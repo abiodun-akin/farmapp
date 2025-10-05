@@ -1,0 +1,26 @@
+.Links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.LinkItem {
+  color: var(--Grayscale-500, #767e94);
+  text-align: center;
+
+  /* Body Medium/400 */
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 150% */
+}
+
+CaretRight {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  transform: rotate(-90deg);
+  justify-content: center;
+  align-items: center;
+}

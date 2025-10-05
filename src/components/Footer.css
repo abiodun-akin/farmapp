@@ -1,0 +1,49 @@
+.footer {
+  display: flex;
+  justify-content: space-evenly;
+  align-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 10px;
+  background-color: cadetblue;
+  list-style-type: none;
+  width: 100%;
+}
+
+.footer > div {
+  flex: 0;
+  align-self: center;
+  justify-self: flex-start;
+}
+
+.footer > div:last-child {
+  justify-self: flex-end;
+}
+
+.footerNav {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 10px;
+  background-color: cadetblue;
+  list-style-type: none;
+}
+
+.footerNav > li {
+  flex: 0;
+}
+
+.footerNav > li:last-child {
+  padding-right: 20px;
+}
+
+.footerNav > li > a {
+  text-decoration: none;
+}
+
+.footerNav > li > a:hover {
+  text-decoration: underline;
+  font-weight: 600;
+}

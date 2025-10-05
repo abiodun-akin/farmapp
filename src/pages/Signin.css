@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  background: url("../assets/images/bg1.png") no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-flow: wrap;
+  margin: 5rem;
+}
+
+.side-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-content: stretch;
+  flex-grow: 2;
+  gap: 1rem;
+  color: var(--color-white);
+}
+
+.sign-in-form {
+  flex-grow: 1;
+  margin: 5rem;
+  color: var(--color-white);
+  flex-wrap: wrap;
+}
+
+.welcome {
+  align-self: center;
+  padding: 1rem;
+}
+
+.side-content > p {
+  align-self: center;
+  padding: 1rem;
+}

@@ -1,0 +1,117 @@
+// SignUpPage.jsx - SIMPLIFIED, WORKING STRUCTURE
+
+import * as Form from "@radix-ui/react-form";
+import { Button, Text, TextField } from "@radix-ui/themes";
+import AuthLayout from "../layouts/AuthLayout";
+
+const SignUpPage = () => {
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    console.log("Sign Up Data:", data);
+  };
+
+  return (
+    <AuthLayout title="Sign Up">
+      <Form.Root onSubmit={handleSubmit}>
+        <div style={{ display: "grid", gap: "var(--space-4)" }}>
+          {/* Full Name Field */}
+          <Form.Field
+            name="name"
+            style={{ display: "grid", gap: "var(--space-1)" }}
+          >
+            <Form.Label asChild>
+              <Text size="2" weight="bold">
+                Full Name
+              </Text>
+            </Form.Label>
+            <Form.Control asChild>
+              <TextField.Root size="3" required placeholder="John Doe" />
+            </Form.Control>
+            <Form.Message match="valueMissing" asChild>
+              <Text size="2" color="red">
+                Please enter your name
+              </Text>
+            </Form.Message>
+          </Form.Field>
+
+          {/* Email Field */}
+          <Form.Field
+            name="email"
+            style={{ display: "grid", gap: "var(--space-1)" }}
+          >
+            <Form.Label asChild>
+              <Text size="2" weight="bold">
+                Email
+              </Text>
+            </Form.Label>
+            <Form.Control asChild>
+              <TextField.Root
+                size="3"
+                type="email"
+                required
+                placeholder="you@example.com"
+              />
+            </Form.Control>
+            <Form.Message match="valueMissing" asChild>
+              <Text size="2" color="red">
+                Please enter your email
+              </Text>
+            </Form.Message>
+            <Form.Message match="typeMismatch" asChild>
+              <Text size="2" color="red">
+                Must be a valid email
+              </Text>
+            </Form.Message>
+          </Form.Field>
+
+          {/* Password Field */}
+          <Form.Field
+            name="password"
+            style={{ display: "grid", gap: "var(--space-1)" }}
+          >
+            <Form.Label asChild>
+              <Text size="2" weight="bold">
+                Password
+              </Text>
+            </Form.Label>
+            <Form.Control asChild>
+              <TextField.Root
+                size="3"
+                type="password"
+                required
+                minLength={8}
+                placeholder="••••••••"
+              />
+            </Form.Control>
+            <Form.Message match="valueMissing" asChild>
+              <Text size="2" color="red">
+                A password is required
+              </Text>
+            </Form.Message>
+            <Form.Message match={(value) => value.length < 8} asChild>
+              <Text size="2" color="red">
+                Min 8 characters
+              </Text>
+            </Form.Message>
+          </Form.Field>
+
+          {/* Submit Button */}
+          <Form.Submit asChild>
+            <Button
+              size="3"
+              style={{
+                marginTop: "var(--space-3)",
+                backgroundColor: "var(--color-pry-900)",
+              }}
+            >
+              Create Account
+            </Button>
+          </Form.Submit>
+        </div>
+      </Form.Root>
+    </AuthLayout>
+  );
+};
+
+export default SignUpPage;

@@ -1,0 +1,23 @@
+.Logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Receipt {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  justify-content: center;
+  align-items: center;
+}
+
+.LogoText {
+  color: var(--Primary-900, #023);
+  text-align: center;
+  font-family: "Nunito Sans";
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px; /* 85.714% */
+}

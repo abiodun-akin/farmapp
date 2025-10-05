@@ -1,0 +1,47 @@
+.BreadCrumbs {
+  display: inline-flex;
+  padding: 60px 300px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(
+      0deg,
+      rgba(25, 31, 51, 0.8) 0%,
+      rgba(25, 31, 51, 0.8) 100%
+    ),
+    url(../../public/images/breadcrumbs.png) lightgray 0px -642.703px / 100% 630%
+      no-repeat;
+}
+
+.AdsList {
+  color: var(--Grayscale-White, #fff);
+  text-align: center;
+
+  /* Heading/02 */
+  font-family: "Nunito Sans";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 40px; /* 125% */
+}
+
+.Location {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.BreadCrumbItem {
+  color: var(--Grayscale-White, #fff);
+  text-align: center;
+
+  /* Body Medium/400 */
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 150% */
+  opacity: 0.6;
+  padding-left: 5px;
+}

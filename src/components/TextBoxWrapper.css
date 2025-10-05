@@ -1,0 +1,44 @@
+div > input {
+  border-radius: 0.5rem;
+  border: solid 1px cadetblue;
+  background-color: aliceblue;
+  color: grey;
+  padding: 4px 10px;
+}
+
+div > input[type="text"] {
+  width: 100%;
+  min-width: 80px;
+  padding: 4px 10px;
+  margin: 8px 0;
+}
+
+div > input[type="password"] {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+div > input[type="email"] {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+div > input[type="number"] {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+div > input[type="date"] {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+div > input[type="time"] {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}

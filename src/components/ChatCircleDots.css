@@ -1,0 +1,13 @@
+.ChatCircleDots {
+  width: 24px;
+  height: 24px;
+}
+
+.Ellipse {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  fill: var(--Danger-500, #ff4f4f);
+  stroke-width: 2px;
+  stroke: var(--Grayscale-White, #fff);
+}

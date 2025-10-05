@@ -1,0 +1,130 @@
+:root {
+  --color-pry-50: #ebf2ee;
+  --color-pry-100: #c2d6cb;
+  --color-pry-200: #a5c2b2;
+  --color-pry-300: #7ca68e;
+  --color-pry-400: #629579;
+  --color-pry-500: #3b7a57;
+  --color-pry-600: #366f4f;
+  --color-pry-700: #2a573e;
+  --color-pry-800: #204330;
+  --color-pry-900: #193325;
+
+  --color-sec-50: #f2edea;
+  --color-sec-100: #d6c8be;
+  --color-sec-200: #c3ae9e;
+  --color-sec-300: #a78972;
+  --color-sec-400: #967256;
+  --color-sec-500: #7c4f2c;
+  --color-sec-600: #714828;
+  --color-sec-700: #58381f;
+  --color-sec-800: #442b18;
+  --color-sec-900: #342112;
+
+  --color-neutral1-50: #e7e7e7;
+  --color-neutral1-100: #b6b5b5;
+  --color-neutral1-200: #929292;
+  --color-neutral1-300: #606060;
+  --color-neutral1-400: #414141;
+  --color-neutral1-500: #121111;
+  --color-neutral1-600: #100f0f;
+  --color-neutral1-700: #0d0c0c;
+  --color-neutral1-800: #0a0909;
+  --color-neutral1-900: #080707;
+
+  --color-neutral2-50: #fefefe;
+  --color-neutral2-100: #fafafa;
+  --color-neutral2-200: #f8f8f8;
+  --color-neutral2-300: #f5f5f5;
+  --color-neutral2-400: #f3f3f3;
+  --color-neutral2-500: #f0f0f0;
+  --color-neutral2-600: #dadada;
+  --color-neutral2-700: #aaaaaa;
+  --color-neutral2-800: #848484;
+  --color-neutral2-900: #656565;
+
+  --color-neutral3-50: #fefefe;
+  --color-neutral3-100: #fcfcfd;
+  --color-neutral3-200: #fbfafc;
+  --color-neutral3-300: #f9f8fa;
+  --color-neutral3-400: #f8f6f9;
+  --color-neutral3-500: #f6f4f8;
+  --color-neutral3-600: #e0dee2;
+  --color-neutral3-700: #afadb0;
+  --color-neutral3-800: #878688;
+  --color-neutral3-900: #676668;
+
+  /* Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Fonts */
+  --font-inter: "Inter", sans-serif;
+  --font-roboto: "Roboto", sans-serif;
+
+  /* Font Weights */
+  --weight-thin: 100;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  /* Font Sizes */
+  --fs-xxl: 120px;
+  --fs-xxl2: 48px;
+  --fs-xl: 45px;
+  --fs-lg: 40px;
+  --fs-md: 36px;
+  --fs-md2: 32px;
+  --fs-md3: 28px;
+  --fs-sm: 22px;
+  --fs-xs: 20px;
+  --fs-xxs: 18px;
+  --fs-body: 16px;
+
+  /* Line Heights */
+  --lh-xxs: 27px;
+  --lh-xs: 30px;
+
+  /* Headings */
+  --h1-font: var(--font-roboto);
+  --h1-size: var(--fs-xl);
+  --h1-weight: var(--weight-bold);
+
+  --h2-font: var(--font-roboto);
+  --h2-size: var(--fs-md);
+  --h2-weight: var(--weight-bold);
+
+  --h3-size: var(--fs-md2);
+  --h3-weight: var(--weight-bold);
+
+  --h4-size: var(--fs-md3);
+  --h4-weight: var(--weight-regular);
+
+  --h5-size: var(--fs-sm);
+  --h5-weight: var(--weight-light);
+
+  --h6-size: var(--fs-xs);
+  --h6-weight: var(--weight-regular);
+
+  /* Body text */
+  --body-font: var(--font-roboto);
+  --body-size: var(--fs-body);
+  --body-weight: var(--weight-regular);
+
+  /* Spacing (4px → 56px) */
+  --sp-4: 4px;
+  --sp-8: 8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  --sp-28: 28px;
+  --sp-32: 32px;
+  --sp-36: 36px;
+  --sp-40: 40px;
+  --sp-44: 44px;
+  --sp-48: 48px;
+  --sp-52: 52px;
+  --sp-56: 56px;
+}

@@ -1,0 +1,30 @@
+.Buttons {
+  display: flex;
+  padding: 0 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  background: var(--Primary-500, #0af);
+}
+
+.PlusCircle {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.ButtonsText {
+  color: var(--Grayscale-White, #fff);
+  text-align: center;
+
+  /* Heading/04 */
+  font-family: "Nunito Sans";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 50px; /* 312.5% */
+  text-transform: capitalize;
+}
