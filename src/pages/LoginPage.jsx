@@ -5,7 +5,7 @@ import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
 import AuthLayout from "../layouts/AuthLayout";
 
-const SignUpPage = () => {
+const LoginPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -13,30 +13,9 @@ const SignUpPage = () => {
   };
 
   return (
-    <AuthLayout title="Create Account">
+    <AuthLayout title="Sign In">
       <Form.Root onSubmit={handleSubmit}>
         <div style={{ display: "grid", gap: "var(--space-4)" }}>
-          {/* Full Name Field */}
-          <Form.Field
-            name="name"
-            style={{ display: "grid", gap: "var(--space-1)" }}
-          >
-            <Form.Label asChild>
-              <Text size="2" weight="bold">
-                Full Name
-              </Text>
-            </Form.Label>
-            <Form.Control asChild>
-              <TextField.Root size="3" required placeholder="John Doe" />
-            </Form.Control>
-            <Form.Message match="valueMissing" asChild>
-              <Text size="2" color="red">
-                Please enter your name
-              </Text>
-            </Form.Message>
-          </Form.Field>
-
-          {/* Email Field */}
           <Form.Field
             name="email"
             style={{ display: "grid", gap: "var(--space-1)" }}
@@ -66,7 +45,6 @@ const SignUpPage = () => {
             </Form.Message>
           </Form.Field>
 
-          {/* Password Field */}
           <Form.Field
             name="password"
             style={{ display: "grid", gap: "var(--space-1)" }}
@@ -97,7 +75,6 @@ const SignUpPage = () => {
             </Form.Message>
           </Form.Field>
 
-          {/* Submit Button */}
           <Form.Submit asChild>
             <Button
               size="3"
@@ -106,15 +83,15 @@ const SignUpPage = () => {
                 backgroundColor: "var(--color-pry-900)",
               }}
             >
-              Create Account
+              Sign In
             </Button>
           </Form.Submit>
 
           <Flex justify="center" direction="column" align="center" gap="1">
             <Text size="2" color="gray">
               Not a member?{" "}
-              <Link href="/login" ml="1">
-                Sign In
+              <Link href="/signup" ml="1">
+                Create Account
               </Link>
             </Text>
             <Text size="2" color="gray" align={"center"}>
@@ -124,7 +101,7 @@ const SignUpPage = () => {
 
           <Flex align="center" justify="center" wrap="wrap" gap="3">
             <Text size="2" color="gray">
-              --- or sign up with ---
+              --- or sign in with ---
             </Text>
           </Flex>
 
@@ -145,4 +122,4 @@ const SignUpPage = () => {
   );
 };
 
-export default SignUpPage;
+export default LoginPage;

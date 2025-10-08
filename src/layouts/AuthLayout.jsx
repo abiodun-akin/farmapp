@@ -1,13 +1,5 @@
 // AuthLayout.jsx
-import {
-  Box,
-  Flex,
-  Grid,
-  Heading,
-  Link,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
+import { Box, Flex, Grid, Heading, Link, Text } from "@radix-ui/themes";
 
 const FeatureCard = ({ icon, title, description }) => (
   <Flex gap="3" align="start">
@@ -122,8 +114,8 @@ const AuthLayout = ({ title, children }) => (
             <text
               x="50"
               y="70"
-              font-size="12"
-              text-anchor="middle"
+              fontSize="12"
+              textAnchor="middle"
               fill="var(--color-sec-700)"
             >
               Farm Connect
@@ -178,7 +170,6 @@ const AuthLayout = ({ title, children }) => (
           width="100%"
           maxWidth="400px"
           style={{
-            // Card styling for the form
             backgroundColor: "var(--color-background)",
             borderRadius: "var(--radius-3)",
             boxShadow: "var(--shadow-4)",
@@ -193,20 +184,6 @@ const AuthLayout = ({ title, children }) => (
           </Text>
 
           {children}
-
-          <Separator size="4" my="5" />
-
-          <Flex justify="center" direction="column" align="center" gap="1">
-            <Text size="2" color="gray">
-              Already a member?
-              <Link href="/login" ml="1">
-                Log In
-              </Link>
-            </Text>
-            <Text size="2" color="gray">
-              By signing up, you agree to our <Link href="#">Terms</Link>.
-            </Text>
-          </Flex>
         </Box>
       </Flex>
     </Grid>
