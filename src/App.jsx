@@ -1,16 +1,17 @@
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./index.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import SignUpPage from "./pages/SignUpPage";
+import Landing from "./pages/Landing";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 
 function App() {
   return (
     <Theme>
       <Router>
         <Routes>
-          <Route path="/" element={<SignUpPage />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>

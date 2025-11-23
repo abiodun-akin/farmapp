@@ -19,44 +19,55 @@ const FeatureCard = ({ icon, title, description }) => (
   </Flex>
 );
 
-const LeftContent = () => (
-  <Flex direction="column" gap="7" p="9">
-    <Heading size="8" style={{ lineHeight: "1.2" }}>
-      Welcome to{" "}
-      <Text
-        style={{ lineHeight: "1.2", color: "var(--color-pry-800)" }}
-        weight="bold"
-      >
-        Farm Connect
-      </Text>
-    </Heading>
+const LeftContent = ({ leftContent }) => {
+  if (leftContent) return leftContent;
 
-    <FeatureCard
-      icon=""
-      title="A Journey"
-      description="A journey where farmers, vendors and service providers meet, trade and thrive. "
-    />
-    <FeatureCard
-      icon=""
-      title="Connection & Growth"
-      description="Rooted in connection, growing toward the future!"
-    />
+  return (
+    <Flex direction="column" gap="7" p="9">
+      <Heading size="8" style={{ lineHeight: "1.2" }}>
+        Welcome to{" "}
+        <Text
+          style={{ lineHeight: "1.2", color: "var(--color-pry-800)" }}
+          weight="bold"
+        >
+          Farm Connect
+        </Text>
+      </Heading>
 
-    <Box
-      mt="5"
-      height="200px"
-      style={{
-        borderRadius: "var(--radius-3)",
-        backgroundColor: "var(--gray-3)",
-        backgroundImage: "url(/path/to/your/image.jpg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    />
-  </Flex>
-);
+      <FeatureCard
+        icon=""
+        title="A Journey"
+        description="A journey where farmers, vendors and service providers meet, trade and thrive. "
+      />
+      <FeatureCard
+        icon=""
+        title="Connection & Growth"
+        description="Rooted in connection, growing toward the future!"
+      />
 
-const AuthLayout = ({ title, children }) => (
+      <Box
+        mt="5"
+        height="200px"
+        style={{
+          borderRadius: "var(--radius-3)",
+          backgroundColor: "var(--gray-3)",
+          backgroundImage: "url(/path/to/your/image.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+    </Flex>
+  );
+};
+
+const PageLayout = ({
+  title,
+  children,
+  leftContent,
+  showLeftPanel = true,
+  maxWidth = "400px",
+  fullBleed = false,
+}) => (
   <Flex
     direction="column"
     minHeight="100vh"
@@ -65,6 +76,7 @@ const AuthLayout = ({ title, children }) => (
       backgroundImage: "url(images/bg1.png)",
       backgroundSize: "cover",
       backgroundPosition: "center",
+      height: fullBleed ? "100vh" : undefined,
     }}
   >
     <Flex
@@ -133,48 +145,58 @@ const AuthLayout = ({ title, children }) => (
     </Flex>
 
     <Grid
-      columns={{ initial: "1", lg: "700px 1fr" }}
+      columns={{ initial: "1", lg: showLeftPanel ? "700px 1fr" : "1fr" }}
       gap="0"
       style={{
         flexGrow: 1,
         backgroundImage: "url(../../assets/images/bg1.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        minHeight: fullBleed ? "calc(100vh - 120px)" : undefined,
       }}
     >
-      <Box
-        style={{
-          backgroundColor: "var(--color-background)",
-          display: "block",
-          borderRight: "1px solid var(--gray-6)",
-        }}
-        display={{ initial: "none", lg: "block" }}
-      >
-        <LeftContent />
-      </Box>
+      {showLeftPanel && (
+        <Box
+          style={{
+            backgroundColor: "var(--color-background)",
+            display: "block",
+            borderRight: "1px solid var(--gray-6)",
+          }}
+          display={{ initial: "none", lg: "block" }}
+        >
+          <LeftContent leftContent={leftContent} />
+        </Box>
+      )}
 
       <Flex
-        align="center"
+        align={fullBleed ? "stretch" : "center"}
         justify="center"
-        p={{ initial: "5", lg: "9" }}
-        style={{ width: "100%" }}
+        p={{ initial: fullBleed ? "0" : "5", lg: fullBleed ? "0" : "9" }}
+        style={{ width: "100%", height: fullBleed ? "100%" : undefined }}
       >
         <Box
           width="100%"
-          maxWidth="400px"
+          maxWidth={fullBleed ? "100%" : maxWidth}
           style={{
-            backgroundColor: "var(--color-background)",
-            borderRadius: "var(--radius-3)",
-            boxShadow: "var(--shadow-4)",
+            backgroundColor: fullBleed
+              ? "transparent"
+              : "var(--color-background)",
+            borderRadius: fullBleed ? 0 : "var(--radius-3)",
+            boxShadow: fullBleed ? "none" : "var(--shadow-4)",
+            height: fullBleed ? "100%" : undefined,
           }}
-          p="6"
+          p={fullBleed ? "0" : "6"}
         >
-          <Heading size="7" align="center" mb="2">
-            {title}
-          </Heading>
-          <Text as="p" size="3" color="gray" align="center" mb="5">
-            Start your free trial today.
-          </Text>
+          {title && (
+            <>
+              <Heading size="7" align="center" mb="2">
+                {title}
+              </Heading>
+              <Text as="p" size="3" color="gray" align="center" mb="5">
+                Start your free trial today.
+              </Text>
+            </>
+          )}
 
           {children}
         </Box>
@@ -183,4 +205,4 @@ const AuthLayout = ({ title, children }) => (
   </Flex>
 );
 
-export default AuthLayout;
+export default PageLayout;

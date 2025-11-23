@@ -1,20 +1,32 @@
-// SignUpPage.jsx - SIMPLIFIED, WORKING STRUCTURE
-
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
+import { useEffect } from "react";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login, loading, error, isAuthenticated } = useAuth();
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    console.log("Sign Up Data:", data);
+    login(data.email, data.password);
   };
+
+  useEffect(() => {
+    if (isAuthenticated && !error) {
+      navigate("/");
+    }
+  }, [isAuthenticated, error, navigate]);
 
   return (
     <AuthLayout title="Sign In">
       <Form.Root onSubmit={handleSubmit}>
+        {error && <p>{error}</p>}
+        {isAuthenticated && <p>You are logged in</p>}
         <div style={{ display: "grid", gap: "var(--space-4)" }}>
           <Form.Field
             name="email"
@@ -77,13 +89,14 @@ const LoginPage = () => {
 
           <Form.Submit asChild>
             <Button
+              disabled={loading}
               size="3"
               style={{
                 marginTop: "var(--space-3)",
                 backgroundColor: "var(--color-pry-900)",
               }}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </Form.Submit>
 
@@ -95,7 +108,7 @@ const LoginPage = () => {
               </Link>
             </Text>
             <Text size="2" color="gray" align={"center"}>
-              By signing up, you agree to our <Link href="#">Terms</Link>.
+              By signing in, you agree to our <Link href="#">Terms</Link>.
             </Text>
           </Flex>
 

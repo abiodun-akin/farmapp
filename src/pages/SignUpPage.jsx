@@ -1,22 +1,39 @@
-// SignUpPage.jsx - SIMPLIFIED, WORKING STRUCTURE
-
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
+import { useEffect } from "react";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+  const { signup, loading, error, isAuthenticated } = useAuth();
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    console.log("Sign Up Data:", data);
+    signup(data.name, data.email, data.password);
   };
+
+  // Log state changes after Redux updates
+  useEffect(() => {
+    console.log("Authenticated:", isAuthenticated);
+    console.log("Error:", error);
+
+    // Redirect to home page on successful signup
+    if (isAuthenticated && !error) {
+      console.log("Signup successful, redirecting to home...");
+      navigate("/");
+    }
+  }, [isAuthenticated, error, navigate]);
 
   return (
     <AuthLayout title="Create Account">
       <Form.Root onSubmit={handleSubmit}>
+        {error && <p>{error}</p>}
+        {isAuthenticated && <p>You are logged in</p>}
         <div style={{ display: "grid", gap: "var(--space-4)" }}>
-          {/* Full Name Field */}
           <Form.Field
             name="name"
             style={{ display: "grid", gap: "var(--space-1)" }}
@@ -36,7 +53,6 @@ const SignUpPage = () => {
             </Form.Message>
           </Form.Field>
 
-          {/* Email Field */}
           <Form.Field
             name="email"
             style={{ display: "grid", gap: "var(--space-1)" }}
@@ -66,7 +82,6 @@ const SignUpPage = () => {
             </Form.Message>
           </Form.Field>
 
-          {/* Password Field */}
           <Form.Field
             name="password"
             style={{ display: "grid", gap: "var(--space-1)" }}
@@ -97,22 +112,22 @@ const SignUpPage = () => {
             </Form.Message>
           </Form.Field>
 
-          {/* Submit Button */}
           <Form.Submit asChild>
             <Button
+              disabled={loading}
               size="3"
               style={{
                 marginTop: "var(--space-3)",
                 backgroundColor: "var(--color-pry-900)",
               }}
             >
-              Create Account
+              {loading ? "Creating account..." : "Create Account"}
             </Button>
           </Form.Submit>
 
           <Flex justify="center" direction="column" align="center" gap="1">
             <Text size="2" color="gray">
-              Not a member?{" "}
+              Already a member?{" "}
               <Link href="/login" ml="1">
                 Sign In
               </Link>
