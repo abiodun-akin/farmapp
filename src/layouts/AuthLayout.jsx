@@ -48,10 +48,13 @@ const LeftContent = () => (
       style={{
         borderRadius: "var(--radius-3)",
         backgroundColor: "var(--gray-3)",
-        backgroundImage: "url(/path/to/your/image.jpg)",
+        backgroundImage: "url('images/farmconnect.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
+      role="img"
+      aria-label="Farmers working in a field"
     />
   </Flex>
 );
@@ -120,7 +123,7 @@ const AuthLayout = ({ title, children }) => (
         </Heading>
       </Link>
       <Flex as="nav" gap="5" align="center">
-        <Link weight="medium" size="2" color="gray" href="#">
+        <Link weight="medium" size="2" color="gray" href="/">
           Home
         </Link>
         <Link weight="medium" size="2" color="gray" href="#">
@@ -128,6 +131,12 @@ const AuthLayout = ({ title, children }) => (
         </Link>
         <Link weight="medium" size="2" color="gray" href="#">
           Pricing
+        </Link>
+        <Link weight="medium" size="2" color="green" href="/signup">
+          Create Account
+        </Link>
+        <Link weight="medium" size="2" color="green" href="/login">
+          Sign In
         </Link>
       </Flex>
     </Flex>
