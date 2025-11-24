@@ -20,7 +20,7 @@ const FeatureCard = ({ icon, title, description }) => (
 );
 
 const LeftContent = () => (
-  <Flex direction="column" gap="7" p="9">
+  <Flex direction="column" gap="7" p="9" wrap="wrap">
     <Heading size="8" style={{ lineHeight: "1.2" }}>
       Welcome to{" "}
       <Text
@@ -74,6 +74,8 @@ const AuthLayout = ({ title, children }) => (
       as="header"
       align="center"
       justify="between"
+      wrap="wrap"
+      gap="5"
       py="4"
       px="6"
       style={{
@@ -90,6 +92,7 @@ const AuthLayout = ({ title, children }) => (
           weight="bold"
           style={{
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             justifyItems: "center",
             color: "var(--color-pry-800)",
@@ -122,7 +125,7 @@ const AuthLayout = ({ title, children }) => (
           </svg>
         </Heading>
       </Link>
-      <Flex as="nav" gap="5" align="center">
+      <Flex as="nav" gap="5" align="center" wrap="wrap">
         <Link weight="medium" size="2" color="gray" href="/">
           Home
         </Link>
