@@ -3,12 +3,14 @@ import createSagaMiddleware from "redux-saga";
 import { rootSaga } from "./sagas";
 import reportReducer from "./slices/reportSlice";
 import userReducer from "./slices/userSlice";
+import paymentReducer from "./slices/paymentSlice";
 
 const sagaMiddleware = createSagaMiddleware();
 
 const rootReducer = combineReducers({
   user: userReducer,
   report: reportReducer,
+  payment: paymentReducer,
 });
 
 export const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
