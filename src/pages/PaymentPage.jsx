@@ -10,62 +10,41 @@ const PaymentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [planDetails, setPlanDetails] = useState(null);
+  const [error, setError] = useState(null);
   const { isAuthenticated } = useSelector((state) => state.user);
 
   const plans = {
-    basic: {
-      name: "Basic Plan",
-      amount: 5000,
-      features: ["Feature 1", "Feature 2", "Feature 3"],
-    },
-    pro: {
-      name: "Pro Plan",
-      amount: 10000,
-      features: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"],
-    },
-    enterprise: {
-      name: "Enterprise Plan",
-      amount: 15000,
-      features: [
-        "Feature 1",
-        "Feature 2",
-        "Feature 3",
-        "Feature 4",
-        "Feature 5",
-      ],
-    },
+    basic: { name: "Basic Plan", amount: 50000, description: "Perfect for getting started" },
+    pro: { name: "Pro Plan", amount: 100000, description: "Best for growing businesses" },
+    enterprise: { name: "Enterprise Plan", amount: 150000, description: "For large-scale operations" },
   };
 
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log("PaymentPage - user not authenticated, redirecting to login");
       navigate("/login", { state: { redirectTo: window.location.pathname + window.location.search } });
       return;
     }
 
     const plan = searchParams.get("plan");
-    console.log("PaymentPage - plan from URL:", plan);
     if (plan && plans[plan]) {
-      console.log("PaymentPage - setting plan details:", plans[plan]);
       setPlanDetails(plans[plan]);
     } else {
-      console.log("PaymentPage - plan not found, redirecting to pricing");
+      setError("Invalid plan selected");
       navigate("/pricing");
     }
   }, [searchParams, navigate, isAuthenticated]);
 
   const handlePaymentSuccess = async (response) => {
-    console.log("Payment success:", response);
     try {
       await paymentAPI.handlePaymentSuccess(response.reference, searchParams.get("plan"));
       navigate("/dashboard");
     } catch (error) {
       console.error("Payment success handling failed:", error);
+      setError("Payment verification failed");
     }
   };
 
   const handlePaymentClose = async () => {
-    console.log("Payment closed by user");
     try {
       await paymentAPI.handlePaymentClose();
     } catch (error) {
@@ -73,18 +52,25 @@ const PaymentPage = () => {
     }
   };
 
-  if (!planDetails) {
-    console.log("PaymentPage - planDetails not loaded yet");
+  if (error) {
     return (
       <FullPageLayout>
         <Flex align="center" justify="center" style={{ minHeight: "100vh" }}>
-          <Text>Loading...</Text>
+          <Text color="red">{error}</Text>
         </Flex>
       </FullPageLayout>
     );
   }
 
-  console.log("PaymentPage - rendering with planDetails:", planDetails);
+  if (!planDetails) {
+    return (
+      <FullPageLayout>
+        <Flex align="center" justify="center" style={{ minHeight: "100vh" }}>
+          <Text>Loading payment details...</Text>
+        </Flex>
+      </FullPageLayout>
+    );
+  }
 
   return (
     <FullPageLayout>
@@ -95,13 +81,11 @@ const PaymentPage = () => {
         p="8"
         style={{ minHeight: "100vh" }}
       >
-        <Card
-          style={{
-            backgroundColor: "white",
-            padding: "32px",
-            maxWidth: "400px",
-          }}
-        >
+        <Card style={{ backgroundColor: "white", padding: "32px", maxWidth: "400px" }}>
+          <Flex direction="column" gap="4" align="center" mb="6">
+            <Text size="6" weight="bold">{planDetails.name}</Text>
+            <Text size="2" color="gray">{planDetails.description}</Text>
+          </Flex>
           <PaystackPayment
             plan={planDetails.name}
             amount={planDetails.amount}

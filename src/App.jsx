@@ -6,6 +6,7 @@ import Landing from "./pages/Landing";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import PricingPage from "./pages/PricingPage";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
         </Routes>
       </Router>
     </Theme>

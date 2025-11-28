@@ -96,6 +96,9 @@ const NavigationBar = () => {
         ) : (
           <>
             <Link asChild weight="medium" size="2" color="gray">
+              <RouterLink to="/pricing">Pricing</RouterLink>
+            </Link>
+            <Link asChild weight="medium" size="2" color="gray">
               <RouterLink to="/">Account</RouterLink>
             </Link>
             <Button variant="ghost" onClick={handleLogout} size="2">

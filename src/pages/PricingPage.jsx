@@ -11,7 +11,6 @@ const PricingPage = () => {
 
   const handleChoosePlan = (plan) => {
     if (!isAuthenticated) {
-      console.log("User not authenticated, redirecting to login");
       navigate("/login", { state: { redirectTo: `/payment?plan=${plan}` } });
       return;
     }
@@ -21,6 +20,36 @@ const PricingPage = () => {
       setLoadingPlan(null);
     }, 500);
   };
+
+  const plans = [
+    {
+      id: "basic",
+      name: "Basic Plan",
+      price: "₦5,000",
+      description: "Perfect for getting started",
+      features: ["Feature 1", "Feature 2", "Feature 3"],
+    },
+    {
+      id: "pro",
+      name: "Pro Plan",
+      price: "₦10,000",
+      description: "Best for growing businesses",
+      features: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"],
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise Plan",
+      price: "₦15,000",
+      description: "For large-scale operations",
+      features: [
+        "Feature 1",
+        "Feature 2",
+        "Feature 3",
+        "Feature 4",
+        "Feature 5",
+      ],
+    },
+  ];
 
   return (
     <FullPageLayout>
@@ -36,120 +65,60 @@ const PricingPage = () => {
           Our Pricing Plans
         </Text>
         <Flex gap="8" wrap="wrap" justify="center">
-          <Card
-            style={{
-              backgroundColor: "white",
-              width: "320px",
-              minHeight: "384px",
-            }}
-          >
-            <Flex direction="column" align="center" p="6" gap="4" height="100%">
-              <Text size="6" weight="bold">
-                Basic Plan
-              </Text>
-              <Text size="8" weight="bold">
-                $10<Text size="4">/month</Text>
-              </Text>
+          {plans.map((plan) => (
+            <Card
+              key={plan.id}
+              style={{
+                backgroundColor: "white",
+                width: "320px",
+                minHeight: "384px",
+              }}
+            >
               <Flex
                 direction="column"
-                gap="2"
-                style={{ textAlign: "left", flexGrow: 1 }}
+                align="center"
+                p="6"
+                gap="4"
+                height="100%"
               >
-                <Text>Feature 1</Text>
-                <Text>Feature 2</Text>
-                <Text>Feature 3</Text>
+                <Text size="6" weight="bold">
+                  {plan.name}
+                </Text>
+                <Text size="2" color="gray">
+                  {plan.description}
+                </Text>
+                <Text size="8" weight="bold">
+                  {plan.price}
+                </Text>
+                <Text size="2" color="gray">
+                  /month
+                </Text>
+                <Flex
+                  direction="column"
+                  gap="2"
+                  style={{ textAlign: "left", flexGrow: 1 }}
+                >
+                  {plan.features.map((feature, idx) => (
+                    <Text key={idx} size="2">
+                      ✓ {feature}
+                    </Text>
+                  ))}
+                </Flex>
+                <Button
+                  onClick={() => handleChoosePlan(plan.id)}
+                  disabled={loadingPlan === plan.id}
+                  style={{
+                    backgroundColor: "var(--color-pry-800)",
+                    color: "white",
+                    borderRadius: "9999px",
+                    opacity: loadingPlan === plan.id ? 0.7 : 1,
+                  }}
+                >
+                  {loadingPlan === plan.id ? "Processing..." : "Choose Plan"}
+                </Button>
               </Flex>
-              <Button
-                onClick={() => handleChoosePlan("basic")}
-                disabled={loadingPlan === "basic"}
-                style={{
-                  backgroundColor: "var(--color-pry-800)",
-                  color: "white",
-                  borderRadius: "9999px",
-                  opacity: loadingPlan === "basic" ? 0.7 : 1,
-                }}
-              >
-                {loadingPlan === "basic" ? "Processing..." : "Choose Plan"}
-              </Button>
-            </Flex>
-          </Card>
-          <Card
-            style={{
-              backgroundColor: "white",
-              width: "320px",
-              minHeight: "384px",
-            }}
-          >
-            <Flex direction="column" align="center" p="6" gap="4" height="100%">
-              <Text size="6" weight="bold">
-                Pro Plan
-              </Text>
-              <Text size="8" weight="bold">
-                $20<Text size="4">/month</Text>
-              </Text>
-              <Flex
-                direction="column"
-                gap="2"
-                style={{ textAlign: "left", flexGrow: 1 }}
-              >
-                <Text>Feature 1</Text>
-                <Text>Feature 2</Text>
-                <Text>Feature 3</Text>
-                <Text>Feature 4</Text>
-              </Flex>
-              <Button
-                onClick={() => handleChoosePlan("pro")}
-                disabled={loadingPlan === "pro"}
-                style={{
-                  backgroundColor: "var(--color-pry-800)",
-                  color: "white",
-                  borderRadius: "9999px",
-                  opacity: loadingPlan === "pro" ? 0.7 : 1,
-                }}
-              >
-                {loadingPlan === "pro" ? "Processing..." : "Choose Plan"}
-              </Button>
-            </Flex>
-          </Card>
-          <Card
-            style={{
-              backgroundColor: "white",
-              width: "320px",
-              minHeight: "384px",
-            }}
-          >
-            <Flex direction="column" align="center" p="6" gap="4" height="100%">
-              <Text size="6" weight="bold">
-                Enterprise Plan
-              </Text>
-              <Text size="8" weight="bold">
-                $30<Text size="4">/month</Text>
-              </Text>
-              <Flex
-                direction="column"
-                gap="2"
-                style={{ textAlign: "left", flexGrow: 1 }}
-              >
-                <Text>Feature 1</Text>
-                <Text>Feature 2</Text>
-                <Text>Feature 3</Text>
-                <Text>Feature 4</Text>
-                <Text>Feature 5</Text>
-              </Flex>
-              <Button
-                onClick={() => handleChoosePlan("enterprise")}
-                disabled={loadingPlan === "enterprise"}
-                style={{
-                  backgroundColor: "var(--color-pry-800)",
-                  color: "white",
-                  borderRadius: "9999px",
-                  opacity: loadingPlan === "enterprise" ? 0.7 : 1,
-                }}
-              >
-                {loadingPlan === "enterprise" ? "Processing..." : "Choose Plan"}
-              </Button>
-            </Flex>
-          </Card>
+            </Card>
+          ))}
         </Flex>
       </Flex>
     </FullPageLayout>
