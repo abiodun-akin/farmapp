@@ -7,11 +7,13 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import PricingPage from "./pages/PricingPage";
 import PaymentPage from "./pages/PaymentPage";
+import Toast from "./components/Toast";
 
 function App() {
   return (
     <Theme>
       <Router>
+        <Toast />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/signup" element={<SignUpPage />} />

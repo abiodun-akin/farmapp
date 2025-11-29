@@ -1,14 +1,16 @@
 import { Card, Flex, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { paymentAPI } from "../api/paymentApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
+import { addToast } from "../redux/slices/toastSlice";
 
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [planDetails, setPlanDetails] = useState(null);
   const [error, setError] = useState(null);
   const { isAuthenticated } = useSelector((state) => state.user);
@@ -47,6 +49,7 @@ const PaymentPage = () => {
   const handlePaymentClose = async () => {
     try {
       await paymentAPI.handlePaymentClose();
+      dispatch(addToast({ message: "Payment cancelled", type: "warning" }));
     } catch (error) {
       console.error("Payment close handling failed:", error);
     }
