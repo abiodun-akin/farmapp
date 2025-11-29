@@ -1,4 +1,4 @@
-import { Box, Text } from "@radix-ui/themes";
+import { Box } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Slider from "../components/Slider";
@@ -61,25 +61,8 @@ const Landing = () => {
           height: "calc(100vh - 120px)",
           padding: "0",
           margin: "0",
-          position: "relative",
         }}
       >
-        <Text
-          size="3"
-          weight="bold"
-          style={{
-            position: "absolute",
-            top: "20px",
-            left: "20px",
-            backgroundColor: "#10b981",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: "8px",
-            zIndex: 10,
-          }}
-        >
-          Verification code: OS7K3L
-        </Text>
         <Slider
           slides={slides}
           currentSlide={currentSlide}
