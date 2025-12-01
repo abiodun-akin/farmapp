@@ -6,6 +6,7 @@ import { paymentAPI } from "../api/paymentApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
 import { addToast } from "../redux/slices/toastSlice";
+import { logout } from "../redux/slices/userSlice";
 
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
@@ -34,7 +35,34 @@ const PaymentPage = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Quick client-side JWT expiry check to avoid unexpected 401s
+    const token = localStorage.getItem("token");
+    const isTokenExpired = (t) => {
+      if (!t) return true;
+      try {
+        const payload = JSON.parse(atob(t.split(".")[1]));
+        // exp is in seconds since epoch
+        return (
+          typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()
+        );
+      } catch (err) {
+        return true;
+      }
+    };
+
+    if (!isAuthenticated || isTokenExpired(token)) {
+      // clear any stale auth and redirect to login with return path
+      if (isTokenExpired(token)) {
+        // remove local auth state and show a helpful toast
+        dispatch(logout());
+        dispatch(
+          addToast({
+            message: "Session expired — please sign in again",
+            type: "warning",
+          })
+        );
+      }
+
       navigate("/login", {
         state: {
           redirectTo: window.location.pathname + window.location.search,
