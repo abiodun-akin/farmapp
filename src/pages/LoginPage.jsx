@@ -94,6 +94,7 @@ const LoginPage = () => {
               style={{
                 marginTop: "var(--space-3)",
                 backgroundColor: "var(--color-pry-900)",
+                color: "var(--color-white)",
               }}
             >
               {loading ? "Signing in..." : "Sign In"}

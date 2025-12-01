@@ -16,14 +16,30 @@ const PaymentPage = () => {
   const { isAuthenticated } = useSelector((state) => state.user);
 
   const plans = {
-    basic: { name: "Basic Plan", amount: 50000, description: "Perfect for getting started" },
-    pro: { name: "Pro Plan", amount: 100000, description: "Best for growing businesses" },
-    enterprise: { name: "Enterprise Plan", amount: 150000, description: "For large-scale operations" },
+    basic: {
+      name: "Basic Plan",
+      amount: 5000,
+      description: "Perfect for getting started",
+    },
+    pro: {
+      name: "Pro Plan",
+      amount: 10000,
+      description: "Best for growing businesses",
+    },
+    enterprise: {
+      name: "Enterprise Plan",
+      amount: 15000,
+      description: "For large-scale operations",
+    },
   };
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { redirectTo: window.location.pathname + window.location.search } });
+      navigate("/login", {
+        state: {
+          redirectTo: window.location.pathname + window.location.search,
+        },
+      });
       return;
     }
 
@@ -38,7 +54,10 @@ const PaymentPage = () => {
 
   const handlePaymentSuccess = async (response) => {
     try {
-      await paymentAPI.handlePaymentSuccess(response.reference, searchParams.get("plan"));
+      await paymentAPI.handlePaymentSuccess(
+        response.reference,
+        searchParams.get("plan")
+      );
       navigate("/dashboard");
     } catch (error) {
       console.error("Payment success handling failed:", error);
@@ -84,10 +103,20 @@ const PaymentPage = () => {
         p="8"
         style={{ minHeight: "100vh" }}
       >
-        <Card style={{ backgroundColor: "white", padding: "32px", maxWidth: "400px" }}>
+        <Card
+          style={{
+            backgroundColor: "white",
+            padding: "32px",
+            maxWidth: "400px",
+          }}
+        >
           <Flex direction="column" gap="4" align="center" mb="6">
-            <Text size="6" weight="bold">{planDetails.name}</Text>
-            <Text size="2" color="gray">{planDetails.description}</Text>
+            <Text size="6" weight="bold">
+              {planDetails.name}
+            </Text>
+            <Text size="2" color="gray">
+              {planDetails.description}
+            </Text>
           </Flex>
           <PaystackPayment
             plan={planDetails.name}
