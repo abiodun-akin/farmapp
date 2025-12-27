@@ -84,7 +84,7 @@ const PricingPage = () => {
                 <Text size="6" weight="bold">
                   {plan.name}
                 </Text>
-                <Text size="2" color="gray">
+                <Text size="2" color="gray" style={{ textAlign: "center" }}>
                   {plan.description}
                 </Text>
                 <Text size="8" weight="bold">
@@ -114,7 +114,7 @@ const PricingPage = () => {
                     opacity: loadingPlan === plan.id ? 0.7 : 1,
                   }}
                 >
-                  {loadingPlan === plan.id ? "Processing..." : "Choose Plan"}
+                  {loadingPlan === plan.id ? "Processing..." : "Start trial"}
                 </Button>
               </Flex>
             </Card>
