@@ -26,29 +26,29 @@ const PricingPage = () => {
       id: "basic",
       name: "Basic Plan",
       price: "₦5,000",
-      description: "Perfect for getting started",
-      features: ["Feature 1", "Feature 2", "Feature 3"],
+      description: "Get started with our 30 days free trial.",
+      features: ["Free signup", "Free listing", "Unlimited listing", "Basic support", "Analytics dashboard", "Access to community", "And many more..."],
     },
-    {
-      id: "pro",
-      name: "Pro Plan",
-      price: "₦10,000",
-      description: "Best for growing businesses",
-      features: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"],
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise Plan",
-      price: "₦15,000",
-      description: "For large-scale operations",
-      features: [
-        "Feature 1",
-        "Feature 2",
-        "Feature 3",
-        "Feature 4",
-        "Feature 5",
-      ],
-    },
+    // {
+    //   id: "pro",
+    //   name: "Pro Plan",
+    //   price: "₦10,000",
+    //   description: "Best for growing businesses",
+    //   features: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"],
+    // },
+    // {
+    //   id: "enterprise",
+    //   name: "Enterprise Plan",
+    //   price: "₦15,000",
+    //   description: "For large-scale operations",
+    //   features: [
+    //     "Feature 1",
+    //     "Feature 2",
+    //     "Feature 3",
+    //     "Feature 4",
+    //     "Feature 5",
+    //   ],
+    // },
   ];
 
   return (

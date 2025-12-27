@@ -20,18 +20,18 @@ const PaymentPage = () => {
     basic: {
       name: "Basic Plan",
       amount: 5000,
-      description: "Perfect for getting started",
+      description: "Get started with our 30 days free trial.",
     },
-    pro: {
-      name: "Pro Plan",
-      amount: 10000,
-      description: "Best for growing businesses",
-    },
-    enterprise: {
-      name: "Enterprise Plan",
-      amount: 15000,
-      description: "For large-scale operations",
-    },
+    // pro: {
+    //   name: "Pro Plan",
+    //   amount: 10000,
+    //   description: "Best for growing businesses",
+    // },
+    // enterprise: {
+    //   name: "Enterprise Plan",
+    //   amount: 15000,
+    //   description: "For large-scale operations",
+    // },
   };
 
   useEffect(() => {
