@@ -1,0 +1,218 @@
+.vendor-profile-form {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.vendor-profile-form h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.vendor-profile-form .form-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.vendor-profile-form .error-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.vendor-profile-form .success-message {
+  text-align: center;
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendor-profile-form .success-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  background: #4caf50;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendor-profile-form .success-message h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.vendor-profile-form .success-message p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.vendor-profile-form .form-section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.vendor-profile-form .form-section:last-of-type {
+  border-bottom: none;
+}
+
+.vendor-profile-form .form-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.vendor-profile-form .form-group {
+  margin-bottom: 20px;
+}
+
+.vendor-profile-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.vendor-profile-form .form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.vendor-profile-form .form-group input[type="text"],
+.vendor-profile-form .form-group input[type="tel"],
+.vendor-profile-form .form-group input[type="email"],
+.vendor-profile-form .form-group select,
+.vendor-profile-form .form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.vendor-profile-form .form-group input[type="text"]:focus,
+.vendor-profile-form .form-group input[type="tel"]:focus,
+.vendor-profile-form .form-group input[type="email"]:focus,
+.vendor-profile-form .form-group select:focus,
+.vendor-profile-form .form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.vendor-profile-form .form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+.vendor-profile-form .form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.vendor-profile-form .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.vendor-profile-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.2s;
+}
+
+.vendor-profile-form .checkbox-label:hover {
+  background-color: #f9f9f9;
+  border-color: #ddd;
+}
+
+.vendor-profile-form .checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.vendor-profile-form .error {
+  display: block;
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.vendor-profile-form .submit-button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 20px;
+}
+
+.vendor-profile-form .submit-button:hover:not(:disabled) {
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+}
+
+.vendor-profile-form .submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .vendor-profile-form {
+    padding: 20px;
+  }
+
+  .vendor-profile-form h1 {
+    font-size: 22px;
+  }
+
+  .vendor-profile-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .vendor-profile-form .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+}

@@ -9,32 +9,44 @@ import {
   verifyPaymentFailure,
 } from "../slices/paymentSlice";
 import { addToast } from "../slices/toastSlice";
+import { logout } from "../slices/userSlice";
+import { formatErrorMessage, isAuthError } from "../../utils/errorHandler";
 
 function* initializePaymentSaga(action) {
   try {
     const { plan, amount, email } = action.payload;
     const response = yield call(paymentAPI.initializePayment, plan, amount, email);
     yield put(initializePaymentSuccess(response.data));
-    yield put(addToast({ message: "Payment initialized", type: "info" }));
+    console.log("Payment initialization successful:", response.data);
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.error || error.message || "Payment initialization failed";
-    yield put(initializePaymentFailure(errorMessage));
-    yield put(addToast({ message: errorMessage, type: "error" }));
+    // Check if it's an auth error
+    if (isAuthError(error)) {
+      yield put(logout());
+      yield put(addToast({ message: "Session expired. Please login again.", type: "error" }));
+    } else {
+      const errorMessage = formatErrorMessage(error);
+      yield put(initializePaymentFailure(errorMessage));
+      yield put(addToast({ message: errorMessage, type: "error" }));
+    }
   }
 }
 
 function* verifyPaymentSaga(action) {
   try {
-    const { reference } = action.payload;
+    const { reference, plan } = action.payload;
     const response = yield call(paymentAPI.verifyPayment, reference);
     yield put(verifyPaymentSuccess(response.data));
-    yield put(addToast({ message: "Payment verified successfully!", type: "success" }));
+    console.log("Payment verification successful:", response.data);
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.error || error.message || "Payment verification failed";
-    yield put(verifyPaymentFailure(errorMessage));
-    yield put(addToast({ message: errorMessage, type: "error" }));
+    // Check if it's an auth error
+    if (isAuthError(error)) {
+      yield put(logout());
+      yield put(addToast({ message: "Session expired. Please login again.", type: "error" }));
+    } else {
+      const errorMessage = formatErrorMessage(error);
+      yield put(verifyPaymentFailure(errorMessage));
+      yield put(addToast({ message: errorMessage, type: "error" }));
+    }
   }
 }
 

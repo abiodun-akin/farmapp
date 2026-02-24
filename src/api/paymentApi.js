@@ -12,4 +12,7 @@ export const paymentAPI = {
 
   handlePaymentClose: () =>
     api.post("/api/payment/close"),
+
+  getSubscriptionStatus: () =>
+    api.get("/api/payment/subscription"),
 };
