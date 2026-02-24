@@ -10,9 +10,19 @@ import PaymentPage from "./pages/PaymentPage";
 import ProfileTypeSelector from "./pages/ProfileTypeSelector";
 import FarmerProfileForm from "./pages/FarmerProfileForm";
 import VendorProfileForm from "./pages/VendorProfileForm";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminUserDetail from "./pages/admin/AdminUserDetail";
+import AdminViolations from "./pages/admin/AdminViolations";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminPaymentDetail from "./pages/admin/AdminPaymentDetail";
+import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
 import Toast from "./components/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
@@ -55,6 +65,78 @@ function App() {
                 <PrivateRoute>
                   <VendorProfileForm />
                 </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:userId"
+              element={
+                <AdminRoute>
+                  <AdminUserDetail />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/violations"
+              element={
+                <AdminRoute>
+                  <AdminViolations />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/messages"
+              element={
+                <AdminRoute>
+                  <AdminMessages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/subscriptions"
+              element={
+                <AdminRoute>
+                  <AdminSubscriptions />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/payments"
+              element={
+                <AdminRoute>
+                  <AdminPayments />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/payments/:paymentId"
+              element={
+                <AdminRoute>
+                  <AdminPaymentDetail />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/payments-analytics"
+              element={
+                <AdminRoute>
+                  <AdminPaymentAnalytics />
+                </AdminRoute>
               }
             />
           </Routes>
