@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/paymentSlice";
+import { paymentAPI } from "../api/paymentApi";
+import { addToast } from "../redux/slices/toastSlice";
 
 const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
   const dispatch = useDispatch();
@@ -54,6 +56,31 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
     }
   };
 
+  const handlePaymentConfirmation = async (reference) => {
+    try {
+      // First verify the payment
+      console.log("Verifying payment...");
+      const verifyResponse = await paymentAPI.verifyPayment(reference, plan);
+      console.log("Payment verification successful:", verifyResponse.data);
+
+      // Then confirm payment success to create subscription
+      console.log("Confirming payment success...");
+      const successResponse = await paymentAPI.handlePaymentSuccess(reference, plan);
+      console.log("Payment success confirmed:", successResponse.data);
+
+      dispatch(addToast({
+        message: "Subscription activated successfully!",
+        type: "success"
+      }));
+    } catch (error) {
+      console.error("Payment success handling failed:", error.response?.data || error.message);
+      dispatch(addToast({
+        message: error.response?.data?.message || "Failed to confirm payment. Please contact support.",
+        type: "error"
+      }));
+    }
+  };
+
   const openPaystackModal = () => {
     if (!paymentData?.paymentData?.reference) {
       console.error("No payment reference available");
@@ -77,8 +104,8 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
         console.log("Payment successful:", response);
         setPaymentInProgress(false);
 
-        // Verify the payment with backend
-        dispatch(verifyPaymentRequest({ reference: response.reference, plan }));
+        // Verify the payment with backend and then confirm success
+        handlePaymentConfirmation(response.reference);
 
         // Call success handler
         onSuccess(response);
