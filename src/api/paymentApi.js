@@ -4,8 +4,8 @@ export const paymentAPI = {
   initializePayment: (plan, amount, email) =>
     api.post("/api/payment/initialize", { plan, amount, email }),
 
-  verifyPayment: (reference) =>
-    api.post("/api/payment/verify", { reference }),
+  verifyPayment: (reference, plan) =>
+    api.post("/api/payment/verify", { reference, plan }),
 
   handlePaymentSuccess: (reference, plan) =>
     api.post("/api/payment/success", { reference, plan }),

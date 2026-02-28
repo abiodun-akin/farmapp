@@ -78,7 +78,7 @@ const AuthLayout = ({ title, children }) => (
       gap="0"
       style={{
         flexGrow: 1,
-        backgroundImage: "url(../../assets/images/bg1.png)",
+        backgroundImage: "url(/images/bg1.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

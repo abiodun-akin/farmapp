@@ -72,7 +72,7 @@ const PaymentPage = () => {
 
     const plan = searchParams.get("plan");
     if (plan && plans[plan]) {
-      setPlanDetails(plans[plan]);
+      setPlanDetails({ ...plans[plan], planKey: plan });
     } else {
       setError("Invalid plan selected");
       navigate("/pricing");
@@ -296,7 +296,7 @@ const PaymentPage = () => {
           </div>
 
           <PaystackPayment
-            plan={planDetails.name}
+            plan={planDetails.planKey}
             amount={planDetails.amount}
             onSuccess={handlePaymentSuccess}
             onClose={handlePaymentClose}

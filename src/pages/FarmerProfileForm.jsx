@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import "./FarmerProfileForm.css";
-import { userApi } from "../../api/userApi";
-import { useForm } from "../../hooks/useForm";
+import { userApi } from "../api/userApi";
+import { useForm } from "../hooks/useForm";
 
 /**
  * Farmer Profile Form Component

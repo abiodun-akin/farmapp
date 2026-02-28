@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import "./VendorProfileForm.css";
-import { userApi } from "../../api/userApi";
-import { useForm } from "../../hooks/useForm";
+import { userApi } from "../api/userApi";
+import { useForm } from "../hooks/useForm";
 
 /**
  * Vendor Profile Form Component

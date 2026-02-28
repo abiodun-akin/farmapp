@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import "./ProfileTypeSelector.css";
-import { userApi } from "../../api/userApi";
+import { userApi } from "../api/userApi";
 
 /**
  * Profile Type Selector Component

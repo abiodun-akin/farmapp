@@ -5,7 +5,7 @@ import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/
 
 const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
   const dispatch = useDispatch();
-  const { loading, paymentData } = useSelector((state) => state.payment);
+  const { loading, paymentData, error } = useSelector((state) => state.payment);
   const { user } = useSelector((state) => state.user);
   const [paystackReady, setPaystackReady] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
@@ -23,9 +23,21 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
     checkPaystack();
   }, []);
 
+  // Watch for payment data and open modal when it's ready
+  useEffect(() => {
+    if (paymentInProgress && !loading && paymentData && !error) {
+      openPaystackModal();
+    }
+  }, [paymentData, loading, paymentInProgress, error]);
+
   const initializePayment = async () => {
     if (!window.PaystackPop) {
       console.error("Paystack not loaded");
+      return;
+    }
+
+    if (!user?.email) {
+      console.error("User email not available");
       return;
     }
 
@@ -34,14 +46,8 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
     try {
       console.log("Initializing payment for:", { plan, amount, email: user?.email });
       
-      // Initialize payment on backend to get unique reference
+      // Dispatch action to initialize payment via saga
       dispatch(initializePaymentRequest({ plan, amount, email: user?.email }));
-
-      // Wait a moment for state to update, then get the reference from paymentData
-      // In a real app, you'd want to wait for the async action to complete properly
-      setTimeout(() => {
-        openPaystackModal();
-      }, 500);
     } catch (error) {
       console.error("Payment initialization error:", error);
       setPaymentInProgress(false);
@@ -49,8 +55,13 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
   };
 
   const openPaystackModal = () => {
-    // Use backend-generated reference, fallback to timestamp
-    const reference = paymentData?.paymentData?.reference || `ref_${Date.now()}`;
+    if (!paymentData?.paymentData?.reference) {
+      console.error("No payment reference available");
+      setPaymentInProgress(false);
+      return;
+    }
+
+    const reference = paymentData.paymentData.reference;
 
     const handler = window.PaystackPop.setup({
       key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
@@ -93,6 +104,8 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
       <Text size="4">Amount: ₦{amount.toLocaleString()}</Text>
 
       {!paystackReady && <Text size="2" color="gray">Loading payment provider...</Text>}
+
+      {error && <Text size="2" color="red">Error: {error}</Text>}
 
       <Button
         onClick={initializePayment}

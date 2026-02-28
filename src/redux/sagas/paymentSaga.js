@@ -34,7 +34,7 @@ function* initializePaymentSaga(action) {
 function* verifyPaymentSaga(action) {
   try {
     const { reference, plan } = action.payload;
-    const response = yield call(paymentAPI.verifyPayment, reference);
+    const response = yield call(paymentAPI.verifyPayment, reference, plan);
     yield put(verifyPaymentSuccess(response.data));
     console.log("Payment verification successful:", response.data);
   } catch (error) {

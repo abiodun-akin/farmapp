@@ -92,7 +92,7 @@ const PageLayout = ({
         gap="0"
         style={{
           flexGrow: 1,
-          backgroundImage: "url(../../assets/images/bg1.png)",
+          backgroundImage: "url(/images/bg1.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: fullBleed ? "calc(100vh - 120px)" : undefined,

@@ -17,7 +17,7 @@ const FullPageLayout = ({ children }) => {
       <Flex
         style={{
           flexGrow: 1,
-          backgroundImage: "url(../../assets/images/bg1.png)",
+          backgroundImage: "url(/images/bg1.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           justifyContent: "center",
