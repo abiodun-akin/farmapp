@@ -32,7 +32,7 @@
 .vendor-profile-form .success-message {
   text-align: center;
   padding: 60px 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2d8659 0%, #1e5f3f 100%);
   color: white;
   border-radius: 12px;
   min-height: 400px;
@@ -119,8 +119,8 @@
 .vendor-profile-form .form-group select:focus,
 .vendor-profile-form .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #2d8659;
+  box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1);
 }
 
 .vendor-profile-form .form-group select {
@@ -154,13 +154,13 @@
 
 .vendor-profile-form .location-input-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #2d8659;
+  box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1);
 }
 
 .vendor-profile-form .geolocation-btn {
   padding: 10px 16px;
-  background-color: #667eea;
+  background-color: #2d8659;
   color: white;
   border: none;
   border-radius: 6px;
@@ -175,7 +175,7 @@
 }
 
 .vendor-profile-form .geolocation-btn:hover:not(:disabled) {
-  background-color: #5568d3;
+  background-color: #246d47;
 }
 
 .vendor-profile-form .geolocation-btn:disabled {
@@ -218,7 +218,7 @@
   height: 18px;
   margin-right: 10px;
   cursor: pointer;
-  accent-color: #667eea;
+  accent-color: #2d8659;
   flex-shrink: 0;
 }
 
@@ -232,7 +232,7 @@
 .vendor-profile-form .submit-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2d8659 0%, #1e5f3f 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -244,7 +244,7 @@
 }
 
 .vendor-profile-form .submit-button:hover:not(:disabled) {
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 20px rgba(45, 134, 89, 0.3);
   transform: translateY(-2px);
 }
 
