@@ -5,14 +5,14 @@ import { useState, useCallback } from 'react';
  * Reduces boilerplate for form state management and error handling
  */
 export const useForm = (initialValues = {}, onSubmit = null) => {
-  const [values, setValues] = useState(initialValues);
+  const [formData, setFormData] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
-    setValues((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
@@ -34,10 +34,31 @@ export const useForm = (initialValues = {}, onSubmit = null) => {
   }, []);
 
   const setFieldValue = useCallback((name, value) => {
-    setValues((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+  }, []);
+
+  const handleArrayChange = useCallback((fieldName, value) => {
+    setFormData((prev) => {
+      // Handle nested field paths like "farmerDetails.farmingAreas"
+      if (fieldName.includes('.')) {
+        const [parentKey, childKey] = fieldName.split('.');
+        return {
+          ...prev,
+          [parentKey]: {
+            ...prev[parentKey],
+            [childKey]: value,
+          },
+        };
+      }
+      // Simple field path
+      return {
+        ...prev,
+        [fieldName]: value,
+      };
+    });
   }, []);
 
   const setFieldError = useCallback((name, error) => {
@@ -61,7 +82,7 @@ export const useForm = (initialValues = {}, onSubmit = null) => {
 
       try {
         if (onSubmit) {
-          await onSubmit(values);
+          await onSubmit(formData);
         }
       } catch (error) {
         // Handle API errors
@@ -74,11 +95,11 @@ export const useForm = (initialValues = {}, onSubmit = null) => {
         setIsSubmitting(false);
       }
     },
-    [values, onSubmit, setFieldError]
+    [formData, onSubmit, setFieldError]
   );
 
   const resetForm = useCallback(() => {
-    setValues(initialValues);
+    setFormData(initialValues);
     setErrors({});
     setTouched({});
   }, [initialValues]);
@@ -86,17 +107,17 @@ export const useForm = (initialValues = {}, onSubmit = null) => {
   const getFieldProps = useCallback(
     (name) => ({
       name,
-      value: values[name] || '',
+      value: formData[name] || '',
       onChange: handleChange,
       onBlur: handleBlur,
       error: touched[name] && errors[name] ? errors[name] : '',
       isTouched: touched[name] || false,
     }),
-    [values, errors, touched, handleChange, handleBlur]
+    [formData, errors, touched, handleChange, handleBlur]
   );
 
   return {
-    values,
+    formData,
     errors,
     touched,
     isSubmitting,
@@ -106,6 +127,7 @@ export const useForm = (initialValues = {}, onSubmit = null) => {
     setFieldValue,
     setFieldError,
     setFieldTouched,
+    handleArrayChange,
     resetForm,
     getFieldProps,
   };
