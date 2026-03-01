@@ -5,13 +5,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { paymentAPI } from "../api/paymentApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
-import { addToast } from "../redux/slices/toastSlice";
 import { logout } from "../redux/slices/userSlice";
+import useToast from "../hooks/useToast";
 
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { addToast } = useToast();
   const [planDetails, setPlanDetails] = useState(null);
   const [error, setError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -79,37 +80,38 @@ const PaymentPage = () => {
     }
   }, [searchParams, navigate, isAuthenticated, dispatch]);
 
-  const handlePaymentSuccess = async (response) => {
+  const handlePaymentSuccess = async (data) => {
     try {
       setIsProcessing(true);
       
-      // Call success endpoint to finalize subscription
+      // data should contain { reference, plan }
+      // But verification was already done in PaystackPayment component
+      // Just call the success endpoint to finalize subscription
+      const planFromUrl = searchParams.get("plan");
       const result = await paymentAPI.handlePaymentSuccess(
-        response.reference,
-        searchParams.get("plan")
+        data.reference,
+        planFromUrl
       );
 
       // Show success state
       setPaymentSuccess(true);
       setSubscriptionDetails(result.data.subscription);
 
-      dispatch(
-        addToast({
-          message: "Payment successful! Your subscription is now active.",
-          type: "success",
-        })
+      addToast(
+        "Payment successful! Your subscription is now active.",
+        "success"
       );
 
       // Redirect after a short delay
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/profile");
       }, 2000);
     } catch (error) {
       console.error("Payment success handling failed:", error);
       const errorMessage =
-        error.response?.data?.error || "Payment verification failed";
+        error.response?.data?.message || error.response?.data?.error || "Payment verification failed";
       setError(errorMessage);
-      dispatch(addToast({ message: errorMessage, type: "error" }));
+      addToast(errorMessage, "error");
     } finally {
       setIsProcessing(false);
     }
@@ -118,7 +120,7 @@ const PaymentPage = () => {
   const handlePaymentClose = async () => {
     try {
       await paymentAPI.handlePaymentClose();
-      dispatch(addToast({ message: "Payment cancelled", type: "warning" }));
+      addToast("Payment cancelled", "warning");
     } catch (error) {
       console.error("Payment close handling failed:", error);
     }

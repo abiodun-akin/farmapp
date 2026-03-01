@@ -74,6 +74,22 @@ const userSlice = createSlice({
       localStorage.removeItem("user");
     },
 
+    // Profile actions
+    setProfile: (state, action) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
+    
+    updateProfileSuccess: (state, action) => {
+      state.loading = false;
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
+
     // Clear error
     clearError: (state) => {
       state.error = null;
@@ -90,6 +106,8 @@ export const {
   loginFailure,
   logout,
   clearError,
+  setProfile,
+  updateProfileSuccess,
 } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -4,15 +4,16 @@ import { useSelector, useDispatch } from "react-redux";
 import "./VendorProfileForm.css";
 import { userApi } from "../api/userApi";
 import { useForm } from "../hooks/useForm";
+import { setProfile } from "../redux/slices/userSlice";
 
 /**
  * Vendor Profile Form Component
- * Collects detailed vendor/service provider information
+ * Collects detailed vendor information with dropdown fields
  */
 const VendorProfileForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { profile } = useSelector((state) => state.user);
+  const { user } = useSelector((state) => state.user);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -176,15 +177,21 @@ const VendorProfileForm = () => {
       const response = await userApi.completeVendorProfile(formData);
 
       setSuccess(true);
-      // Dispatch to update redux state
-      dispatch({
-        type: "user/setProfile",
-        payload: response.profile,
-      });
+      
+      // Dispatch to update redux state with profile data
+      if (response && response.profile) {
+        dispatch(setProfile({
+          ...response.profile,
+          profileType: 'vendor'
+        }));
+      } else {
+        // If API doesn't return profile, at least ensure profileType is set
+        dispatch(setProfile({ profileType: 'vendor' }));
+      }
 
-      // Redirect to dashboard after 2 seconds
+      // Redirect to vendor dashboard after 2 seconds
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/vendor-dashboard");
       }, 2000);
     } catch (err) {
       setError(err.message || "Error saving profile. Please try again.");

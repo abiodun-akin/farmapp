@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/paymentSlice";
 import { paymentAPI } from "../api/paymentApi";
-import { addToast } from "../redux/slices/toastSlice";
+import useToast from "../hooks/useToast";
 
 const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
   const dispatch = useDispatch();
+  const { addToast } = useToast();
   const { loading, paymentData, error } = useSelector((state) => state.payment);
   const { user } = useSelector((state) => state.user);
   const [paystackReady, setPaystackReady] = useState(false);
@@ -56,28 +57,20 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
     }
   };
 
-  const handlePaymentConfirmation = async (reference) => {
+  const verifyPaymentOnly = async (reference) => {
     try {
-      // First verify the payment
       console.log("Verifying payment...");
       const verifyResponse = await paymentAPI.verifyPayment(reference, plan);
       console.log("Payment verification successful:", verifyResponse.data);
-
-      // Then confirm payment success to create subscription
-      console.log("Confirming payment success...");
-      const successResponse = await paymentAPI.handlePaymentSuccess(reference, plan);
-      console.log("Payment success confirmed:", successResponse.data);
-
-      dispatch(addToast({
-        message: "Subscription activated successfully!",
-        type: "success"
-      }));
+      
+      return true;
     } catch (error) {
-      console.error("Payment success handling failed:", error.response?.data || error.message);
-      dispatch(addToast({
-        message: error.response?.data?.message || "Failed to confirm payment. Please contact support.",
-        type: "error"
-      }));
+      console.error("Payment verification failed:", error.response?.data || error.message);
+      addToast(
+        error.response?.data?.message || "Payment verification failed. Please contact support.",
+        "error"
+      );
+      return false;
     }
   };
 
@@ -104,11 +97,13 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
         console.log("Payment successful:", response);
         setPaymentInProgress(false);
 
-        // Verify the payment with backend and then confirm success
-        handlePaymentConfirmation(response.reference);
-
-        // Call success handler
-        onSuccess(response);
+        // Verify the payment with backend
+        verifyPaymentOnly(response.reference).then((verified) => {
+          if (verified) {
+            // Only pass the reference to onSuccess - parent will handle final success call
+            onSuccess({ reference: response.reference, plan });
+          }
+        });
       },
       onClose: function () {
         console.log("Payment modal closed");

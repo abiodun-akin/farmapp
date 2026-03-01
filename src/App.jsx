@@ -10,6 +10,8 @@ import PaymentPage from "./pages/PaymentPage";
 import ProfileTypeSelector from "./pages/ProfileTypeSelector";
 import FarmerProfileForm from "./pages/FarmerProfileForm";
 import VendorProfileForm from "./pages/VendorProfileForm";
+import FarmerDashboard from "./pages/FarmerDashboard";
+import VendorDashboard from "./pages/VendorDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
@@ -23,6 +25,7 @@ import Toast from "./components/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
@@ -64,6 +67,26 @@ function App() {
               element={
                 <PrivateRoute>
                   <VendorProfileForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/farmer-dashboard"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <FarmerDashboard />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor-dashboard"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <VendorDashboard />
+                  </MainLayout>
                 </PrivateRoute>
               }
             />

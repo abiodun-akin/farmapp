@@ -9,15 +9,8 @@ const toastSlice = createSlice({
   initialState,
   reducers: {
     addToast: (state, action) => {
-      const { message, type = "info", duration = 3000 } = action.payload;
-      const id = Date.now();
-      state.toasts.push({ id, message, type });
-      
-      if (duration) {
-        setTimeout(() => {
-          state.toasts = state.toasts.filter((t) => t.id !== id);
-        }, duration);
-      }
+      const { message, type = "info", id } = action.payload;
+      state.toasts.push({ id: id || Date.now() + Math.random(), message, type });
     },
     removeToast: (state, action) => {
       state.toasts = state.toasts.filter((t) => t.id !== action.payload);

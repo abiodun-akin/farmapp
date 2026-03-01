@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+coverage/
+docs/
+
+# Workspace-level sensitive/local data
+../WORKING/
+../rabbitmq_data/
 
 # Editor directories and files
 .vscode/*

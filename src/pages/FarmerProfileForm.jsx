@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import "./FarmerProfileForm.css";
 import { userApi } from "../api/userApi";
 import { useForm } from "../hooks/useForm";
+import { setProfile } from "../redux/slices/userSlice";
 
 /**
  * Farmer Profile Form Component
@@ -12,7 +13,7 @@ import { useForm } from "../hooks/useForm";
 const FarmerProfileForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { profile } = useSelector((state) => state.user);
+  const { user } = useSelector((state) => state.user);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -171,15 +172,21 @@ const FarmerProfileForm = () => {
       const response = await userApi.completeFarmerProfile(formData);
 
       setSuccess(true);
-      // Dispatch to update redux state
-      dispatch({
-        type: "user/setProfile",
-        payload: response.profile,
-      });
+      
+      // Dispatch to update redux state with profile data
+      if (response && response.profile) {
+        dispatch(setProfile({
+          ...response.profile,
+          profileType: 'farmer'
+        }));
+      } else {
+        // If API doesn't return profile, at least ensure profileType is set
+        dispatch(setProfile({ profileType: 'farmer' }));
+      }
 
-      // Redirect to dashboard after 2 seconds
+      // Redirect to farmer dashboard after 2 seconds
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/farmer-dashboard");
       }, 2000);
     } catch (err) {
       setError(err.message || "Error saving profile. Please try again.");
