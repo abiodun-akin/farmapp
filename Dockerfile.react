@@ -4,7 +4,7 @@
 FROM node:20.11-alpine AS development
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY . .
 EXPOSE 5173
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
@@ -17,7 +17,7 @@ CMD ["npm", "run", "dev"]
 FROM node:20.11-alpine AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY . .
 ARG VITE_API_URL=http://localhost:8888/api
 ARG VITE_PAYSTACK_PUBLIC_KEY=pk_test_dummy_key
