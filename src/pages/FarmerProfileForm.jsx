@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import "./FarmerProfileForm.css";
 import { userApi } from "../api/userApi";
 import { useForm } from "../hooks/useForm";
 import { setProfile } from "../redux/slices/userSlice";
+import {
+  nigerianStates,
+  stateLGAMap,
+  farmingAreas,
+  crops,
+  animals,
+  farmSizes,
+  yearsOfExperience,
+  certifications,
+  farmerInterests,
+  getLGAsForState,
+} from "../data/nigerianGeoData";
 
 /**
  * Farmer Profile Form Component
- * Collects detailed farmer information with dropdown fields
+ * Collects detailed farmer information with dropdown fields and geolocation
  */
 const FarmerProfileForm = () => {
   const navigate = useNavigate();
@@ -17,12 +29,16 @@ const FarmerProfileForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [customInterests, setCustomInterests] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
     location: "",
     state: "",
     lga: "",
+    latitude: "",
+    longitude: "",
     bio: "",
     farmerDetails: {
       farmingAreas: [],
@@ -32,123 +48,69 @@ const FarmerProfileForm = () => {
       yearsOfExperience: "",
       certifications: [],
       interests: [],
+      otherInterests: "",
       additionalInfo: "",
     },
   });
 
-  // Dropdown options
-  const farmingAreas = [
-    "Dry Season Farming",
-    "Wet Season Farming",
-    "Mixed Farming",
-    "Organic Farming",
-    "Commercial Farming",
-  ];
+  // Get available LGAs for selected state
+  const availableLGAs = formData.state
+    ? getLGAsForState(formData.state)
+    : [];
 
-  const crops = [
-    "Maize",
-    "Rice",
-    "Cassava",
-    "Yam",
-    "Vegetables",
-    "Beans",
-    "Sorghum",
-    "Groundnuts",
-  ];
-
-  const animals = [
-    "Cattle",
-    "Poultry",
-    "Goats",
-    "Sheep",
-    "Pigs",
-    "Fish",
-    "Rabbits",
-  ];
-
-  const farmSizes = [
-    "Less than 1 hectare",
-    "1-5 hectares",
-    "5-10 hectares",
-    "10-20 hectares",
-    "More than 20 hectares",
-  ];
-
-  const experiences = [
-    "Less than 1 year",
-    "1-3 years",
-    "3-5 years",
-    "5-10 years",
-    "More than 10 years",
-  ];
-
-  const certifications = [
-    "Organic Certification",
-    "ISO 9001",
-    "GAP Certification",
-    "Other",
-  ];
-
-  const interests = [
-    "Seeds & Seedlings",
-    "Fertilizers",
-    "Pesticides",
-    "Farm Equipment",
-    "Irrigation Systems",
-    "Market Access",
-    "Storage Solutions",
-    "Training",
-  ];
-
-  const nigerianStates = [
-    "Abia",
-    "Adamawa",
-    "Akwa Ibom",
-    "Anambra",
-    "Bauchi",
-    "Bayelsa",
-    "Benu",
-    "Borno",
-    "Cross River",
-    "Delta",
-    "Ebonyi",
-    "Edo",
-    "Ekiti",
-    "Enugu",
-    "Gombe",
-    "Imo",
-    "Jigawa",
-    "Kaduna",
-    "Kano",
-    "Katsina",
-    "Kebbi",
-    "Kogi",
-    "Kwara",
-    "Lagos",
-    "Nasarawa",
-    "Niger",
-    "Ogun",
-    "Ondo",
-    "Osun",
-    "Oyo",
-    "Plateau",
-    "Rivers",
-    "Sokoto",
-    "Taraba",
-    "Yobe",
-    "Zamfara",
-    "FCT",
-  ];
-
+  /**
+   * Handle multi-select for nested arrays
+   * Correctly passes nested field path to handleArrayChange
+   */
   const handleMultiSelect = (fieldName, value) => {
     const currentArray = formData.farmerDetails[fieldName] || [];
     const updated = currentArray.includes(value)
       ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
 
-    handleArrayChange(fieldName, updated);
+    // Pass nested field path with dot notation
+    handleArrayChange(`farmerDetails.${fieldName}`, updated);
   };
 
+  /**
+   * Handle nested field updates (for select dropdowns)
+   */
+  const handleNestedChange = (fieldName, value) => {
+    handleArrayChange(`farmerDetails.${fieldName}`, value);
+  };
+
+  /**
+   * Get current geolocation
+   */
+  const handleGetLocation = () => {
+    setGeoLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          handleArrayChange("latitude", latitude.toString());
+          handleArrayChange("longitude", longitude.toString());
+          handleArrayChange(
+            "location",
+            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+          );
+          setGeoLoading(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setError("Failed to get your location. Please enable location services.");
+          setGeoLoading(false);
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser.");
+      setGeoLoading(false);
+    }
+  };
+
+  /**
+   * Handle form submission
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -160,6 +122,10 @@ const FarmerProfileForm = () => {
         throw new Error("Please fill in all required fields");
       }
 
+      if (!formData.lga) {
+        throw new Error("Please select your Local Government Area");
+      }
+
       if (
         formData.farmerDetails.farmingAreas.length === 0 ||
         formData.farmerDetails.cropsProduced.length === 0 ||
@@ -169,19 +135,32 @@ const FarmerProfileForm = () => {
         throw new Error("Please complete all profile details");
       }
 
-      const response = await userApi.completeFarmerProfile(formData);
+      const submitData = {
+        ...formData,
+        farmerDetails: {
+          ...formData.farmerDetails,
+          otherInterests:
+            formData.farmerDetails.interests.includes("Other (Please specify)")
+              ? customInterests
+              : "",
+        },
+      };
+
+      const response = await userApi.completeFarmerProfile(submitData);
 
       setSuccess(true);
-      
+
       // Dispatch to update redux state with profile data
       if (response && response.profile) {
-        dispatch(setProfile({
-          ...response.profile,
-          profileType: 'farmer'
-        }));
+        dispatch(
+          setProfile({
+            ...response.profile,
+            profileType: "farmer",
+          })
+        );
       } else {
         // If API doesn't return profile, at least ensure profileType is set
-        dispatch(setProfile({ profileType: 'farmer' }));
+        dispatch(setProfile({ profileType: "farmer" }));
       }
 
       // Redirect to farmer dashboard after 2 seconds
@@ -256,30 +235,56 @@ const FarmerProfileForm = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="lga">Local Government Area</label>
-              <input
-                type="text"
+              <label htmlFor="lga">Local Government Area *</label>
+              <select
                 id="lga"
                 name="lga"
                 value={formData.lga}
                 onChange={handleChange}
-                placeholder="Your LGA"
-              />
+                required
+                disabled={!formData.state}
+              >
+                <option value="">Select LGA</option>
+                {availableLGAs.map((lga) => (
+                  <option key={lga} value={lga}>
+                    {lga}
+                  </option>
+                ))}
+              </select>
+              {!formData.state && (
+                <small className="hint">
+                  Please select a state first
+                </small>
+              )}
             </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="location">Specific Location *</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="e.g., Somewhere in Lagos"
-              required
-            />
+            <div className="location-input-group">
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="e.g., Yaba, Lagos or your address"
+                required
+              />
+              <button
+                type="button"
+                className="geolocation-btn"
+                onClick={handleGetLocation}
+                disabled={geoLoading}
+              >
+                {geoLoading ? "Getting Location..." : "📍 Use GPS"}
+              </button>
+            </div>
             {errors.location && <span className="error">{errors.location}</span>}
+            <small className="hint">
+              {formData.latitude &&
+                `Coordinates: ${formData.latitude}, ${formData.longitude}`}
+            </small>
           </div>
         </div>
 
@@ -297,7 +302,7 @@ const FarmerProfileForm = () => {
                     checked={formData.farmerDetails.farmingAreas.includes(area)}
                     onChange={() => handleMultiSelect("farmingAreas", area)}
                   />
-                  {area}
+                  <span>{area}</span>
                 </label>
               ))}
             </div>
@@ -313,7 +318,7 @@ const FarmerProfileForm = () => {
                     checked={formData.farmerDetails.cropsProduced.includes(crop)}
                     onChange={() => handleMultiSelect("cropsProduced", crop)}
                   />
-                  {crop}
+                  <span>{crop}</span>
                 </label>
               ))}
             </div>
@@ -326,10 +331,12 @@ const FarmerProfileForm = () => {
                 <label key={animal} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.farmerDetails.animalsRaised.includes(animal)}
+                    checked={formData.farmerDetails.animalsRaised.includes(
+                      animal
+                    )}
                     onChange={() => handleMultiSelect("animalsRaised", animal)}
                   />
-                  {animal}
+                  <span>{animal}</span>
                 </label>
               ))}
             </div>
@@ -342,9 +349,7 @@ const FarmerProfileForm = () => {
                 id="farmSize"
                 name="farmSize"
                 value={formData.farmerDetails.farmSize}
-                onChange={(e) =>
-                  handleArrayChange("farmSize", e.target.value)
-                }
+                onChange={(e) => handleNestedChange("farmSize", e.target.value)}
               >
                 <option value="">Select Farm Size</option>
                 {farmSizes.map((size) => (
@@ -362,12 +367,12 @@ const FarmerProfileForm = () => {
                 name="yearsOfExperience"
                 value={formData.farmerDetails.yearsOfExperience}
                 onChange={(e) =>
-                  handleArrayChange("yearsOfExperience", e.target.value)
+                  handleNestedChange("yearsOfExperience", e.target.value)
                 }
                 required
               >
                 <option value="">Select Experience</option>
-                {experiences.map((exp) => (
+                {yearsOfExperience.map((exp) => (
                   <option key={exp} value={exp}>
                     {exp}
                   </option>
@@ -388,30 +393,51 @@ const FarmerProfileForm = () => {
                 <label key={cert} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.farmerDetails.certifications.includes(cert)}
+                    checked={formData.farmerDetails.certifications.includes(
+                      cert
+                    )}
                     onChange={() => handleMultiSelect("certifications", cert)}
                   />
-                  {cert}
+                  <span>{cert}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="form-group">
-            <label>What are you interested in? *</label>
+            <label>What are you interested in? * (Select all that apply)</label>
             <div className="checkbox-group">
-              {interests.map((interest) => (
+              {farmerInterests.map((interest) => (
                 <label key={interest} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.farmerDetails.interests.includes(interest)}
+                    checked={formData.farmerDetails.interests.includes(
+                      interest
+                    )}
                     onChange={() => handleMultiSelect("interests", interest)}
                   />
-                  {interest}
+                  <span>{interest}</span>
                 </label>
               ))}
             </div>
           </div>
+
+          {formData.farmerDetails.interests.includes(
+            "Other (Please specify)"
+          ) && (
+            <div className="form-group">
+              <label htmlFor="customInterests">
+                Please specify other interests
+              </label>
+              <textarea
+                id="customInterests"
+                value={customInterests}
+                onChange={(e) => setCustomInterests(e.target.value)}
+                placeholder="Enter other interests here..."
+                rows="3"
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="bio">About You</label>
@@ -422,7 +448,7 @@ const FarmerProfileForm = () => {
               onChange={handleChange}
               placeholder="Tell us a bit about your farming and what you're looking for..."
               rows="4"
-            ></textarea>
+            />
           </div>
 
           <div className="form-group">
@@ -432,11 +458,11 @@ const FarmerProfileForm = () => {
               name="additionalInfo"
               value={formData.farmerDetails.additionalInfo}
               onChange={(e) =>
-                handleArrayChange("additionalInfo", e.target.value)
+                handleNestedChange("additionalInfo", e.target.value)
               }
               placeholder="Any other details you'd like to share..."
               rows="3"
-            ></textarea>
+            />
           </div>
         </div>
 

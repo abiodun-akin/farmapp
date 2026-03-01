@@ -1,14 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import "./VendorProfileForm.css";
 import { userApi } from "../api/userApi";
 import { useForm } from "../hooks/useForm";
 import { setProfile } from "../redux/slices/userSlice";
+import {
+  nigerianStates,
+  stateLGAMap,
+  vendorBusinessTypes,
+  vendorInterests,
+  yearsOfExperience,
+  certifications,
+  getLGAsForState,
+} from "../data/nigerianGeoData";
 
 /**
  * Vendor Profile Form Component
- * Collects detailed vendor information with dropdown fields
+ * Collects detailed vendor information with dropdown fields and geolocation
  */
 const VendorProfileForm = () => {
   const navigate = useNavigate();
@@ -17,11 +26,16 @@ const VendorProfileForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [customInterests, setCustomInterests] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
     location: "",
     state: "",
+    lga: "",
+    latitude: "",
+    longitude: "",
     bio: "",
     vendorDetails: {
       businessType: "",
@@ -32,125 +46,64 @@ const VendorProfileForm = () => {
       businessRegistration: "",
       offersCredit: false,
       interests: [],
+      otherInterests: "",
       additionalInfo: "",
     },
   });
 
-  // Dropdown options
-  const businessTypes = [
-    "Input Supplier",
-    "Equipment Provider",
-    "Financial Services",
-    "Extension Services",
-    "Processing/Storage",
-    "Trading/Marketing",
-    "Livestock Services",
-    "Veterinary Services",
-    "Transportation",
-    "Other",
-  ];
+  // Get available LGAs for selected state
+  const availableLGAs = formData.state
+    ? getLGAsForState(formData.state)
+    : [];
 
-  const services = [
-    "Seeds & Seedlings",
-    "Fertilizers",
-    "Pesticides",
-    "Farm Equipment Rental",
-    "Irrigation Systems",
-    "Farm Machinery Services",
-    "Extension Advisory",
-    "Training Programs",
-    "Market Linkage",
-    "Storage Solutions",
-    "Credit/Financing",
-    "Veterinary Care",
-    "Livestock Trading",
-    "Processing Services",
-  ];
-
-  const certifications = [
-    "Business Registration",
-    "Quality Assurance",
-    "ISO Certified",
-    "Health & Safety",
-    "Environmental Compliance",
-    "Other",
-  ];
-
-  const nigerianStates = [
-    "Abia",
-    "Adamawa",
-    "Akwa Ibom",
-    "Anambra",
-    "Bauchi",
-    "Bayelsa",
-    "Benu",
-    "Borno",
-    "Cross River",
-    "Delta",
-    "Ebonyi",
-    "Edo",
-    "Ekiti",
-    "Enugu",
-    "Gombe",
-    "Imo",
-    "Jigawa",
-    "Kaduna",
-    "Kano",
-    "Katsina",
-    "Kebbi",
-    "Kogi",
-    "Kwara",
-    "Lagos",
-    "Nasarawa",
-    "Niger",
-    "Ogun",
-    "Ondo",
-    "Osun",
-    "Oyo",
-    "Plateau",
-    "Rivers",
-    "Sokoto",
-    "Taraba",
-    "Yobe",
-    "Zamfara",
-    "FCT",
-  ];
-
-  const operatingAreas = [
-    "North West",
-    "North East",
-    "North Central",
-    "South West",
-    "South East",
-    "South South",
-  ];
-
-  const yearsOptions = [
-    "Less than 1 year",
-    "1-3 years",
-    "3-5 years",
-    "5-10 years",
-    "More than 10 years",
-  ];
-
-  const interests = [
-    "Supply Chain Development",
-    "Farmer Partnerships",
-    "Market Expansion",
-    "Government Contracts",
-    "Export Opportunities",
-    "Capacity Building",
-    "Technology Integration",
-    "Certification Help",
-  ];
-
+  /**
+   * Handle multi-select for nested arrays
+   * Correctly passes nested field path to handleArrayChange
+   */
   const handleMultiSelect = (fieldName, value) => {
     const currentArray = formData.vendorDetails[fieldName] || [];
     const updated = currentArray.includes(value)
       ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
 
-    handleArrayChange(fieldName, updated);
+    // Pass nested field path with dot notation
+    handleArrayChange(`vendorDetails.${fieldName}`, updated);
+  };
+
+  /**
+   * Handle nested field updates (for select dropdowns)
+   */
+  const handleNestedChange = (fieldName, value) => {
+    handleArrayChange(`vendorDetails.${fieldName}`, value);
+  };
+
+  /**
+   * Get current geolocation
+   */
+  const handleGetLocation = () => {
+    setGeoLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          handleArrayChange("latitude", latitude.toString());
+          handleArrayChange("longitude", longitude.toString());
+          handleArrayChange(
+            "location",
+            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+          );
+          setGeoLoading(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setError("Failed to get your location. Please enable location services.");
+          setGeoLoading(false);
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser.");
+      setGeoLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -164,29 +117,45 @@ const VendorProfileForm = () => {
         throw new Error("Please fill in all required fields");
       }
 
+      if (!formData.lga) {
+        throw new Error("Please select your Local Government Area");
+      }
+
       if (
         !formData.vendorDetails.businessType ||
         formData.vendorDetails.servicesOffered.length === 0 ||
         !formData.vendorDetails.yearsInBusiness ||
-        formData.vendorDetails.operatingAreas.length === 0 ||
         formData.vendorDetails.interests.length === 0
       ) {
         throw new Error("Please complete all profile details");
       }
 
-      const response = await userApi.completeVendorProfile(formData);
+      const submitData = {
+        ...formData,
+        vendorDetails: {
+          ...formData.vendorDetails,
+          otherInterests:
+            formData.vendorDetails.interests.includes("Other (Please specify)")
+              ? customInterests
+              : "",
+        },
+      };
+
+      const response = await userApi.completeVendorProfile(submitData);
 
       setSuccess(true);
-      
+
       // Dispatch to update redux state with profile data
       if (response && response.profile) {
-        dispatch(setProfile({
-          ...response.profile,
-          profileType: 'vendor'
-        }));
+        dispatch(
+          setProfile({
+            ...response.profile,
+            profileType: "vendor",
+          })
+        );
       } else {
         // If API doesn't return profile, at least ensure profileType is set
-        dispatch(setProfile({ profileType: 'vendor' }));
+        dispatch(setProfile({ profileType: "vendor" }));
       }
 
       // Redirect to vendor dashboard after 2 seconds
@@ -261,18 +230,56 @@ const VendorProfileForm = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="location">City/Town *</label>
+              <label htmlFor="lga">Local Government Area *</label>
+              <select
+                id="lga"
+                name="lga"
+                value={formData.lga}
+                onChange={handleChange}
+                required
+                disabled={!formData.state}
+              >
+                <option value="">Select LGA</option>
+                {availableLGAs.map((lga) => (
+                  <option key={lga} value={lga}>
+                    {lga}
+                  </option>
+                ))}
+              </select>
+              {!formData.state && (
+                <small className="hint">
+                  Please select a state first
+                </small>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="location">Specific Location/Address *</label>
+            <div className="location-input-group">
               <input
                 type="text"
                 id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="Your business location"
+                placeholder="Your business location/address"
                 required
               />
-              {errors.location && <span className="error">{errors.location}</span>}
+              <button
+                type="button"
+                className="geolocation-btn"
+                onClick={handleGetLocation}
+                disabled={geoLoading}
+              >
+                {geoLoading ? "Getting Location..." : "📍 Use GPS"}
+              </button>
             </div>
+            {errors.location && <span className="error">{errors.location}</span>}
+            <small className="hint">
+              {formData.latitude &&
+                `Coordinates: ${formData.latitude}, ${formData.longitude}`}
+            </small>
           </div>
         </div>
 
@@ -286,11 +293,11 @@ const VendorProfileForm = () => {
               id="businessType"
               name="businessType"
               value={formData.vendorDetails.businessType}
-              onChange={(e) => handleArrayChange("businessType", e.target.value)}
+              onChange={(e) => handleNestedChange("businessType", e.target.value)}
               required
             >
               <option value="">Select Business Type</option>
-              {businessTypes.map((type) => (
+              {vendorBusinessTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -301,7 +308,7 @@ const VendorProfileForm = () => {
           <div className="form-group">
             <label>Services Offered *</label>
             <div className="checkbox-group">
-              {services.map((service) => (
+              {vendorInterests.slice(0, -1).map((service) => (
                 <label key={service} className="checkbox-label">
                   <input
                     type="checkbox"
@@ -310,7 +317,7 @@ const VendorProfileForm = () => {
                     )}
                     onChange={() => handleMultiSelect("servicesOffered", service)}
                   />
-                  {service}
+                  <span>{service}</span>
                 </label>
               ))}
             </div>
@@ -323,11 +330,11 @@ const VendorProfileForm = () => {
                 id="yearsInBusiness"
                 name="yearsInBusiness"
                 value={formData.vendorDetails.yearsInBusiness}
-                onChange={(e) => handleArrayChange("yearsInBusiness", e.target.value)}
+                onChange={(e) => handleNestedChange("yearsInBusiness", e.target.value)}
                 required
               >
                 <option value="">Select Years</option>
-                {yearsOptions.map((years) => (
+                {yearsOfExperience.map((years) => (
                   <option key={years} value={years}>
                     {years}
                   </option>
@@ -345,7 +352,7 @@ const VendorProfileForm = () => {
                 name="businessRegistration"
                 value={formData.vendorDetails.businessRegistration}
                 onChange={(e) =>
-                  handleArrayChange("businessRegistration", e.target.value)
+                  handleNestedChange("businessRegistration", e.target.value)
                 }
                 placeholder="e.g., BN/123456"
               />
@@ -358,10 +365,10 @@ const VendorProfileForm = () => {
                 type="checkbox"
                 checked={formData.vendorDetails.offersCredit}
                 onChange={(e) =>
-                  handleArrayChange("offersCredit", e.target.checked)
+                  handleNestedChange("offersCredit", e.target.checked)
                 }
               />
-              We offer credit/financing options
+              <span>We offer credit/financing options</span>
             </label>
           </div>
         </div>
@@ -370,21 +377,6 @@ const VendorProfileForm = () => {
         <div className="form-section">
           <h2>Service Coverage & Details</h2>
 
-          <div className="form-group">
-            <label>Operating Areas *</label>
-            <div className="checkbox-group">
-              {operatingAreas.map((area) => (
-                <label key={area} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={formData.vendorDetails.operatingAreas.includes(area)}
-                    onChange={() => handleMultiSelect("operatingAreas", area)}
-                  />
-                  {area}
-                </label>
-              ))}
-            </div>
-          </div>
 
           <div className="form-group">
             <label>Certifications & Compliance</label>
@@ -396,27 +388,44 @@ const VendorProfileForm = () => {
                     checked={formData.vendorDetails.certifications.includes(cert)}
                     onChange={() => handleMultiSelect("certifications", cert)}
                   />
-                  {cert}
+                  <span>{cert}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="form-group">
-            <label>What are you interested in? *</label>
+            <label>What are you interested in? * (Select all that apply)</label>
             <div className="checkbox-group">
-              {interests.map((interest) => (
+              {vendorInterests.map((interest) => (
                 <label key={interest} className="checkbox-label">
                   <input
                     type="checkbox"
                     checked={formData.vendorDetails.interests.includes(interest)}
                     onChange={() => handleMultiSelect("interests", interest)}
                   />
-                  {interest}
+                  <span>{interest}</span>
                 </label>
               ))}
             </div>
           </div>
+
+          {formData.vendorDetails.interests.includes(
+            "Other (Please specify)"
+          ) && (
+            <div className="form-group">
+              <label htmlFor="customInterests">
+                Please specify other interests
+              </label>
+              <textarea
+                id="customInterests"
+                value={customInterests}
+                onChange={(e) => setCustomInterests(e.target.value)}
+                placeholder="Enter other interests here..."
+                rows="3"
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="bio">About Your Business</label>
@@ -427,7 +436,7 @@ const VendorProfileForm = () => {
               onChange={handleChange}
               placeholder="Tell us about your business and what you offer..."
               rows="4"
-            ></textarea>
+            />
           </div>
 
           <div className="form-group">
@@ -437,11 +446,11 @@ const VendorProfileForm = () => {
               name="additionalInfo"
               value={formData.vendorDetails.additionalInfo}
               onChange={(e) =>
-                handleArrayChange("additionalInfo", e.target.value)
+                handleNestedChange("additionalInfo", e.target.value)
               }
               placeholder="Any other details you'd like to share..."
               rows="3"
-            ></textarea>
+            />
           </div>
         </div>
 
