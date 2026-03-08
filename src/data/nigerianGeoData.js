@@ -3,181 +3,40 @@
  * Contains state-LGA mappings and comprehensive agriculture value chain data
  */
 
-export const nigerianStates = [
-  "Abia",
-  "Adamawa",
-  "Akwa Ibom",
-  "Anambra",
-  "Bauchi",
-  "Bayelsa",
-  "Benu",
-  "Borno",
-  "Cross River",
-  "Delta",
-  "Ebonyi",
-  "Edo",
-  "Ekiti",
-  "Enugu",
-  "Gombe",
-  "Imo",
-  "Jigawa",
-  "Kaduna",
-  "Kano",
-  "Katsina",
-  "Kebbi",
-  "Kogi",
-  "Kwara",
-  "Lagos",
-  "Nasarawa",
-  "Niger",
-  "Ogun",
-  "Ondo",
-  "Osun",
-  "Oyo",
-  "Plateau",
-  "Rivers",
-  "Sokoto",
-  "Taraba",
-  "Yobe",
-  "Zamfara",
-  "FCT",
-];
+import NaijaStates from "naija-state-local-government";
+
+const normalizeStateName = (state) => {
+  if (state === "Federal Capital Territory") return "FCT";
+  if (state === "Nassarawa") return "Nasarawa";
+  return state;
+};
+
+const denormalizeStateName = (state) => {
+  if (state === "FCT") return "Federal Capital Territory";
+  if (state === "Nasarawa") return "Nassarawa";
+  return state;
+};
+
+export const nigerianStates = NaijaStates.states()
+  .map(normalizeStateName)
+  .sort((a, b) => a.localeCompare(b));
 
 /**
  * State-LGA mapping for Nigeria
  * Maps each state to its local government areas
  */
 export const stateLGAMap = {
-  Abia: [
-    "Aba North",
-    "Aba South",
-    "Arochukwu",
-    "Bende",
-    "Ikwuano",
-    "Isiala Ngwa North",
-    "Isiala Ngwa South",
-    "Isuikwuato",
-    "Mkad",
-    "Obingwa",
-    "Ohafia",
-    "Osisioma Ngwa",
-    "Ugwunagbo",
-    "Ukwa East",
-    "Ukwa West",
-    "Umuahia North",
-    "Umuahia South",
-  ],
-  Adamawa: [
-    "Demsa",
-    "Fufore",
-    "Ganye",
-    "Girei",
-    "Gombi",
-    "Guyuk",
-    "Hong",
-    "Jada",
-    "Lamurde",
-    "Madagali",
-    "Maiha",
-    "Mayo-Belwa",
-    "Michika",
-    "Mubi North",
-    "Mubi South",
-    "Numan",
-    "Shelleng",
-    "Song",
-    "Toungo",
-    "Yola North",
-    "Yola South",
-  ],
-  Akwa: [
-    "Abak",
-    "Eastern Obolo",
-    "Eket",
-    "Esit Eket",
-    "Essien Udim",
-    "Etim Ekpo",
-    "Etinan",
-    "Ibeno",
-    "Ibesikpo Asutan",
-    "Ibiono Ibom",
-    "Ika",
-    "Ikk",
-    "Ikot Abasi",
-    "Ikot Ekpene",
-    "Ini",
-    "Itu",
-    "Mbo",
-    "Mkpat Enin",
-    "Nsit Atai",
-    "Nsit Ibom",
-    "Nsit Ubium",
-    "Obot Akara",
-    "Okobo",
-    "Onna",
-    "Oron",
-    "Oruk Anam",
-    "Ukanafun",
-    "Udung Uko",
-    "Urue Offong Oruko",
-    "Uruan",
-    "Uyo",
-  ],
-  Anambra: [
-    "Aguata",
-    "Anambra East",
-    "Anambra West",
-    "Anaocha",
-    "Awka North",
-    "Awka South",
-    "Ayamelum",
-    "Dunukofia",
-    "Ekwusigo",
-    "Idemili North",
-    "Idemili South",
-    "Ihiala",
-    "Njikoka",
-    "Nnewi North",
-    "Nnewi South",
-    "Ogbaru",
-    "Onitsha North",
-    "Onitsha South",
-    "Orumba North",
-    "Orumba South",
-    "Oyi",
-  ],
-  // Add more states...
-  Lagos: [
-    "Agege",
-    "Ajeromi-Ifelodun",
-    "Alimosho",
-    "Amuwo-Odofin",
-    "Apapa",
-    "Badagry",
-    "Bariga",
-    "Ebutte-Meta",
-    "Epe",
-    "Eyitala",
-    "Fade-Ilupeju",
-    "Ibeju-Lekki",
-    "Ifako-Ijaiye",
-    "Ikeja",
-    "Ikoyi",
-    "Ikotun-Igando",
-    "Ilasamaja",
-    "Isolo",
-    "Kosofe",
-    "Lagos Island",
-    "Lagos Mainland",
-    "Lekki",
-    "Mushin",
-    "Ojo",
-    "Oshodi-Isolo",
-    "Shomolu",
-    "Somolu",
-    "Surulere",
-    "Yaba",
-  ],
+  ...Object.fromEntries(
+    nigerianStates.map((state) => {
+      const lookupState = denormalizeStateName(state);
+      const stateData = NaijaStates.lgas(lookupState);
+      const lgas = Array.isArray(stateData?.lgas)
+        ? stateData.lgas.map((lga) => lga.trim())
+        : [];
+
+      return [state, lgas];
+    })
+  ),
 };
 
 /**
@@ -218,6 +77,11 @@ export const farmerInterests = [
   "Packaging Materials",
   "Marketing & Branding Support",
   "Quality Certification (Organic, GAP)",
+
+  // Logistics
+  "Transportation & Logistics",
+  "Warehousing & Cold Storage",
+  "Distribution Networks",
 
   // Other
   "Other (Please specify)",
@@ -380,7 +244,19 @@ export const vendorBusinessTypes = [
  * @returns {Array} List of LGAs in the state
  */
 export const getLGAsForState = (state) => {
-  return stateLGAMap[state] || [];
+  if (!state) return [];
+
+  if (stateLGAMap[state]) {
+    return stateLGAMap[state];
+  }
+
+  const normalized = normalizeStateName(state);
+  if (stateLGAMap[normalized]) {
+    return stateLGAMap[normalized];
+  }
+
+  const denormalized = denormalizeStateName(state);
+  return stateLGAMap[normalizeStateName(denormalized)] || [];
 };
 
 export default {

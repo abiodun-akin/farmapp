@@ -173,7 +173,7 @@ export const roleConfig = {
     color: theme.colors.primary[900],
     description: 'Grow crops or raise animals',
     menuItems: [
-      { label: 'Home', icon: 'home', route: '/' },
+      { label: 'Home', icon: 'home', route: '/farmer-dashboard' },
       { label: 'Profile', icon: 'user', route: '/profile' },
       { label: 'Matches', icon: 'handshake', route: '/matches' },
       { label: 'Messages', icon: 'message', route: '/messages' },
@@ -188,7 +188,7 @@ export const roleConfig = {
     color: theme.colors.secondary[900],
     description: 'Provide agricultural services or products',
     menuItems: [
-      { label: 'Home', icon: 'home', route: '/' },
+      { label: 'Home', icon: 'home', route: '/vendor-dashboard' },
       { label: 'Profile', icon: 'user', route: '/profile' },
       { label: 'Customers', icon: 'users', route: '/customers' },
       { label: 'Messages', icon: 'message', route: '/messages' },

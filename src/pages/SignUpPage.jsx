@@ -13,7 +13,7 @@ const SignUpPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    signup(data.name, data.email, data.password);
+    signup(data.name, data.email, data.password, data.promoCode || null);
   };
 
   // Log state changes after Redux updates
@@ -110,6 +110,23 @@ const SignUpPage = () => {
                 Min 8 characters
               </Text>
             </Form.Message>
+          </Form.Field>
+
+          <Form.Field
+            name="promoCode"
+            style={{ display: "grid", gap: "var(--space-1)" }}
+          >
+            <Form.Label asChild>
+              <Text size="2" weight="bold">
+                Promo Code (Optional)
+              </Text>
+            </Form.Label>
+            <Form.Control asChild>
+              <TextField.Root
+                size="3"
+                placeholder="Enter referral promo code"
+              />
+            </Form.Control>
           </Form.Field>
 
           <Form.Submit asChild>

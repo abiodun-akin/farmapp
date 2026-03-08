@@ -4,7 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaTractor, FaStore } from "react-icons/fa";
 import "./ProfileTypeSelector.css";
 import { userApi } from "../api/userApi";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { setProfile } from "../redux/slices/userSlice";
+import { canAccessFeature } from "../utils/subscriptionHelper";
 
 /**
  * Profile Type Selector Component
@@ -13,18 +15,35 @@ import { setProfile } from "../redux/slices/userSlice";
 const ProfileTypeSelector = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, loading, error } = useSelector((state) => state.user);
+  const { user } = useSelector((state) => state.user);
   const [selectedType, setSelectedType] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   useEffect(() => {
-    // Check if profile already exists
-    if (user && user.profileType) {
-      // Redirect to appropriate form
-      navigate(`/profile/${user.profileType}`);
-    }
+    const syncProfile = async () => {
+      if (user && user.profileType) {
+        navigate(`/profile/${user.profileType}`);
+        return;
+      }
+
+      try {
+        const response = await userApi.getProfile();
+        const profile = response.data?.profile;
+
+        if (profile?.profileType) {
+          dispatch(setProfile(profile));
+          navigate(`/profile/${profile.profileType}`);
+        }
+      } catch (err) {
+      }
+    };
+
+    syncProfile();
   }, [user, navigate]);
+
+  const canUseProfile = canAccessFeature(subscriptionStatusType, "profile");
 
   const handleSelectType = async (type) => {
     setSelectedType(type);
@@ -35,7 +54,7 @@ const ProfileTypeSelector = () => {
       const response = await userApi.initializeProfile(type);
       
       // Store profile type in redux
-      dispatch(setProfile(response.profile));
+      dispatch(setProfile(response.data?.profile || { profileType: type }));
 
       // Redirect to profile completion form
       navigate(`/profile/${type}`);
@@ -54,6 +73,41 @@ const ProfileTypeSelector = () => {
       }
     }
   };
+
+  if (subscriptionLoading) {
+    return <div style={{ padding: "24px" }}>Loading...</div>;
+  }
+
+  if (!canUseProfile) {
+    return (
+      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+          Complete Your Profile
+        </h1>
+        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+          You need an active subscription before creating a profile.
+        </p>
+        <button
+          onClick={() => navigate("/pricing")}
+          style={{
+            background: "#2d8659",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "clamp(10px, 2vw, 14px) clamp(20px, 3vw, 32px)",
+            fontSize: "clamp(14px, 2vw, 16px)",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.background = "#1f5f3d")}
+          onMouseLeave={(e) => (e.target.style.background = "#2d8659")}
+        >
+          Subscribe Now
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-type-selector-container">

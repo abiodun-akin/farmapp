@@ -2,79 +2,93 @@ import api from "../config/api";
 
 // User API endpoints
 export const userAPI = {
-  signup: (name, email, password) =>
-    api.post("/api/auth/signup", { name, email, password }),
+  signup: (name, email, password, promoCode = null) =>
+    api.post("/auth/signup", { name, email, password, promoCode }),
 
-  login: (email, password) => api.post("/api/auth/login", { email, password }),
+  login: (email, password) => api.post("/auth/login", { email, password }),
 
-  logout: () => api.post("/api/auth/logout"),
+  logout: () => api.post("/auth/logout"),
 };
 
 // Profile API endpoints
 export const userApi = {
   // Auth
-  signup: (name, email, password) =>
-    api.post("/api/auth/signup", { name, email, password }),
+  signup: (name, email, password, promoCode = null) =>
+    api.post("/auth/signup", { name, email, password, promoCode }),
 
-  login: (email, password) => api.post("/api/auth/login", { email, password }),
+  login: (email, password) => api.post("/auth/login", { email, password }),
 
-  logout: () => api.post("/api/auth/logout"),
+  logout: () => api.post("/auth/logout"),
 
   // Profile management
   initializeProfile: (profileType) =>
-    api.post("/api/profile/initialize", { profileType }),
+    api.post("/profile/initialize", { profileType }),
 
   completeFarmerProfile: (profileData) =>
-    api.post("/api/profile/farmer", profileData),
+    api.post("/profile/farmer", profileData),
 
   completeVendorProfile: (profileData) =>
-    api.post("/api/profile/vendor", profileData),
+    api.post("/profile/vendor", profileData),
 
-  getProfile: () => api.get("/api/profile"),
+  getProfile: () => api.get("/profile"),
 
-  getPublicProfile: (userId) => api.get(`/api/profile/${userId}`),
+  getPublicProfile: (userId) => api.get(`/profile/${userId}`),
 
-  updateProfile: (profileData) => api.put("/api/profile", profileData),
+  updateProfile: (profileData) => api.put("/profile", profileData),
 
   // Matching
   getMatches: (params = {}) =>
-    api.get("/api/matches", { params }),
+    api.get("/matches", { params }),
 
-  getMatchDetails: (matchId) => api.get(`/api/matches/${matchId}`),
+  getMatchDetails: (matchId) => api.get(`/matches/${matchId}`),
 
   expressInterest: (matchId) =>
-    api.post(`/api/matches/${matchId}/express-interest`),
+    api.post(`/matches/${matchId}/express-interest`),
 
   updateMatchScore: (matchId, scores) =>
-    api.put(`/api/matches/${matchId}/update-score`, scores),
+    api.put(`/matches/${matchId}/update-score`, scores),
 
-  archiveMatch: (matchId) => api.delete(`/api/matches/${matchId}`),
+  archiveMatch: (matchId) => api.delete(`/matches/${matchId}`),
 
   createMatch: (farmerId, vendorId, reason) =>
-    api.post("/api/matches/create-from-interest", { farmerId, vendorId, reason }),
+    api.post("/matches/create-from-interest", { farmerId, vendorId, reason }),
 
   // Messaging
   sendMessage: (matchId, content) =>
-    api.post("/api/messages/send", { match_id: matchId, content }),
+    api.post("/messages/send", { match_id: matchId, content }),
 
   getConversations: (pagination = {}) =>
-    api.get("/api/messages/conversations", { params: pagination }),
+    api.get("/messages/conversations", { params: pagination }),
 
   getMessages: (matchId, pagination = {}) =>
-    api.get(`/api/messages/${matchId}`, { params: pagination }),
+    api.get(`/messages/${matchId}`, { params: pagination }),
 
   flagMessage: (messageId, reason) =>
-    api.put(`/api/messages/${messageId}/flag`, { reason }),
+    api.put(`/messages/${messageId}/flag`, { reason }),
 
-  getUnreadCount: () => api.get("/api/messages/stats/unread"),
+  getUnreadCount: () => api.get("/messages/stats/unread"),
 
   // Admin endpoints
   getFlaggedMessages: (pagination = {}) =>
-    api.get("/api/messages/admin/flagged", { params: pagination }),
+    api.get("/messages/admin/flagged", { params: pagination }),
 
   approveMessage: (messageId, action) =>
-    api.put(`/api/messages/${messageId}/admin/approve`, { action }),
+    api.put(`/messages/${messageId}/admin/approve`, { action }),
 
   getMessageAnalysisStats: () =>
-    api.get("/api/messages/admin/ai-analysis"),
+    api.get("/messages/admin/ai-analysis"),
+
+  // Agent endpoints
+  applyAsAgent: (data) => api.post("/agents/apply", data),
+
+  getAgentStatus: () => api.get("/agents/me"),
+
+  getPromoCodes: () => api.get("/agents/promo-codes"),
+
+  requestWithdrawal: (data) => api.post("/agents/withdrawals", data),
+
+  getWithdrawals: () => api.get("/agents/withdrawals"),
+
+  cancelWithdrawal: (withdrawalId) =>
+    api.delete(`/agents/withdrawals/${withdrawalId}`),
 };

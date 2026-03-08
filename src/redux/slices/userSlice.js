@@ -70,8 +70,20 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
+      sessionStorage.clear();
+      // Clear all auth-related localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("profile");
+      localStorage.removeItem("subscription");
+      // Clear all localStorage to prevent data leakage
+      Object.keys(localStorage).forEach(key => {
+        if (key !== 'theme') { // Keep theme preference
+          localStorage.removeItem(key);
+        }
+      });
     },
 
     // Profile actions

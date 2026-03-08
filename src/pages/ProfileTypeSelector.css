@@ -1,10 +1,10 @@
 .profile-type-selector-container {
-  min-height: 100vh;
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b7a57 0%, #193325 100%);
-  padding: 20px;
+  background: transparent;
+  padding: 40px 20px;
 }
 
 .profile-type-selector {

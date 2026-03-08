@@ -15,7 +15,15 @@ const rootReducer = combineReducers({
   toast: toastReducer,
 });
 
-export const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
+const appReducer = (state, action) => {
+  if (action.type === "user/logout") {
+    return rootReducer(undefined, action);
+  }
+
+  return rootReducer(state, action);
+};
+
+export const store = createStore(appReducer, applyMiddleware(sagaMiddleware));
 
 sagaMiddleware.run(rootSaga);
 

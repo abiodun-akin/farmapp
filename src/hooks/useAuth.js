@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import { userApi } from "../api/userApi";
 import {
   clearError,
   loginRequest,
@@ -14,16 +15,22 @@ export const useAuth = () => {
   const error = useSelector((state) => state.user.error);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
 
-  const signup = (name, email, password) => {
-    dispatch(signupRequest({ name, email, password }));
+  const signup = (name, email, password, promoCode = null) => {
+    dispatch(signupRequest({ name, email, password, promoCode }));
   };
 
   const login = (email, password) => {
     dispatch(loginRequest({ email, password }));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await userApi.logout();
+    } catch (error) {
+    }
+
     dispatch(logout());
+    sessionStorage.clear();
   };
 
   const handleClearError = () => {

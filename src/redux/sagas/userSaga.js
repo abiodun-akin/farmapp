@@ -13,7 +13,8 @@ import { addToast } from "../slices/toastSlice";
 function* signupSaga(action) {
   try {
     const { name, email, password } = action.payload;
-    const response = yield call(userAPI.signup, name, email, password);
+      const { promoCode } = action.payload;
+      const response = yield call(userAPI.signup, name, email, password, promoCode);
     const { user, token } = response.data;
     yield put(signupSuccess({ user, token }));
     yield put(addToast({ message: "Account created successfully!", type: "success" }));

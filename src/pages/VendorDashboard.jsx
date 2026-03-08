@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaStore, FaUsers, FaChartLine, FaComments, FaCreditCard } from "react-icons/fa";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
+import { canAccessFeature } from "../utils/subscriptionHelper";
 import "./VendorDashboard.css";
 
 const VendorDashboard = () => {
@@ -13,11 +15,18 @@ const VendorDashboard = () => {
     revenue: 0,
     subscriptionStatus: 'inactive'
   });
+  const {
+    hasActiveSubscription,
+    statusType: subscriptionStatusType,
+    subscriptionLoading,
+  } = useSubscriptionStatus();
 
   useEffect(() => {
-    // Load vendor stats here - can integrate with API later
-    // For now, using placeholder data
-  }, []);
+    setStats(prev => ({
+      ...prev,
+      subscriptionStatus: hasActiveSubscription ? 'active' : 'inactive'
+    }));
+  }, [hasActiveSubscription]);
 
   const quickActions = [
     { 
@@ -45,6 +54,43 @@ const VendorDashboard = () => {
       color: "var(--color-sec-800)"
     }
   ];
+
+  const canUseDashboard = canAccessFeature(subscriptionStatusType, "core");
+
+  if (subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+
+  if (!canUseDashboard) {
+    return (
+      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+          Dashboard
+        </h1>
+        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+          {subscriptionStatusType === "expired"
+            ? "Your subscription has expired. Renew to continue accessing your dashboard features."
+            : "You need an active subscription to access the dashboard and manage your business."}
+        </p>
+        <button
+          onClick={() => navigate("/pricing")}
+          style={{
+            background: "#2d8659",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "clamp(10px, 2vw, 14px) clamp(20px, 3vw, 32px)",
+            fontSize: "clamp(14px, 2vw, 16px)",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.background = "#1f5f3d")}
+          onMouseLeave={(e) => (e.target.style.background = "#2d8659")}
+        >
+          Subscribe Now
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="vendor-dashboard">

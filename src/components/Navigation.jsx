@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/userSlice';
-import { theme, roleConfig } from '../config/theme';
+import { userApi } from '../api/userApi';
+import useSubscriptionStatus from '../hooks/useSubscriptionStatus';
+import { roleConfig } from '../config/theme';
+import FarmConnectLogo from './FarmConnectLogo';
 import './Navigation.css';
 
 // Icon imports from react-icons
@@ -24,6 +27,7 @@ import {
   FaBox,
   FaExclamationCircle,
   FaClipboardList,
+  FaChevronDown,
 } from 'react-icons/fa';
 
 /**
@@ -48,14 +52,34 @@ const iconMap = {
 
 /**
  * Navigation Component
- * Displays role-based navigation menu with icons
- * Supports mobile and desktop views
+ * Displays role-based navigation menu with icons and user dropdown
+ * Supports mobile and desktop views with sticky positioning
  */
 function NavigationComponent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.user);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
+  const { statusDisplay } = useSubscriptionStatus();
+
+  // Handle clicking outside dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
 
   if (!isAuthenticated || !user) {
     return null;
@@ -70,10 +94,16 @@ function NavigationComponent() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await userApi.logout();
+    } catch (error) {
+    }
+
     dispatch(logout());
-    navigate('/login');
-    setIsMobileMenuOpen(false);
+    sessionStorage.clear();
+    // Force full page reload to clear all state
+    window.location.href = '/login';
   };
 
   const renderIcon = (iconKey) => {
@@ -91,7 +121,7 @@ function NavigationComponent() {
         <div className="nav-container">
           {/* Logo */}
           <div className="nav-logo" onClick={() => navigate('/')}>
-            🌾 <span>FarmConnect</span>
+            <FarmConnectLogo size={32} showText={true} />
           </div>
 
           {/* Menu Items */}
@@ -109,24 +139,108 @@ function NavigationComponent() {
             ))}
           </div>
 
-          {/* Right Side - User Info & Logout */}
-          <div className="nav-right">
-            <div className="user-info">
-              <span className="user-name">{userName}</span>
-              <span className="user-role">{config.label}</span>
-            </div>
-            <button className="nav-logout" onClick={handleLogout} title="Logout">
-              <FaSignOutAlt />
+          {/* Right Side - User Profile Dropdown */}
+          <div className="nav-right" ref={profileDropdownRef}>
+            <button
+              className="user-profile-btn"
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              title="User menu"
+            >
+              <div className="user-avatar">
+                {user?.profileImageUrl ? (
+                  <img src={user.profileImageUrl} alt={userName} className="avatar-image" />
+                ) : (
+                  <div className="avatar-placeholder">{userName.charAt(0).toUpperCase()}</div>
+                )}
+              </div>
+              <div className="profile-info">
+                <span className="user-name">{userName}</span>
+                <span className="user-role">{statusDisplay}</span>
+              </div>
+              <FaChevronDown className={`dropdown-icon ${isProfileDropdownOpen ? 'open' : ''}`} />
             </button>
-          </div>
+
+            {/* Profile Dropdown Menu */}
+            {isProfileDropdownOpen && (
+              <div className="profile-dropdown-menu">
+                <div className="dropdown-header">
+                  <div className="dropdown-avatar">
+                    {user?.profileImageUrl ? (
+                      <img src={user.profileImageUrl} alt={userName} className="avatar-image-lg" />
+                    ) : (
+                      <div className="avatar-placeholder-lg">{userName.charAt(0).toUpperCase()}</div>
+                    )}
+                  </div>
+                  <div className="dropdown-user-info">
+                    <div className="dropdown-name">{userName}</div>
+                    <div className="dropdown-email">{user?.email}</div>
+                    <div className="dropdown-status">{statusDisplay}</div>
+                  </div>
+                </div>
+
+                <div className="dropdown-divider" />
+
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleNavigate('/profile');
+                    setIsProfileDropdownOpen(false);
+                  }}
+                >
+                  <FaUser className="dropdown-icon" />
+                  <span>My Profile</span>
+                </button>
+
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleNavigate('/settings');
+                    setIsProfileDropdownOpen(false);
+                  }}
+                >
+                  <FaCog className="dropdown-icon" />
+                  <span>Settings</span>
+                </button>
+
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleNavigate('/apply-agent');
+                    setIsProfileDropdownOpen(false);
+                  }}
+                >
+                  <FaUsers className="dropdown-icon" />
+                  <span>Apply as Agent</span>
+                </button>
+
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleNavigate('/agent-earnings');
+                    setIsProfileDropdownOpen(false);
+                  }}
+                >
+                  <FaChartBar className="dropdown-icon" />
+                  <span>Agent Earnings</span>
+                </button>
+
+                <div className="dropdown-divider" />
+
+                <button className="dropdown-item logout-item" onClick={handleLogout}>
+                  <FaSignOutAlt className="dropdown-icon" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
         </div>
+      </div>
       </nav>
 
       {/* Mobile Navigation */}
       <nav className="navigation-mobile">
         <div className="mobile-nav-header">
           <div className="nav-logo-mobile" onClick={() => navigate('/')}>
-            🌾
+            <FarmConnectLogo size={20} showText={false} />
           </div>
           <button
             className="mobile-menu-toggle"
@@ -149,15 +263,58 @@ function NavigationComponent() {
               </button>
             ))}
             <div className="mobile-nav-divider" />
-            <div className="mobile-user-section">
-              <div className="mobile-user-info">
-                <p className="mobile-user-name">{userName}</p>
-                <p className="mobile-user-role">{config.label}</p>
+            <button
+              className="mobile-user-profile-btn"
+              onClick={() => handleNavigate('/profile')}
+            >
+              <div className="mobile-avatar">
+                {user?.profileImageUrl ? (
+                  <img src={user.profileImageUrl} alt={userName} className="avatar-image-sm" />
+                ) : (
+                  <div className="avatar-placeholder-sm">{userName.charAt(0).toUpperCase()}</div>
+                )}
               </div>
-              <button className="mobile-logout-btn" onClick={handleLogout}>
-                <FaSignOutAlt /> Logout
-              </button>
-            </div>
+              <div className="mobile-profile-info">
+                <p className="mobile-user-name">{userName}</p>
+                <p className="mobile-user-role">{statusDisplay}</p>
+              </div>
+            </button>
+
+            <button
+              className="mobile-nav-item"
+              onClick={() => {
+                handleNavigate('/settings');
+              }}
+            >
+              <FaCog className="mobile-nav-icon" />
+              <span>Settings</span>
+            </button>
+
+            <button
+              className="mobile-nav-item"
+              onClick={() => {
+                handleNavigate('/apply-agent');
+              }}
+            >
+              <FaUsers className="mobile-nav-icon" />
+              <span>Apply as Agent</span>
+            </button>
+
+            <button
+              className="mobile-nav-item"
+              onClick={() => {
+                handleNavigate('/agent-earnings');
+              }}
+            >
+              <FaChartBar className="mobile-nav-icon" />
+              <span>Agent Earnings</span>
+            </button>
+
+            <div className="mobile-nav-divider" />
+
+            <button className="mobile-logout-btn" onClick={handleLogout}>
+              <FaSignOutAlt /> Logout
+            </button>
           </div>
         )}
       </nav>

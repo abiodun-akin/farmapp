@@ -12,6 +12,12 @@ import FarmerProfileForm from "./pages/FarmerProfileForm";
 import VendorProfileForm from "./pages/VendorProfileForm";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import VendorDashboard from "./pages/VendorDashboard";
+import DashboardRedirect from "./pages/DashboardRedirect";
+import MatchesPage from "./pages/MatchesPage";
+import MessagesPage from "./pages/MessagesPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import SettingsPage from "./pages/SettingsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
@@ -21,6 +27,8 @@ import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminPaymentDetail from "./pages/admin/AdminPaymentDetail";
 import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
+import AgentApplicationForm from "./pages/AgentApplicationForm";
+import AgentEarnings from "./pages/AgentEarnings";
 import Toast from "./components/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
@@ -50,7 +58,9 @@ function App() {
               path="/profile"
               element={
                 <PrivateRoute>
-                  <ProfileTypeSelector />
+                  <MainLayout>
+                    <ProfileTypeSelector />
+                  </MainLayout>
                 </PrivateRoute>
               }
             />
@@ -58,7 +68,9 @@ function App() {
               path="/profile/farmer"
               element={
                 <PrivateRoute>
-                  <FarmerProfileForm />
+                  <MainLayout>
+                    <FarmerProfileForm />
+                  </MainLayout>
                 </PrivateRoute>
               }
             />
@@ -66,7 +78,17 @@ function App() {
               path="/profile/vendor"
               element={
                 <PrivateRoute>
-                  <VendorProfileForm />
+                  <MainLayout>
+                    <VendorProfileForm />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <DashboardRedirect />
                 </PrivateRoute>
               }
             />
@@ -86,6 +108,86 @@ function App() {
                 <PrivateRoute>
                   <MainLayout>
                     <VendorDashboard />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/matches"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <MatchesPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <MatchesPage title="Customers" />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <MessagesPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/subscription"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <SubscriptionPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <SettingsPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <AnalyticsPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/apply-agent"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <AgentApplicationForm />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/agent-earnings"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <AgentEarnings />
                   </MainLayout>
                 </PrivateRoute>
               }

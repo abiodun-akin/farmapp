@@ -7,6 +7,9 @@ import {
   verifyPaymentRequest,
   verifyPaymentSuccess,
   verifyPaymentFailure,
+  fetchSubscriptionStatusRequest,
+  fetchSubscriptionStatusSuccess,
+  fetchSubscriptionStatusFailure,
 } from "../slices/paymentSlice";
 import { addToast } from "../slices/toastSlice";
 import { logout } from "../slices/userSlice";
@@ -36,6 +39,7 @@ function* verifyPaymentSaga(action) {
     const { reference, plan } = action.payload;
     const response = yield call(paymentAPI.verifyPayment, reference, plan);
     yield put(verifyPaymentSuccess(response.data));
+    yield put(fetchSubscriptionStatusRequest({ userId: action.payload?.userId, force: true }));
     console.log("Payment verification successful:", response.data);
   } catch (error) {
     // Check if it's an auth error
@@ -50,7 +54,32 @@ function* verifyPaymentSaga(action) {
   }
 }
 
+function* fetchSubscriptionStatusSaga(action) {
+  try {
+    const response = yield call(paymentAPI.getSubscriptionStatus);
+    const hasActiveSubscription = response.data?.hasActiveSubscription || false;
+    const subscription = response.data?.subscription || null;
+    const hasEverSubscribed = response.data?.hasEverSubscribed || false;
+
+    yield put(fetchSubscriptionStatusSuccess({
+      subscription: hasActiveSubscription ? subscription : null,
+      hasActiveSubscription,
+      hasEverSubscribed,
+      userId: action.payload?.userId || null,
+    }));
+  } catch (error) {
+    if (isAuthError(error)) {
+      yield put(logout());
+      yield put(addToast({ message: "Session expired. Please login again.", type: "error" }));
+    } else {
+      const errorMessage = formatErrorMessage(error);
+      yield put(fetchSubscriptionStatusFailure(errorMessage));
+    }
+  }
+}
+
 export function* paymentSaga() {
   yield takeEvery(initializePaymentRequest.type, initializePaymentSaga);
   yield takeEvery(verifyPaymentRequest.type, verifyPaymentSaga);
+  yield takeEvery(fetchSubscriptionStatusRequest.type, fetchSubscriptionStatusSaga);
 }

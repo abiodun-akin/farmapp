@@ -48,12 +48,13 @@ const LeftContent = ({ leftContent }) => {
 
       <Box
         mt="5"
-        height="200px"
         style={{
+          flex: 1,
+          minHeight: "clamp(200px, 35vh, 500px)",
           borderRadius: "var(--radius-3)",
           backgroundColor: "var(--gray-3)",
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=1200&h=800&fit=crop&auto=format&q=80')",
+            "url('https://images.unsplash.com/photo-1625246333195-78d9c38ad576?auto=format&fit=crop&w=800&q=80')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -79,7 +80,7 @@ const PageLayout = ({
       minHeight="100vh"
       style={{
         backgroundColor: "var(--color-pry-200)",
-        backgroundImage: "url(images/bg1.png)",
+        backgroundImage: "url(/images/bg1.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         height: fullBleed ? "100vh" : undefined,

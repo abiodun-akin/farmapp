@@ -5,6 +5,12 @@ const initialState = {
   error: null,
   paymentData: null,
   subscription: null,
+  hasActiveSubscription: false,
+  hasEverSubscribed: false,
+  subscriptionLoading: false,
+  subscriptionError: null,
+  subscriptionLastFetchedAt: null,
+  subscriptionUserId: null,
 };
 
 const paymentSlice = createSlice({
@@ -37,6 +43,38 @@ const paymentSlice = createSlice({
       state.error = action.payload;
     },
 
+    fetchSubscriptionStatusRequest: (state) => {
+      state.subscriptionLoading = true;
+      state.subscriptionError = null;
+    },
+    fetchSubscriptionStatusSuccess: (state, action) => {
+      state.subscriptionLoading = false;
+      state.subscriptionError = null;
+      state.subscription = action.payload?.subscription || null;
+      state.hasActiveSubscription = action.payload?.hasActiveSubscription || false;
+      state.hasEverSubscribed = action.payload?.hasEverSubscribed || false;
+      state.subscriptionLastFetchedAt = Date.now();
+      state.subscriptionUserId = action.payload?.userId || null;
+    },
+    fetchSubscriptionStatusFailure: (state, action) => {
+      state.subscriptionLoading = false;
+      state.subscriptionError = action.payload;
+      state.subscription = null;
+      state.hasActiveSubscription = false;
+      state.hasEverSubscribed = false;
+      state.subscriptionLastFetchedAt = Date.now();
+    },
+
+    clearSubscriptionState: (state) => {
+      state.subscription = null;
+      state.hasActiveSubscription = false;
+      state.hasEverSubscribed = false;
+      state.subscriptionLoading = false;
+      state.subscriptionError = null;
+      state.subscriptionLastFetchedAt = null;
+      state.subscriptionUserId = null;
+    },
+
     clearPaymentError: (state) => {
       state.error = null;
     },
@@ -50,6 +88,10 @@ export const {
   verifyPaymentRequest,
   verifyPaymentSuccess,
   verifyPaymentFailure,
+  fetchSubscriptionStatusRequest,
+  fetchSubscriptionStatusSuccess,
+  fetchSubscriptionStatusFailure,
+  clearSubscriptionState,
   clearPaymentError,
 } = paymentSlice.actions;
 

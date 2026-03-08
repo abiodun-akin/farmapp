@@ -66,9 +66,6 @@ const AuthLayout = ({ title, children }) => (
     minHeight="100vh"
     style={{
       backgroundColor: "var(--color-pry-200)",
-      backgroundImage: "url(images/bg1.png)",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
     }}
   >
     <NavigationBar />
@@ -81,13 +78,30 @@ const AuthLayout = ({ title, children }) => (
         backgroundImage: "url(/images/bg1.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        position: "relative",
       }}
     >
+      {/* Fade overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "linear-gradient(135deg, rgba(200, 240, 200, 0.5) 0%, rgba(200, 240, 200, 0.6) 50%, rgba(200, 240, 200, 0.7) 100%)",
+          pointerEvents: "none",
+        }}
+      />
       <Box
         style={{
           backgroundColor: "var(--color-background)",
           display: "block",
           borderRight: "1px solid var(--gray-6)",
+          position: "relative",
+          zIndex: 1,
         }}
         display={{ initial: "none", lg: "block" }}
       >
@@ -98,7 +112,7 @@ const AuthLayout = ({ title, children }) => (
         align="center"
         justify="center"
         p={{ initial: "5", lg: "9" }}
-        style={{ width: "100%" }}
+        style={{ width: "100%", position: "relative", zIndex: 1 }}
       >
         <Box
           width="100%"

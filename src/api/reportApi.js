@@ -2,13 +2,13 @@ import api from "../config/api";
 
 // Report API endpoints
 export const reportAPI = {
-  getAll: () => api.get("/api"),
+  getAll: () => api.get("/report"),
 
-  getById: (id) => api.get(`/api/report/${id}`),
+  getById: (id) => api.get(`/report/${id}`),
 
-  create: (data) => api.post("/api/report", data),
+  create: (data) => api.post("/report", data),
 
-  update: (id, data) => api.put(`/api/report/${id}`, data),
+  update: (id, data) => api.put(`/report/${id}`, data),
 
-  delete: (id) => api.delete(`/api/report/${id}`),
+  delete: (id) => api.delete(`/report/${id}`),
 };

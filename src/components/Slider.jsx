@@ -8,6 +8,8 @@ const Slider = ({
   setIsAutoplay,
   navigate,
 }) => {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
     setIsAutoplay(false);
@@ -50,7 +52,7 @@ const Slider = ({
             position: "absolute",
             width: "100%",
             height: "100%",
-            backgroundImage: `url(${slide.image})`,
+            backgroundImage: `url(${isMobile && slide.mobileImage ? slide.mobileImage : slide.image})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             opacity: index === currentSlide ? 1 : 0,
@@ -80,29 +82,32 @@ const Slider = ({
             textAlign: "center",
             color: "white",
             zIndex: 3,
+            width: "min(92vw, 900px)",
+            padding: "0 16px",
           }}
         >
           <h1
             style={{
-              fontSize: "48px",
+              fontSize: "clamp(1.75rem, 5vw, 3rem)",
               fontWeight: "bold",
               margin: "0 0 10px 0",
             }}
           >
             {slides[currentSlide].title}
           </h1>
-          <p style={{ fontSize: "20px", margin: "0 0 30px 0" }}>
+          <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.25rem)", margin: "0 0 24px 0" }}>
             {slides[currentSlide].subtitle}
           </p>
           <button
             style={{
               background: "#2ecc71",
               color: "white",
-              padding: "12px 30px",
-              fontSize: "16px",
+              padding: "12px 24px",
+              fontSize: "clamp(0.95rem, 2vw, 1rem)",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "8px",
               cursor: "pointer",
+              fontWeight: 600,
             }}
             onClick={handleCtaClick}
           >
@@ -115,14 +120,14 @@ const Slider = ({
       <button
         style={{
           position: "absolute",
-          left: "20px",
+          left: "clamp(8px, 2vw, 20px)",
           top: "50%",
           transform: "translateY(-50%)",
           zIndex: 4,
           background: "rgba(255, 255, 255, 0.8)",
           border: "none",
-          width: "50px",
-          height: "50px",
+          width: "clamp(36px, 6vw, 50px)",
+          height: "clamp(36px, 6vw, 50px)",
           borderRadius: "50%",
           cursor: "pointer",
           display: "flex",
@@ -145,14 +150,14 @@ const Slider = ({
       <button
         style={{
           position: "absolute",
-          right: "20px",
+          right: "clamp(8px, 2vw, 20px)",
           top: "50%",
           transform: "translateY(-50%)",
           zIndex: 4,
           background: "rgba(255, 255, 255, 0.8)",
           border: "none",
-          width: "50px",
-          height: "50px",
+          width: "clamp(36px, 6vw, 50px)",
+          height: "clamp(36px, 6vw, 50px)",
           borderRadius: "50%",
           cursor: "pointer",
           display: "flex",
@@ -175,7 +180,7 @@ const Slider = ({
       <div
         style={{
           position: "absolute",
-          bottom: "20px",
+          bottom: "clamp(10px, 2vw, 20px)",
           left: "50%",
           transform: "translateX(-50%)",
           display: "flex",

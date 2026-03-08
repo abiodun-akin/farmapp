@@ -1,0 +1,138 @@
+.agent-application-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-pry-900);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  transition: transform 0.2s;
+}
+
+.back-button:hover {
+  transform: translateX(-4px);
+}
+
+.agent-form-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.agent-form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.agent-form-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-pry-900);
+}
+
+.agent-form-header p {
+  color: #666;
+  font-size: 1rem;
+}
+
+.agent-benefits {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.agent-benefits h3 {
+  margin-top: 0;
+  color: var(--color-pry-900);
+  font-size: 1.1rem;
+}
+
+.agent-benefits ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.agent-benefits li {
+  padding: 0.5rem 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.agent-benefits li:before {
+  content: "✓ ";
+  color: var(--color-pry-900);
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c33;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3c3;
+}
+
+.terms-agreement {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.terms-agreement label {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.terms-agreement a {
+  color: var(--color-pry-900);
+  text-decoration: none;
+}
+
+.agent-success-card,
+.agent-pending-card,
+.agent-not-approved-card {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.agent-success-card h2,
+.agent-pending-card h2,
+.agent-not-approved-card h2 {
+  color: var(--color-pry-900);
+  margin-bottom: 1rem;
+}
+
+.agent-success-card p,
+.agent-pending-card p,
+.agent-not-approved-card p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}

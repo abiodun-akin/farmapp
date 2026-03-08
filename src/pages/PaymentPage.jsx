@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { paymentAPI } from "../api/paymentApi";
+import { userApi } from "../api/userApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
 import { logout } from "../redux/slices/userSlice";
+import { fetchSubscriptionStatusRequest } from "../redux/slices/paymentSlice";
 import useToast from "../hooks/useToast";
 
 const PaymentPage = () => {
@@ -54,7 +56,9 @@ const PaymentPage = () => {
       // clear any stale auth and redirect to login with return path
       if (isTokenExpired(token)) {
         // remove local auth state and show a helpful toast
+        userApi.logout().catch(() => {});
         dispatch(logout());
+        sessionStorage.clear();
         dispatch(
           addToast({
             message: "Session expired — please sign in again",
@@ -96,6 +100,9 @@ const PaymentPage = () => {
       // Show success state
       setPaymentSuccess(true);
       setSubscriptionDetails(result.data.subscription);
+
+      // Refresh subscription status in Redux
+      dispatch(fetchSubscriptionStatusRequest({ force: true }));
 
       addToast(
         "Payment successful! Your subscription is now active.",

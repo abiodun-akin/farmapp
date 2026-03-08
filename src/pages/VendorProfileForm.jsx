@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import "./VendorProfileForm.css";
 import { userApi } from "../api/userApi";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { useForm } from "../hooks/useForm";
 import { setProfile } from "../redux/slices/userSlice";
+import { canAccessFeature } from "../utils/subscriptionHelper";
 import {
   nigerianStates,
-  stateLGAMap,
   vendorBusinessTypes,
   vendorInterests,
   yearsOfExperience,
@@ -28,6 +29,7 @@ const VendorProfileForm = () => {
   const [success, setSuccess] = useState(false);
   const [customInterests, setCustomInterests] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
+  const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
@@ -55,6 +57,45 @@ const VendorProfileForm = () => {
   const availableLGAs = formData.state
     ? getLGAsForState(formData.state)
     : [];
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await userApi.getProfile();
+        const profile = response.data?.profile;
+
+        if (!profile || profile.profileType !== "vendor") {
+          return;
+        }
+
+        handleArrayChange("phone", profile.phone || "");
+        handleArrayChange("location", profile.location || "");
+        handleArrayChange("state", profile.state || "");
+        handleArrayChange("lga", profile.lga || "");
+        handleArrayChange("latitude", profile.latitude ? String(profile.latitude) : "");
+        handleArrayChange("longitude", profile.longitude ? String(profile.longitude) : "");
+        handleArrayChange("bio", profile.bio || "");
+        handleArrayChange("vendorDetails", {
+          businessType: profile.vendorDetails?.businessType || "",
+          servicesOffered: profile.vendorDetails?.servicesOffered || [],
+          yearsInBusiness: profile.vendorDetails?.yearsInBusiness || "",
+          certifications: profile.vendorDetails?.certifications || [],
+          operatingAreas: profile.vendorDetails?.operatingAreas || [],
+          businessRegistration: profile.vendorDetails?.businessRegistration || "",
+          offersCredit: profile.vendorDetails?.offersCredit || false,
+          interests: profile.vendorDetails?.interests || [],
+          otherInterests: profile.vendorDetails?.otherInterests || "",
+          additionalInfo: profile.vendorDetails?.additionalInfo || "",
+        });
+        setCustomInterests(profile.vendorDetails?.otherInterests || "");
+
+        dispatch(setProfile(profile));
+      } catch (err) {
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   /**
    * Handle multi-select for nested arrays
@@ -146,10 +187,10 @@ const VendorProfileForm = () => {
       setSuccess(true);
 
       // Dispatch to update redux state with profile data
-      if (response && response.profile) {
+      if (response?.data?.profile) {
         dispatch(
           setProfile({
-            ...response.profile,
+            ...response.data.profile,
             profileType: "vendor",
           })
         );
@@ -177,6 +218,41 @@ const VendorProfileForm = () => {
           <h2>Profile Completed Successfully!</h2>
           <p>Your vendor profile has been saved. Redirecting to dashboard...</p>
         </div>
+      </div>
+    );
+  }
+
+  const canUseProfile = canAccessFeature(subscriptionStatusType, "profile");
+
+  if (subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+
+  if (!canUseProfile) {
+    return (
+      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+          Complete Your Profile
+        </h1>
+        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+          You need an active subscription to complete and manage your profile.
+        </p>
+        <button
+          onClick={() => navigate("/pricing")}
+          style={{
+            background: "#2d8659",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "clamp(10px, 2vw, 14px) clamp(20px, 3vw, 32px)",
+            fontSize: "clamp(14px, 2vw, 16px)",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.background = "#1f5f3d")}
+          onMouseLeave={(e) => (e.target.style.background = "#2d8659")}
+        >
+          Subscribe Now
+        </button>
       </div>
     );
   }
