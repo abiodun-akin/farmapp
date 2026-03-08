@@ -1,11 +1,23 @@
 import axios from "axios";
 
-export const API_BASE_URL =
+const configuredApiUrl =
   import.meta.env.VITE_API_URL || "https://connectapi-joq3.onrender.com";
+
+const normalizedApiUrl = configuredApiUrl.replace(/\/+$/, "");
+
+// Socket.IO should connect to the API origin (without /api suffix).
+export const API_BASE_URL = normalizedApiUrl.endsWith("/api")
+  ? normalizedApiUrl.slice(0, -4)
+  : normalizedApiUrl;
+
+// REST endpoints are mounted under /api on the backend.
+export const API_REST_BASE_URL = normalizedApiUrl.endsWith("/api")
+  ? normalizedApiUrl
+  : `${normalizedApiUrl}/api`;
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_REST_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
