@@ -2,7 +2,7 @@ import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { useEffect } from "react";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 
@@ -146,8 +146,8 @@ const SignUpPage = () => {
           <Flex justify="center" direction="column" align="center" gap="1">
             <Text size="2" color="gray">
               Already a member?{" "}
-              <Link href="/login" ml="1">
-                Sign In
+              <Link asChild ml="1">
+                <RouterLink to="/login">Sign In</RouterLink>
               </Link>
             </Text>
             <Text size="2" color="gray" align={"center"}>
