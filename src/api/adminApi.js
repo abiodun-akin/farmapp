@@ -55,5 +55,28 @@ export const adminApi = {
 
   getPendingPayments: (params = {}) =>
     api.get("/admin/payments/pending", { params }),
+
+  // Agent management
+  getAgentApplications: (params = {}) =>
+    api.get("/admin/agents/applications", { params }),
+
+  reviewAgentApplication: (id, decision, note = "") =>
+    api.post(`/admin/agents/applications/${id}/review`, { decision, note }),
+
+  createAgentPromoCode: (agentId, data) =>
+    api.post(`/admin/agents/${agentId}/promo-codes`, data),
+
+  getAgentPromoCodes: (agentId) =>
+    api.get(`/admin/agents/${agentId}/promo-codes`),
+
+  getAgentWithdrawals: (params = {}) =>
+    api.get("/admin/agents/withdrawals", { params }),
+
+  reviewAgentWithdrawal: (id, decision, note = "") =>
+    api.post(`/admin/agents/withdrawals/${id}/review`, { decision, note }),
+
+  // User password reset
+  resetUserPassword: (userId, newPassword) =>
+    api.post(`/admin/users/${userId}/reset-password`, { newPassword }),
 };
 

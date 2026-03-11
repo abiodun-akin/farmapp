@@ -10,6 +10,8 @@ const AdminUserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reason, setReason] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [pwMsg, setPwMsg] = useState(null);
 
   const loadUser = async () => {
     try {
@@ -60,6 +62,24 @@ const AdminUserDetail = () => {
       loadUser();
     } catch (err) {
       setError("Unable to record violation");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    setPwMsg(null);
+    if (!newPassword.trim()) {
+      setPwMsg({ type: "error", text: "Enter the new password first" });
+      return;
+    }
+    try {
+      await adminApi.resetUserPassword(userId, newPassword);
+      setNewPassword("");
+      setPwMsg({ type: "success", text: "Password reset successfully" });
+    } catch (err) {
+      setPwMsg({
+        type: "error",
+        text: err?.response?.data?.error || "Failed to reset password",
+      });
     }
   };
 
@@ -120,6 +140,34 @@ const AdminUserDetail = () => {
             Record Cancellation
           </button>
         </div>
+      </div>
+
+      <div className="admin-card">
+        <h3>Reset Password</h3>
+        {pwMsg && (
+          <div
+            className={`admin-pill ${pwMsg.type === "error" ? "high" : "low"}`}
+            style={{ marginBottom: 12 }}
+          >
+            {pwMsg.text}
+          </div>
+        )}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
+          <input
+            className="admin-input"
+            type="password"
+            placeholder="New password (min 8 chars, 1 upper, 1 number)"
+            value={newPassword}
+            onChange={(e) => { setNewPassword(e.target.value); setPwMsg(null); }}
+            style={{ minWidth: 280 }}
+          />
+          <button className="admin-button danger" onClick={handleResetPassword}>
+            Reset Password
+          </button>
+        </div>
+        <p style={{ fontSize: 11, color: "var(--admin-muted)", marginTop: 8 }}>
+          Communicate the new password to the user securely. Admin accounts cannot be reset here.
+        </p>
       </div>
 
       {report && (

@@ -28,6 +28,8 @@ import AdminPayments from "./pages/admin/AdminPayments";
 import AdminPaymentDetail from "./pages/admin/AdminPaymentDetail";
 import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
 import AgentApplicationForm from "./pages/AgentApplicationForm";
+import AdminAgents from "./pages/admin/AdminAgents";
+import AdminAgentDetail from "./pages/admin/AdminAgentDetail";
 import AgentEarnings from "./pages/AgentEarnings";
 import Toast from "./components/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -264,6 +266,22 @@ function App() {
                 </AdminRoute>
               }
             />
+              <Route
+                path="/admin/agents"
+                element={
+                  <AdminRoute>
+                    <AdminAgents />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/agents/:agentId"
+                element={
+                  <AdminRoute>
+                    <AdminAgentDetail />
+                  </AdminRoute>
+                }
+              />
           </Routes>
         </Router>
       </Theme>

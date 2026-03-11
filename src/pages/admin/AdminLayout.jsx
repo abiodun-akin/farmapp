@@ -36,6 +36,10 @@ const AdminLayout = ({ title, children }) => {
           <NavLink to="/admin/payments-analytics" className="admin-link">
             Payment Analytics
           </NavLink>
+          <div className="admin-nav-divider" />
+          <NavLink to="/admin/agents" className="admin-link">
+            Agents
+          </NavLink>
         </nav>
       </aside>
       <main className="admin-main">
