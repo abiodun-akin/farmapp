@@ -43,13 +43,13 @@ const AdminAgentDetail = () => {
 
   const handleCreatePromo = async () => {
     setPromoMsg(null);
-    if (!newCode.code.trim() || !newCode.rebateValue) {
-      setPromoMsg({ type: "error", text: "Code and rebate value are required" });
+    if (!newCode.rebateValue) {
+      setPromoMsg({ type: "error", text: "Rebate value is required" });
       return;
     }
     try {
       await adminApi.createAgentPromoCode(agentId, {
-        code: newCode.code.trim().toUpperCase(),
+        code: newCode.code.trim().toUpperCase() || undefined, // omit to auto-generate
         rebateType: newCode.rebateType,
         rebateValue: Number(newCode.rebateValue),
         maxRedemptions: newCode.maxRedemptions
@@ -154,11 +154,11 @@ const AdminAgentDetail = () => {
                       letterSpacing: "0.06em",
                     }}
                   >
-                    Code *
+                    Code <span style={{ color: "var(--admin-muted)", fontWeight: 400 }}>(optional)</span>
                   </label>
                   <input
                     className="admin-input"
-                    placeholder="e.g. JOHN2025"
+                    placeholder="Auto-generated if blank"
                     value={newCode.code}
                     onChange={(e) =>
                       setNewCode((n) => ({
@@ -166,7 +166,7 @@ const AdminAgentDetail = () => {
                         code: e.target.value.toUpperCase(),
                       }))
                     }
-                    style={{ width: 140 }}
+                    style={{ width: 180 }}
                   />
                 </div>
                 <div>

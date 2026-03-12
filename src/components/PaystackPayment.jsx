@@ -2,16 +2,16 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/paymentSlice";
-import { paymentAPI } from "../api/paymentApi";
 import useToast from "../hooks/useToast";
 
-const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
+const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false }) => {
   const dispatch = useDispatch();
   const { addToast } = useToast();
-  const { loading, paymentData, error } = useSelector((state) => state.payment);
+  const { loading, paymentData, error, verifyResult } = useSelector((state) => state.payment);
   const { user } = useSelector((state) => state.user);
   const [paystackReady, setPaystackReady] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [pendingVerificationRef, setPendingVerificationRef] = useState(null);
 
   useEffect(() => {
     const checkPaystack = () => {
@@ -57,22 +57,21 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
     }
   };
 
-  const verifyPaymentOnly = async (reference) => {
-    try {
-      console.log("Verifying payment...");
-      const verifyResponse = await paymentAPI.verifyPayment(reference, plan);
-      console.log("Payment verification successful:", verifyResponse.data);
-      
-      return true;
-    } catch (error) {
-      console.error("Payment verification failed:", error.response?.data || error.message);
-      addToast(
-        error.response?.data?.message || "Payment verification failed. Please contact support.",
-        "error"
-      );
-      return false;
+  useEffect(() => {
+    if (!pendingVerificationRef || loading) return;
+
+    if (verifyResult?.status === "success" && verifyResult?.reference === pendingVerificationRef) {
+      const ref = pendingVerificationRef;
+      setPendingVerificationRef(null);
+      onSuccess({ reference: ref, plan });
+      return;
     }
-  };
+
+    if (error) {
+      addToast(error, "error");
+      setPendingVerificationRef(null);
+    }
+  }, [pendingVerificationRef, loading, verifyResult, error, onSuccess, plan, addToast]);
 
   const openPaystackModal = () => {
     if (!paymentData?.paymentData?.reference) {
@@ -96,14 +95,8 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
       callback: function (response) {
         console.log("Payment successful:", response);
         setPaymentInProgress(false);
-
-        // Verify the payment with backend
-        verifyPaymentOnly(response.reference).then((verified) => {
-          if (verified) {
-            // Only pass the reference to onSuccess - parent will handle final success call
-            onSuccess({ reference: response.reference, plan });
-          }
-        });
+        setPendingVerificationRef(response.reference);
+        dispatch(verifyPaymentRequest({ reference: response.reference, plan }));
       },
       onClose: function () {
         console.log("Payment modal closed");
@@ -121,9 +114,21 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
   return (
     <Flex direction="column" gap="4" align="center">
       <Text size="6" weight="bold">
-        Subscribe to {plan}
+        {isTrialAuth ? "Authorize Card" : `Subscribe to ${plan}`}
       </Text>
-      <Text size="4">Amount: ₦{amount.toLocaleString()}</Text>
+
+      {isTrialAuth ? (
+        <div style={{ textAlign: "center", padding: "0 8px" }}>
+          <Text size="3" style={{ color: "#555", display: "block", marginBottom: "6px" }}>
+            A <strong>₦50</strong> authorization charge is used to verify your card.
+          </Text>
+          <Text size="2" color="gray" style={{ display: "block" }}>
+            ₦5,000 will only be charged after your free trial ends (if you haven't cancelled).
+          </Text>
+        </div>
+      ) : (
+        <Text size="4">Amount: ₦{amount.toLocaleString()}</Text>
+      )}
 
       {!paystackReady && <Text size="2" color="gray">Loading payment provider...</Text>}
 
@@ -145,7 +150,9 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose }) => {
           ? "Loading..."
           : isProcessing
             ? "Processing..."
-            : "Pay Now"}
+            : isTrialAuth
+              ? "Authorize Card — ₦50"
+              : "Pay Now"}
       </Button>
 
       {isProcessing && (

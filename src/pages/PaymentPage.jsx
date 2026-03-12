@@ -2,13 +2,31 @@ import { Card, Flex, Text, Button } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { paymentAPI } from "../api/paymentApi";
 import { userApi } from "../api/userApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
 import { logout } from "../redux/slices/userSlice";
-import { fetchSubscriptionStatusRequest } from "../redux/slices/paymentSlice";
+import {
+  fetchSubscriptionStatusRequest,
+  successPaymentRequest,
+  closePaymentRequest,
+  clearPaymentFlowState,
+} from "../redux/slices/paymentSlice";
 import useToast from "../hooks/useToast";
+
+const PLANS = {
+  basic: {
+    name: "Basic Plan",
+    amount: 5000,
+    description: "Get started with our 30 days free trial.",
+    features: [
+      "Access to core features",
+      "30-day trial period",
+      "Email support",
+      "Basic analytics",
+    ],
+  },
+};
 
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
@@ -18,23 +36,17 @@ const PaymentPage = () => {
   const [planDetails, setPlanDetails] = useState(null);
   const [error, setError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [isCardAuthSuccess, setIsCardAuthSuccess] = useState(false);
   const [subscriptionDetails, setSubscriptionDetails] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isTrialAuth, setIsTrialAuth] = useState(false);
+  const [pendingFinalizeReference, setPendingFinalizeReference] = useState(null);
   const { isAuthenticated } = useSelector((state) => state.user);
-
-  const plans = {
-    basic: {
-      name: "Basic Plan",
-      amount: 5000,
-      description: "Get started with our 30 days free trial.",
-      features: [
-        "Access to core features",
-        "30-day trial period",
-        "Email support",
-        "Basic analytics",
-      ],
-    },
-  };
+  const {
+    successResult,
+    error: paymentError,
+    loading: paymentLoading,
+    subscription,
+  } = useSelector((state) => state.payment);
 
   useEffect(() => {
     // Quick client-side JWT expiry check to avoid unexpected 401s
@@ -59,12 +71,7 @@ const PaymentPage = () => {
         userApi.logout().catch(() => {});
         dispatch(logout());
         sessionStorage.clear();
-        dispatch(
-          addToast({
-            message: "Session expired — please sign in again",
-            type: "warning",
-          })
-        );
+        addToast("Session expired — please sign in again", "warning");
       }
 
       navigate("/login", {
@@ -76,64 +83,90 @@ const PaymentPage = () => {
     }
 
     const plan = searchParams.get("plan");
-    if (plan && plans[plan]) {
-      setPlanDetails({ ...plans[plan], planKey: plan });
+    if (plan && PLANS[plan]) {
+      setPlanDetails({ ...PLANS[plan], planKey: plan });
+      dispatch(fetchSubscriptionStatusRequest({ force: true }));
     } else {
       setError("Invalid plan selected");
       navigate("/pricing");
     }
-  }, [searchParams, navigate, isAuthenticated, dispatch]);
+  }, [searchParams, navigate, isAuthenticated, dispatch, addToast]);
 
-  const handlePaymentSuccess = async (data) => {
-    try {
-      setIsProcessing(true);
-      
-      // data should contain { reference, plan }
-      // But verification was already done in PaystackPayment component
-      // Just call the success endpoint to finalize subscription
-      const planFromUrl = searchParams.get("plan");
-      const result = await paymentAPI.handlePaymentSuccess(
-        data.reference,
-        planFromUrl
-      );
+  const handlePaymentSuccess = (data) => {
+    const planFromUrl = searchParams.get("plan");
+    setPendingFinalizeReference(data.reference);
+    dispatch(successPaymentRequest({ reference: data.reference, plan: planFromUrl }));
+  };
 
-      // Show success state
+  useEffect(() => {
+    const shouldAuthorizeCard = subscription?.status === "trial" && !subscription?.isCardAuthorized;
+    setIsTrialAuth(Boolean(shouldAuthorizeCard));
+  }, [subscription]);
+
+  useEffect(() => {
+    if (!pendingFinalizeReference || !successResult) return;
+
+    if (successResult?.isCardAuthorization) {
+      setIsCardAuthSuccess(true);
       setPaymentSuccess(true);
-      setSubscriptionDetails(result.data.subscription);
-
-      // Refresh subscription status in Redux
-      dispatch(fetchSubscriptionStatusRequest({ force: true }));
-
-      addToast(
-        "Payment successful! Your subscription is now active.",
-        "success"
-      );
-
-      // Redirect after a short delay
-      setTimeout(() => {
-        navigate("/profile");
-      }, 2000);
-    } catch (error) {
-      console.error("Payment success handling failed:", error);
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Payment verification failed";
-      setError(errorMessage);
-      addToast(errorMessage, "error");
-    } finally {
-      setIsProcessing(false);
+      addToast("Card authorized! You'll be charged ₦5,000 after your trial ends.", "success");
+      setPendingFinalizeReference(null);
+      setTimeout(() => navigate("/profile"), 2500);
+      return;
     }
+
+    if (successResult?.subscription) {
+      setPaymentSuccess(true);
+      setSubscriptionDetails(successResult.subscription);
+      addToast("Payment successful! Your subscription is now active.", "success");
+      setPendingFinalizeReference(null);
+      setTimeout(() => navigate("/profile"), 2000);
+    }
+  }, [pendingFinalizeReference, successResult, navigate, addToast]);
+
+  useEffect(() => {
+    if (!pendingFinalizeReference || !paymentError) return;
+    setError(paymentError);
+    setPendingFinalizeReference(null);
+  }, [pendingFinalizeReference, paymentError]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearPaymentFlowState());
+    };
+  }, [dispatch]);
+
+  const handlePaymentClose = () => {
+    dispatch(closePaymentRequest());
   };
 
-  const handlePaymentClose = async () => {
-    try {
-      await paymentAPI.handlePaymentClose();
-      addToast("Payment cancelled", "warning");
-    } catch (error) {
-      console.error("Payment close handling failed:", error);
-    }
-  };
+  // Card Authorization Success State
+  if (paymentSuccess && isCardAuthSuccess) {
+    return (
+      <FullPageLayout>
+        <Flex direction="column" align="center" justify="center" p="8" style={{ minHeight: "100vh" }}>
+          <Card style={{ backgroundColor: "white", padding: "40px", maxWidth: "500px", textAlign: "center", border: "2px solid #27ae60" }}>
+            <div style={{ fontSize: "48px", marginBottom: "20px" }}>✅</div>
+            <Text size="7" weight="bold" style={{ color: "#27ae60" }}>Card Authorized!</Text>
+            <Text size="4" style={{ color: "#555", marginTop: "16px", display: "block" }}>
+              Your card has been saved for future billing.
+            </Text>
+            <div style={{ margin: "24px 0", padding: "20px", background: "#f0f7f4", borderRadius: "8px", border: "1px solid #27ae60" }}>
+              <Text size="3" style={{ color: "#333" }}>
+                ₦5,000 will be charged automatically when your free trial expires.
+                You can cancel anytime before then.  
+              </Text>
+            </div>
+            <Button onClick={() => navigate("/profile")} style={{ backgroundColor: "#27ae60", color: "white", padding: "10px 24px" }}>
+              Go to Dashboard
+            </Button>
+          </Card>
+        </Flex>
+      </FullPageLayout>
+    );
+  }
 
-  // Success State
+  // Subscription Success State
   if (paymentSuccess && subscriptionDetails) {
     return (
       <FullPageLayout>
@@ -306,12 +339,13 @@ const PaymentPage = () => {
 
           <PaystackPayment
             plan={planDetails.planKey}
-            amount={planDetails.amount}
+            amount={isTrialAuth ? 50 : planDetails.amount}
+            isTrialAuth={isTrialAuth}
             onSuccess={handlePaymentSuccess}
             onClose={handlePaymentClose}
           />
 
-          {isProcessing && (
+          {paymentLoading && (
             <Text size="2" color="gray" style={{ marginTop: "16px" }}>
               Processing your payment...
             </Text>

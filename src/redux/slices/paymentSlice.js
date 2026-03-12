@@ -4,6 +4,9 @@ const initialState = {
   loading: false,
   error: null,
   paymentData: null,
+  verifyResult: null,
+  successResult: null,
+  closeResult: null,
   subscription: null,
   hasActiveSubscription: false,
   hasEverSubscribed: false,
@@ -20,6 +23,7 @@ const paymentSlice = createSlice({
     initializePaymentRequest: (state) => {
       state.loading = true;
       state.error = null;
+      state.paymentData = null;
     },
     initializePaymentSuccess: (state, action) => {
       state.loading = false;
@@ -33,14 +37,49 @@ const paymentSlice = createSlice({
     verifyPaymentRequest: (state) => {
       state.loading = true;
       state.error = null;
+      state.verifyResult = null;
     },
     verifyPaymentSuccess: (state, action) => {
       state.loading = false;
-      state.subscription = action.payload;
+      state.verifyResult = action.payload;
     },
     verifyPaymentFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
+      state.verifyResult = null;
+    },
+
+    successPaymentRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.successResult = null;
+    },
+    successPaymentSuccess: (state, action) => {
+      state.loading = false;
+      state.successResult = action.payload;
+      state.subscription = action.payload?.subscription || state.subscription;
+    },
+    successPaymentFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.successResult = null;
+    },
+
+    closePaymentRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.closeResult = null;
+    },
+    closePaymentSuccess: (state, action) => {
+      state.loading = false;
+      state.closeResult = action.payload;
+      state.subscription = null;
+      state.hasActiveSubscription = false;
+    },
+    closePaymentFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.closeResult = null;
     },
 
     fetchSubscriptionStatusRequest: (state) => {
@@ -78,6 +117,14 @@ const paymentSlice = createSlice({
     clearPaymentError: (state) => {
       state.error = null;
     },
+    clearPaymentFlowState: (state) => {
+      state.paymentData = null;
+      state.verifyResult = null;
+      state.successResult = null;
+      state.closeResult = null;
+      state.loading = false;
+      state.error = null;
+    },
   },
 });
 
@@ -88,11 +135,18 @@ export const {
   verifyPaymentRequest,
   verifyPaymentSuccess,
   verifyPaymentFailure,
+  successPaymentRequest,
+  successPaymentSuccess,
+  successPaymentFailure,
+  closePaymentRequest,
+  closePaymentSuccess,
+  closePaymentFailure,
   fetchSubscriptionStatusRequest,
   fetchSubscriptionStatusSuccess,
   fetchSubscriptionStatusFailure,
   clearSubscriptionState,
   clearPaymentError,
+  clearPaymentFlowState,
 } = paymentSlice.actions;
 
 export default paymentSlice.reducer;

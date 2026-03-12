@@ -7,6 +7,12 @@ import {
   verifyPaymentRequest,
   verifyPaymentSuccess,
   verifyPaymentFailure,
+  successPaymentRequest,
+  successPaymentSuccess,
+  successPaymentFailure,
+  closePaymentRequest,
+  closePaymentSuccess,
+  closePaymentFailure,
   fetchSubscriptionStatusRequest,
   fetchSubscriptionStatusSuccess,
   fetchSubscriptionStatusFailure,
@@ -54,6 +60,42 @@ function* verifyPaymentSaga(action) {
   }
 }
 
+function* successPaymentSaga(action) {
+  try {
+    const { reference, plan } = action.payload;
+    const response = yield call(paymentAPI.handlePaymentSuccess, reference, plan);
+    yield put(successPaymentSuccess(response.data));
+    yield put(fetchSubscriptionStatusRequest({ userId: action.payload?.userId, force: true }));
+    console.log("Payment finalization successful:", response.data);
+  } catch (error) {
+    if (isAuthError(error)) {
+      yield put(logout());
+      yield put(addToast({ message: "Session expired. Please login again.", type: "error" }));
+    } else {
+      const errorMessage = formatErrorMessage(error);
+      yield put(successPaymentFailure(errorMessage));
+      yield put(addToast({ message: errorMessage, type: "error" }));
+    }
+  }
+}
+
+function* closePaymentSaga() {
+  try {
+    const response = yield call(paymentAPI.handlePaymentClose);
+    yield put(closePaymentSuccess(response.data));
+    yield put(addToast({ message: "Payment cancelled", type: "warning" }));
+  } catch (error) {
+    if (isAuthError(error)) {
+      yield put(logout());
+      yield put(addToast({ message: "Session expired. Please login again.", type: "error" }));
+    } else {
+      const errorMessage = formatErrorMessage(error);
+      yield put(closePaymentFailure(errorMessage));
+      yield put(addToast({ message: errorMessage, type: "error" }));
+    }
+  }
+}
+
 function* fetchSubscriptionStatusSaga(action) {
   try {
     const response = yield call(paymentAPI.getSubscriptionStatus);
@@ -81,5 +123,7 @@ function* fetchSubscriptionStatusSaga(action) {
 export function* paymentSaga() {
   yield takeEvery(initializePaymentRequest.type, initializePaymentSaga);
   yield takeEvery(verifyPaymentRequest.type, verifyPaymentSaga);
+  yield takeEvery(successPaymentRequest.type, successPaymentSaga);
+  yield takeEvery(closePaymentRequest.type, closePaymentSaga);
   yield takeEvery(fetchSubscriptionStatusRequest.type, fetchSubscriptionStatusSaga);
 }
