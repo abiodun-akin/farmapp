@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Button, Text, Flex, Card } from "@radix-ui/themes";
 import {
   FaArrowLeft,
@@ -11,7 +11,12 @@ import {
   FaCopy,
   FaCheck,
 } from "react-icons/fa";
-import { userApi } from "../api/userApi";
+import { addToast } from "../redux/slices/toastSlice";
+import {
+  clearAgentActionState,
+  fetchAgentStatusRequest,
+  requestWithdrawalRequest,
+} from "../redux/slices/agentSlice";
 import "./AgentEarnings.css";
 
 /**
@@ -19,31 +24,52 @@ import "./AgentEarnings.css";
  * Shows agent status, wallet balance, promo codes, and withdrawal history
  */
 const AgentEarnings = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
-  const [agentData, setAgentData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    data: agentData,
+    loading,
+    error,
+    withdrawalLoading,
+    withdrawalSuccess,
+  } = useSelector((state) => state.agent);
   const [copiedCode, setCopiedCode] = useState(null);
   const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
 
-  useEffect(() => {
-    fetchAgentData();
-  }, [user]);
+  const agent = agentData?.agent || {};
+  const agentWallet = agent.wallet || agentData?.agentWallet || {};
+  const promoCodes = agentData?.codes || agentData?.promoCodes || [];
+  const recentLedger = agentData?.recentLedger || [];
+  const withdrawals = agentData?.withdrawals || [];
+  const agentStatus = agent.status || agentData?.agentStatus || user?.agentStatus || "none";
+  const isApprovedAgent = Boolean(
+    agent.isAgent
+    || agentData?.isAgent
+    || user?.isAgent
+    || agentStatus === "approved"
+  ) && agentStatus === "approved";
 
-  const fetchAgentData = async () => {
-    try {
-      setLoading(true);
-      const response = await userApi.getAgentStatus?.();
-      setAgentData(response?.data);
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to load agent data");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchAgentStatusRequest());
     }
-  };
+
+    return () => {
+      dispatch(clearAgentActionState());
+    };
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (!withdrawalSuccess) {
+      return;
+    }
+
+    setWithdrawalAmount("");
+    setShowWithdrawalForm(false);
+    dispatch(clearAgentActionState());
+  }, [dispatch, withdrawalSuccess]);
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -51,25 +77,14 @@ const AgentEarnings = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleWithdrawalRequest = async (e) => {
+  const handleWithdrawalRequest = (e) => {
     e.preventDefault();
-    if (!withdrawalAmount || parseInt(withdrawalAmount) <= 0) {
-      alert("Please enter a valid amount");
+    if (!withdrawalAmount || parseInt(withdrawalAmount, 10) <= 0) {
+      dispatch(addToast({ message: "Please enter a valid amount", type: "error" }));
       return;
     }
 
-    try {
-      setLoading(true);
-      await userApi.requestWithdrawal?.({ amount: parseInt(withdrawalAmount) });
-      alert("Withdrawal request submitted successfully!");
-      setWithdrawalAmount("");
-      setShowWithdrawalForm(false);
-      fetchAgentData();
-    } catch (err) {
-      alert(err.response?.data?.error || "Failed to submit withdrawal request");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(requestWithdrawalRequest({ amount: parseInt(withdrawalAmount, 10) }));
   };
 
   if (!user) {
@@ -80,21 +95,27 @@ const AgentEarnings = () => {
     );
   }
 
-  if (!agentData?.isAgent) {
+  if (!loading && !isApprovedAgent) {
     return (
       <div className="agent-earnings-container">
         <button onClick={() => navigate(-1)} className="back-button">
           <FaArrowLeft /> Back
         </button>
         <div className="agent-not-approved-card">
-          <h2>Not an Agent Yet</h2>
-          <p>You haven't been approved as an agent yet. Apply now to get started!</p>
-          <Button
-            onClick={() => navigate("/apply-agent")}
-            style={{ backgroundColor: "var(--color-pry-900)", color: "white" }}
-          >
-            Apply as Agent
-          </Button>
+          <h2>{agentStatus === "pending" ? "Application Under Review" : "Not an Agent Yet"}</h2>
+          <p>
+            {agentStatus === "pending"
+              ? "Your agent application is currently under review. You will see your full earnings dashboard once it is approved."
+              : "You have not been approved as an agent yet. Apply now to get started."}
+          </p>
+          {agentStatus !== "pending" && (
+            <Button
+              onClick={() => navigate("/apply-agent")}
+              style={{ backgroundColor: "var(--color-pry-900)", color: "white" }}
+            >
+              Apply as Agent
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -116,7 +137,6 @@ const AgentEarnings = () => {
     );
   }
 
-  const { agentWallet = {}, promoCodes = [], recentLedger = [], withdrawals = [] } = agentData;
   const wallet = agentWallet || { availableBalance: 0, lifetimeEarned: 0 };
   const withdrawalThreshold = parseInt(process.env.REACT_APP_AGENT_WITHDRAWAL_THRESHOLD) || 5000;
   const canWithdraw = wallet.availableBalance >= withdrawalThreshold;
@@ -164,6 +184,42 @@ const AgentEarnings = () => {
             </Text>
             <Text size="1" color="gray">
               Total earnings from referrals
+            </Text>
+          </Flex>
+        </Card>
+      </div>
+
+      <div className="wallet-cards-grid">
+        <Card className="wallet-card">
+          <Flex direction="column" gap="2">
+            <Flex align="center" gap="2">
+              <FaHistory style={{ color: "var(--color-pry-900)", fontSize: "1.5rem" }} />
+              <Text weight="bold" size="2">
+                Locked Balance
+              </Text>
+            </Flex>
+            <Text size="5" weight="bold" style={{ color: "var(--color-pry-900)" }}>
+              ₦{wallet.lockedBalance?.toLocaleString() || "0"}
+            </Text>
+            <Text size="1" color="gray">
+              Awaiting withdrawal processing
+            </Text>
+          </Flex>
+        </Card>
+
+        <Card className="wallet-card">
+          <Flex direction="column" gap="2">
+            <Flex align="center" gap="2">
+              <FaMoneyBillWave style={{ color: "var(--color-pry-900)", fontSize: "1.5rem" }} />
+              <Text weight="bold" size="2">
+                Lifetime Withdrawn
+              </Text>
+            </Flex>
+            <Text size="5" weight="bold" style={{ color: "var(--color-pry-900)" }}>
+              ₦{wallet.lifetimeWithdrawn?.toLocaleString() || "0"}
+            </Text>
+            <Text size="1" color="gray">
+              Total payouts processed
             </Text>
           </Flex>
         </Card>
@@ -245,8 +301,8 @@ const AgentEarnings = () => {
               max={wallet.availableBalance}
             />
             <Flex gap="2">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Processing..." : "Submit"}
+              <Button type="submit" disabled={withdrawalLoading}>
+                {withdrawalLoading ? "Processing..." : "Submit"}
               </Button>
               <Button
                 type="button"
@@ -270,7 +326,7 @@ const AgentEarnings = () => {
                       Status: <strong>{wd.status}</strong>
                     </Text>
                     <Text size="1" color="gray">
-                      Requested: {new Date(wd.requestedAt).toLocaleDateString()}
+                      Requested: {wd.createdAt ? new Date(wd.createdAt).toLocaleDateString() : ""}
                     </Text>
                   </Flex>
                 </Flex>
@@ -284,32 +340,38 @@ const AgentEarnings = () => {
         ) : null}
       </div>
 
-      {/* Recent Referrals */}
       <div className="section">
         <h2>
-          <FaHistory /> Recent Referrals
+          <FaHistory /> Recent Earnings Activity
         </h2>
-        {recentLedger && recentLedger.length > 0 ? (
+        {recentLedger.length > 0 ? (
           <div className="ledger-list">
             {recentLedger.map((entry) => (
               <Card key={entry._id} className="ledger-card">
-                <Flex justify="between" align="center">
-                  <Flex direction="column" gap="1" style={{ flex: 1 }}>
-                    <Text size="1" color="gray">
-                      {entry.source === "signup" ? "New Signup" : "Subscription Renewal"}
+                <Flex justify="between" align="center" gap="3" wrap="wrap">
+                  <Flex direction="column" gap="1">
+                    <Text weight="bold" size="2">
+                      {entry.promoCode || "Referral rebate"}
                     </Text>
-                    <Text weight="bold">+₦{entry.amount?.toLocaleString()}</Text>
+                    <Text size="1" color="gray">
+                      {entry.source || "activity"} • {entry.status || "accrued"}
+                    </Text>
                   </Flex>
-                  <Text size="1" color="gray">
-                    {new Date(entry.createdAt).toLocaleDateString()}
-                  </Text>
+                  <Flex direction="column" align="end" gap="1">
+                    <Text weight="bold" size="3" style={{ color: "var(--color-pry-900)" }}>
+                      ₦{Number(entry.amount || 0).toLocaleString()}
+                    </Text>
+                    <Text size="1" color="gray">
+                      {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : ""}
+                    </Text>
+                  </Flex>
                 </Flex>
               </Card>
             ))}
           </div>
         ) : (
           <Card className="empty-state">
-            <Text color="gray">No referrals yet. Start sharing your promo codes!</Text>
+            <Text color="gray">No referral earnings recorded yet.</Text>
           </Card>
         )}
       </div>

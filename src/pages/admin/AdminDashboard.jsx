@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import { adminApi } from "../../api/adminApi";
 
+const formatNaira = (amount = 0) => `₦${Number(amount || 0).toLocaleString()}`;
+
 const AdminDashboard = () => {
   const [overview, setOverview] = useState(null);
   const [flaggedMessages, setFlaggedMessages] = useState([]);
@@ -46,6 +48,22 @@ const AdminDashboard = () => {
           <div className="admin-card">
             <h3>Users With Flags</h3>
             <p>{overview.usersWithFlaggedMessages}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Approved Agents</h3>
+            <p>{overview.approvedAgents || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Pending Agent Applications</h3>
+            <p>{overview.pendingAgentApplications || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Total Agent Earnings</h3>
+            <p>{formatNaira(overview.totalAgentLifetimeEarned)}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Agent Available Balance</h3>
+            <p>{formatNaira(overview.totalAgentAvailableBalance)}</p>
           </div>
         </div>
       )}

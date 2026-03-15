@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { fetchAgentStatusRequest } from '../redux/slices/agentSlice';
 import { logout } from '../redux/slices/userSlice';
 import { userApi } from '../api/userApi';
 import useSubscriptionStatus from '../hooks/useSubscriptionStatus';
@@ -59,10 +60,24 @@ function NavigationComponent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.user);
+  const { data: agentData } = useSelector((state) => state.agent);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef(null);
   const { statusDisplay } = useSubscriptionStatus();
+
+  const agentStatus = {
+    isAgent: Boolean(agentData?.agent?.isAgent || agentData?.isAgent),
+    status: agentData?.agent?.status || agentData?.agentStatus || 'none',
+  };
+  const isApprovedAgent = Boolean(
+    agentStatus.isAgent
+    || agentStatus.status === 'approved'
+    || user?.isAgent
+    || user?.agentStatus === 'approved'
+  );
+  const isPendingAgent = agentStatus.status === 'pending' || user?.agentStatus === 'pending';
+  const shouldShowApplyAgent = !isApprovedAgent && !isPendingAgent;
 
   // Handle clicking outside dropdown to close it
   useEffect(() => {
@@ -80,6 +95,12 @@ function NavigationComponent() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    if (isAuthenticated && user && !user?.isAdmin) {
+      dispatch(fetchAgentStatusRequest());
+    }
+  }, [dispatch, isAuthenticated, user]);
 
   if (!isAuthenticated || !user) {
     return null;
@@ -202,16 +223,18 @@ function NavigationComponent() {
                   <span>Settings</span>
                 </button>
 
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    handleNavigate('/apply-agent');
-                    setIsProfileDropdownOpen(false);
-                  }}
-                >
-                  <FaUsers className="dropdown-icon" />
-                  <span>Apply as Agent</span>
-                </button>
+                {shouldShowApplyAgent && (
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      handleNavigate('/apply-agent');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                  >
+                    <FaUsers className="dropdown-icon" />
+                    <span>Apply as Agent</span>
+                  </button>
+                )}
 
                 <button
                   className="dropdown-item"
@@ -240,7 +263,7 @@ function NavigationComponent() {
       <nav className="navigation-mobile">
         <div className="mobile-nav-header">
           <div className="nav-logo-mobile" onClick={() => navigate('/')}>
-            <FarmConnectLogo size={20} showText={false} />
+            <FarmConnectLogo size={20} showText={true} />
           </div>
           <button
             className="mobile-menu-toggle"
@@ -290,15 +313,17 @@ function NavigationComponent() {
               <span>Settings</span>
             </button>
 
-            <button
-              className="mobile-nav-item"
-              onClick={() => {
-                handleNavigate('/apply-agent');
-              }}
-            >
-              <FaUsers className="mobile-nav-icon" />
-              <span>Apply as Agent</span>
-            </button>
+            {shouldShowApplyAgent && (
+              <button
+                className="mobile-nav-item"
+                onClick={() => {
+                  handleNavigate('/apply-agent');
+                }}
+              >
+                <FaUsers className="mobile-nav-icon" />
+                <span>Apply as Agent</span>
+              </button>
+            )}
 
             <button
               className="mobile-nav-item"

@@ -348,8 +348,21 @@
 }
 
 .nav-logo-mobile {
+  display: flex;
+  align-items: center;
   font-size: 24px;
   cursor: pointer;
+  color: #2d8659;
+  min-width: 0;
+}
+
+.nav-logo-mobile > span {
+  gap: 8px !important;
+}
+
+.nav-logo-mobile > span > span:last-child {
+  font-size: 14px !important;
+  white-space: nowrap;
 }
 
 .mobile-menu-toggle {

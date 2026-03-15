@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Text, TextArea, Link } from "@radix-ui/themes";
 import { FaArrowLeft } from "react-icons/fa";
-import { userApi } from "../api/userApi";
+import {
+  applyAgentRequest,
+  clearAgentActionState,
+  fetchAgentStatusRequest,
+} from "../redux/slices/agentSlice";
 import "./AgentApplicationForm.css";
 
 /**
@@ -12,68 +16,73 @@ import "./AgentApplicationForm.css";
  * Allows users to apply to become agents and earn rebates
  */
 const AgentApplicationForm = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [agentStatus, setAgentStatus] = useState(null);
+  const {
+    data: agentStatus,
+    loading,
+    error,
+    applyLoading,
+    applyError,
+    applySuccess,
+  } = useSelector((state) => state.agent);
+  const [validationError, setValidationError] = useState(null);
+
+  const derivedAgent = agentStatus?.agent || {};
+  const currentAgentStatus = derivedAgent.status || agentStatus?.agentStatus || user?.agentStatus || "none";
+  const isApprovedAgent = Boolean(
+    derivedAgent.isAgent
+    || agentStatus?.isAgent
+    || user?.isAgent
+    || currentAgentStatus === "approved"
+  ) && currentAgentStatus === "approved";
 
   useEffect(() => {
-    // Fetch current agent status
-    const fetchAgentStatus = async () => {
-      try {
-        const response = await userApi.getAgentStatus?.();
-        if (response?.data) {
-          setAgentStatus(response.data);
-        }
-      } catch (err) {
-        // Status check failed, continue
-      }
-    };
-
     if (user) {
-      fetchAgentStatus();
+      dispatch(fetchAgentStatusRequest());
     }
-  }, [user]);
 
-  const handleSubmit = async (event) => {
+    return () => {
+      dispatch(clearAgentActionState());
+    };
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (!applySuccess) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      navigate("/agent-earnings");
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [applySuccess, navigate]);
+
+  const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
 
     if (!data.motivation || data.motivation.length < 20) {
-      setError("Motivation must be at least 20 characters");
+      setValidationError("Motivation must be at least 20 characters");
       return;
     }
 
     if (!data.contactPhone) {
-      setError("Contact phone is required");
+      setValidationError("Contact phone is required");
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      const payload = {
-        motivation: data.motivation,
-        contactPhone: data.contactPhone,
-      };
-
-      await userApi.applyAsAgent?.(payload);
-      setSuccess(true);
-      setTimeout(() => {
-        navigate("/agent-earnings");
-      }, 2000);
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to submit application");
-    } finally {
-      setLoading(false);
-    }
+    setValidationError(null);
+    dispatch(applyAgentRequest({
+      motivation: data.motivation,
+      contactPhone: data.contactPhone,
+    }));
   };
 
   // If already approved agent
-  if (agentStatus?.isAgent && agentStatus?.agentStatus === "approved") {
+  if (isApprovedAgent) {
     return (
       <div className="agent-application-container">
         <button onClick={() => navigate(-1)} className="back-button">
@@ -96,7 +105,7 @@ const AgentApplicationForm = () => {
   }
 
   // If application pending
-  if (agentStatus?.agentStatus === "pending") {
+  if (currentAgentStatus === "pending") {
     return (
       <div className="agent-application-container">
         <button onClick={() => navigate(-1)} className="back-button">
@@ -112,6 +121,14 @@ const AgentApplicationForm = () => {
             Expected review time: 1-2 business days
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (loading && !agentStatus) {
+    return (
+      <div className="agent-application-container">
+        <p>Loading...</p>
       </div>
     );
   }
@@ -143,8 +160,10 @@ const AgentApplicationForm = () => {
         </div>
 
         <Form.Root onSubmit={handleSubmit}>
-          {error && <div className="error-message">{error}</div>}
-          {success && (
+          {(validationError || applyError || error) && (
+            <div className="error-message">{validationError || applyError || error}</div>
+          )}
+          {applySuccess && (
             <div className="success-message">
               Application submitted successfully! Redirecting...
             </div>
@@ -226,16 +245,16 @@ const AgentApplicationForm = () => {
 
             <Form.Submit asChild>
               <Button
-                disabled={loading}
+                disabled={applyLoading}
                 size="3"
                 style={{
                   marginTop: "var(--space-3)",
                   backgroundColor: "var(--color-pry-900)",
                   color: "var(--color-white)",
-                  cursor: loading ? "not-allowed" : "pointer",
+                  cursor: applyLoading ? "not-allowed" : "pointer",
                 }}
               >
-                {loading ? "Submitting..." : "Submit Application"}
+                {applyLoading ? "Submitting..." : "Submit Application"}
               </Button>
             </Form.Submit>
           </div>

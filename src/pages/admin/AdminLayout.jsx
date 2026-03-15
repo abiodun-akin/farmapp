@@ -1,13 +1,34 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { FaSignOutAlt } from "react-icons/fa";
+import { logout } from "../../redux/slices/userSlice";
+import { userApi } from "../../api/userApi";
+import FarmConnectLogo from "../../components/FarmConnectLogo";
 import "./AdminLayout.css";
 
 const AdminLayout = ({ title, children }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await userApi.logout();
+    } catch (_error) {
+    }
+
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <div className="brand-mark">FC</div>
+          <div className="brand-mark">
+            <FarmConnectLogo size={26} showText={false} />
+          </div>
           <div>
             <div className="brand-title">FarmConnect</div>
             <div className="brand-subtitle">Admin Console</div>
@@ -41,6 +62,10 @@ const AdminLayout = ({ title, children }) => {
             Agents
           </NavLink>
         </nav>
+        <button className="admin-logout" onClick={handleLogout}>
+          <FaSignOutAlt />
+          <span>Logout</span>
+        </button>
       </aside>
       <main className="admin-main">
         <header className="admin-header">

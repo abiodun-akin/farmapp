@@ -48,6 +48,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  overflow: hidden;
 }
 
 .brand-title {
@@ -65,6 +66,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
 }
 
 .admin-nav-divider {
@@ -91,6 +93,26 @@
 .admin-link.active {
   background: rgba(43, 182, 115, 0.2);
   border-color: rgba(43, 182, 115, 0.5);
+}
+
+.admin-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid rgba(232, 72, 72, 0.35);
+  border-radius: 10px;
+  background: rgba(232, 72, 72, 0.14);
+  color: var(--admin-text);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-logout:hover {
+  background: rgba(232, 72, 72, 0.22);
+  border-color: rgba(232, 72, 72, 0.6);
 }
 
 .admin-main {
@@ -247,11 +269,16 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .admin-nav {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  .admin-logout {
+    width: auto;
   }
 }
 
