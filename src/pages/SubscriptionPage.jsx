@@ -18,7 +18,7 @@ const SubscriptionPage = () => {
       <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "8px" }}>
         Subscription
       </h1>
-      {!isSubscriptionActive && !loading && !error && (
+      {!isSubscriptionActive && !subscriptionLoading && !subscriptionError && (
         <p style={{ color: "#666", fontSize: "clamp(14px, 2vw, 16px)", marginBottom: "20px" }}>
           Activate a subscription to unlock features like viewing matches, messaging, and analytics.
         </p>

@@ -2,6 +2,7 @@ import { applyMiddleware, combineReducers, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { rootSaga } from "./sagas";
 import agentReducer from "./slices/agentSlice";
+import apiBridgeReducer from "./slices/apiBridgeSlice";
 import reportReducer from "./slices/reportSlice";
 import userReducer from "./slices/userSlice";
 import paymentReducer from "./slices/paymentSlice";
@@ -12,6 +13,7 @@ const sagaMiddleware = createSagaMiddleware();
 const rootReducer = combineReducers({
   user: userReducer,
   agent: agentReducer,
+  apiBridge: apiBridgeReducer,
   report: reportReducer,
   payment: paymentReducer,
   toast: toastReducer,

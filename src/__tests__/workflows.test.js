@@ -202,11 +202,6 @@ describe('User Workflows', () => {
     });
 
     it('should clear data on logout', () => {
-      const userData = {
-        name: 'John',
-        email: 'john@example.com',
-      };
-
       const cleared = {
         name: null,
         email: null,

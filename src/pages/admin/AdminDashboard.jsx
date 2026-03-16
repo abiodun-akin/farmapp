@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const formatNaira = (amount = 0) => `₦${Number(amount || 0).toLocaleString()}`;
 
@@ -9,15 +9,20 @@ const AdminDashboard = () => {
   const [flaggedMessages, setFlaggedMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const sagaApi = useSagaApi();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const dashboardRes = await adminApi.getDashboard();
-        const flaggedRes = await adminApi.getFlaggedMessages({ limit: 5, page: 1 });
+        const dashboardRes = await sagaApi({ service: "adminApi", method: "getDashboard" });
+        const flaggedRes = await sagaApi({
+          service: "adminApi",
+          method: "getFlaggedMessages",
+          args: [{ limit: 5, page: 1 }],
+        });
         setOverview(dashboardRes.data.overview);
         setFlaggedMessages(flaggedRes.data.messages || []);
-      } catch (err) {
+      } catch {
         setError("Unable to load admin dashboard");
       } finally {
         setLoading(false);
@@ -25,7 +30,7 @@ const AdminDashboard = () => {
     };
 
     load();
-  }, []);
+  }, [sagaApi]);
 
   return (
     <AdminLayout title="Admin Overview">

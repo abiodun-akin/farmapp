@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import Pagination from "../../components/Pagination";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminPaymentAnalytics = () => {
   const [stats, setStats] = useState(null);
@@ -12,44 +12,50 @@ const AdminPaymentAnalytics = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const sagaApi = useSagaApi();
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [days]);
-
-  useEffect(() => {
-    loadPendingPayments(currentPage);
-  }, []);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     try {
       setLoading(true);
-      const statsRes = await adminApi.getPaymentStats();
-      const dailyRes = await adminApi.getPaymentDailyStats(days);
+      const statsRes = await sagaApi({ service: "adminApi", method: "getPaymentStats" });
+      const dailyRes = await sagaApi({
+        service: "adminApi",
+        method: "getPaymentDailyStats",
+        args: [days],
+      });
 
       setStats(statsRes.data);
       setDailyStats(dailyRes.data.dailyStats);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Unable to load analytics");
     } finally {
       setLoading(false);
     }
-  };
+  }, [days, sagaApi]);
 
-  const loadPendingPayments = async (page = 1) => {
+  const loadPendingPayments = useCallback(async (page = 1) => {
     try {
-      const response = await adminApi.getPendingPayments({
-        limit: 10,
-        page,
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getPendingPayments",
+        args: [{ limit: 10, page }],
       });
       setPendingPayments(response.data.payments || []);
       setCurrentPage(response.data.pagination.page);
       setTotalPages(response.data.pagination.pages);
-    } catch (err) {
+    } catch {
       console.error("Unable to load pending payments");
     }
-  };
+  }, [sagaApi]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
+
+  useEffect(() => {
+    loadPendingPayments(currentPage);
+  }, [currentPage, loadPendingPayments]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

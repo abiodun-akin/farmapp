@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchAgentStatusRequest } from '../redux/slices/agentSlice';
-import { logout } from '../redux/slices/userSlice';
-import { userApi } from '../api/userApi';
+import { logoutRequest } from '../redux/slices/userSlice';
 import useSubscriptionStatus from '../hooks/useSubscriptionStatus';
 import { roleConfig } from '../config/theme';
 import FarmConnectLogo from './FarmConnectLogo';
@@ -115,16 +114,9 @@ function NavigationComponent() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleLogout = async () => {
-    try {
-      await userApi.logout();
-    } catch (error) {
-    }
-
-    dispatch(logout());
-    sessionStorage.clear();
-    // Force full page reload to clear all state
-    window.location.href = '/login';
+  const handleLogout = () => {
+    dispatch(logoutRequest({ reason: 'manual' }));
+    navigate('/login', { replace: true });
   };
 
   const renderIcon = (iconKey) => {

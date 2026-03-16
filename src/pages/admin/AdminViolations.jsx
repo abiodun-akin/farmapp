@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import Pagination from "../../components/Pagination";
-import { adminApi } from "../../api/adminApi";
 import { exportToCSV, prepareViolationsForCSV } from "../../utils/csvExport";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminViolations = () => {
   const [violations, setViolations] = useState([]);
@@ -10,14 +10,21 @@ const AdminViolations = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const sagaApi = useSagaApi();
 
-  const loadViolations = async (selectedType, page = 1) => {
+  const loadViolations = useCallback(async (selectedType, page = 1) => {
     try {
       setLoading(true);
-      const response = await adminApi.getViolations({ 
-        type: selectedType,
-        page,
-        limit: 15
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getViolations",
+        args: [
+          {
+            type: selectedType,
+            page,
+            limit: 15,
+          },
+        ],
       });
       setViolations(response.data.violations || []);
       setCurrentPage(response.data.pagination.page);
@@ -25,11 +32,11 @@ const AdminViolations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi]);
 
   useEffect(() => {
     loadViolations(type, 1);
-  }, [type]);
+  }, [type, loadViolations]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

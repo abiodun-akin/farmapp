@@ -4,7 +4,6 @@ const Slider = ({
   slides,
   currentSlide,
   setCurrentSlide,
-  isAutoplay,
   setIsAutoplay,
   navigate,
 }) => {

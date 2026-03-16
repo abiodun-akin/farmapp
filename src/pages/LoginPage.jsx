@@ -1,14 +1,14 @@
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { useEffect } from "react";
-import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { FaGoogle, FaWindows } from "react-icons/fa";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated } = useAuth();
+  const { login, loading, error, isAuthenticated, startSocialAuth } = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -120,14 +120,11 @@ const LoginPage = () => {
           </Flex>
 
           <Flex align="center" justify="between" wrap="wrap" gap="3">
-            <Button variant="outline" color="gray" highContrast>
+            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("google", "login")}>
               <FaGoogle /> Google
             </Button>
-            <Button variant="outline" color="gray" highContrast>
-              <FaFacebook /> facebook
-            </Button>
-            <Button variant="outline" color="gray" highContrast>
-              <FaApple /> Apple
+            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("microsoft", "login")}>
+              <FaWindows /> Microsoft
             </Button>
           </Flex>
         </div>

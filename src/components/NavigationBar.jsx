@@ -9,11 +9,6 @@ const NavigationBar = () => {
 
   const handleLogout = () => {
     logout();
-    // Clear local storage just in case
-    try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    } catch (e) {}
     navigate("/login");
   };
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminUserDetail = () => {
   const { userId } = useParams();
@@ -12,25 +12,34 @@ const AdminUserDetail = () => {
   const [reason, setReason] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [pwMsg, setPwMsg] = useState(null);
+  const sagaApi = useSagaApi();
 
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       setLoading(true);
-      const userRes = await adminApi.getUser(userId);
-      const reportRes = await adminApi.getUserActivityReport(userId);
+      const userRes = await sagaApi({
+        service: "adminApi",
+        method: "getUser",
+        args: [userId],
+      });
+      const reportRes = await sagaApi({
+        service: "adminApi",
+        method: "getUserActivityReport",
+        args: [userId],
+      });
       setUser(userRes.data.user);
       setReport(reportRes.data);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Unable to load user data");
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi, userId]);
 
   useEffect(() => {
     loadUser();
-  }, [userId]);
+  }, [loadUser]);
 
   const handleSuspend = async () => {
     if (!reason.trim()) {
@@ -39,28 +48,40 @@ const AdminUserDetail = () => {
     }
 
     try {
-      await adminApi.suspendUser(userId, reason);
+      await sagaApi({
+        service: "adminApi",
+        method: "suspendUser",
+        args: [userId, reason],
+      });
       setReason("");
       loadUser();
-    } catch (err) {
+    } catch {
       setError("Unable to suspend user");
     }
   };
 
   const handleUnsuspend = async () => {
     try {
-      await adminApi.unsuspendUser(userId);
+      await sagaApi({
+        service: "adminApi",
+        method: "unsuspendUser",
+        args: [userId],
+      });
       loadUser();
-    } catch (err) {
+    } catch {
       setError("Unable to unsuspend user");
     }
   };
 
   const handleRecordViolation = async (type) => {
     try {
-      await adminApi.recordViolation(userId, type);
+      await sagaApi({
+        service: "adminApi",
+        method: "recordViolation",
+        args: [userId, type],
+      });
       loadUser();
-    } catch (err) {
+    } catch {
       setError("Unable to record violation");
     }
   };
@@ -72,7 +93,11 @@ const AdminUserDetail = () => {
       return;
     }
     try {
-      await adminApi.resetUserPassword(userId, newPassword);
+      await sagaApi({
+        service: "adminApi",
+        method: "resetUserPassword",
+        args: [userId, newPassword],
+      });
       setNewPassword("");
       setPwMsg({ type: "success", text: "Password reset successfully" });
     } catch (err) {

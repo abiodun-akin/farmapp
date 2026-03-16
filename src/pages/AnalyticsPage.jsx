@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { userApi } from "../api/userApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total: 0, connected: 0, interested: 0 });
   const [loading, setLoading] = useState(true);
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const matchResponse = await userApi.getMatches();
+        const matchResponse = await sagaApi({ service: "userApi", method: "getMatches" });
 
         const matches = matchResponse.data?.matches || [];
         setStats({
@@ -27,7 +28,7 @@ const AnalyticsPage = () => {
     };
 
     load();
-  }, []);
+  }, [sagaApi]);
   const canViewAnalytics = canAccessFeature(subscriptionStatusType, "core");
 
   if (!canViewAnalytics && !loading && !subscriptionLoading) {

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../redux/slices/userSlice";
-import { userApi } from "../api/userApi";
+import { logoutRequest } from "../redux/slices/userSlice";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 
 const SettingsPage = () => {
   const dispatch = useDispatch();
@@ -13,37 +13,20 @@ const SettingsPage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
   const canUseSettings = canAccessFeature(subscriptionStatusType, "profile");
 
-  const handleLogout = async () => {
-    try {
-      await userApi.logout();
-    } catch (error) {
-    }
-
-    // Clear everything
-    dispatch(logout());
-    sessionStorage.clear();
-    // Force redirect and page reload to clear all state
-    window.location.href = "/login";
+  const handleLogout = () => {
+    dispatch(logoutRequest({ reason: "manual" }));
+    navigate("/login", { replace: true });
   };
 
   const handleRequestData = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/user/request-data", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        alert("Data export request submitted. You will receive an email with your data within 30 days.");
-      } else {
-        alert("Failed to submit data request. Please try again.");
-      }
+      await sagaApi({ service: "userApi", method: "requestDataExport" });
+      alert("Data export request submitted. You will receive an email with your data within 30 days.");
     } catch (err) {
       console.error("Error requesting data:", err);
       alert("Error submitting request. Please try again.");
@@ -60,28 +43,14 @@ const SettingsPage = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/user/request-delete-account", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reason: "User requested account deletion",
-        }),
+      await sagaApi({
+        service: "userApi",
+        method: "requestAccountDelete",
+        args: ["User requested account deletion"],
       });
-      if (response.ok) {
-        alert("Your account deletion request has been submitted. We will delete your account within 30 days.");
-        try {
-          await userApi.logout();
-        } catch (error) {
-        }
-        dispatch(logout());
-        sessionStorage.clear();
-        window.location.href = "/login";
-      } else {
-        alert("Failed to submit deletion request. Please try again.");
-      }
+      alert("Your account deletion request has been submitted. We will delete your account within 30 days.");
+      dispatch(logoutRequest({ reason: "manual", skipApi: true }));
+      window.location.href = "/login";
     } catch (err) {
       console.error("Error requesting account deletion:", err);
       alert("Error submitting request. Please try again.");

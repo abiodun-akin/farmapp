@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaTractor, FaStore } from "react-icons/fa";
 import "./ProfileTypeSelector.css";
-import { userApi } from "../api/userApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { setProfile } from "../redux/slices/userSlice";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 
 /**
  * Profile Type Selector Component
@@ -19,6 +19,7 @@ const ProfileTypeSelector = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   useEffect(() => {
@@ -29,19 +30,20 @@ const ProfileTypeSelector = () => {
       }
 
       try {
-        const response = await userApi.getProfile();
+        const response = await sagaApi({ service: "userApi", method: "getProfile" });
         const profile = response.data?.profile;
 
         if (profile?.profileType) {
           dispatch(setProfile(profile));
           navigate(`/profile/${profile.profileType}`);
         }
-      } catch (err) {
+      } catch {
+        // Ignore missing profile and allow manual type selection.
       }
     };
 
     syncProfile();
-  }, [user, navigate]);
+  }, [user, navigate, dispatch, sagaApi]);
 
   const canUseProfile = canAccessFeature(subscriptionStatusType, "profile");
 
@@ -51,7 +53,11 @@ const ProfileTypeSelector = () => {
     setErrorMessage(null);
 
     try {
-      const response = await userApi.initializeProfile(type);
+      const response = await sagaApi({
+        service: "userApi",
+        method: "initializeProfile",
+        args: [type],
+      });
       
       // Store profile type in redux
       dispatch(setProfile(response.data?.profile || { profileType: type }));

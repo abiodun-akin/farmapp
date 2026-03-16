@@ -32,10 +32,12 @@ import AdminAgents from "./pages/admin/AdminAgents";
 import AdminAgentDetail from "./pages/admin/AdminAgentDetail";
 import AgentEarnings from "./pages/AgentEarnings";
 import Toast from "./components/Toast";
+import AuthSessionManager from "./components/AuthSessionManager";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
 import MainLayout from "./layouts/MainLayout";
+import SocialAuthCallbackPage from "./pages/SocialAuthCallbackPage";
 
 function App() {
   return (
@@ -43,10 +45,12 @@ function App() {
       <Theme>
         <Router>
           <Toast />
+          <AuthSessionManager />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/social/callback" element={<SocialAuthCallbackPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route
               path="/payment"

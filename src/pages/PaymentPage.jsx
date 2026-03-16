@@ -2,10 +2,9 @@ import { Card, Flex, Text, Button } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { userApi } from "../api/userApi";
 import PaystackPayment from "../components/PaystackPayment";
 import FullPageLayout from "../layouts/FullPageLayout";
-import { logout } from "../redux/slices/userSlice";
+import { logoutRequest } from "../redux/slices/userSlice";
 import {
   fetchSubscriptionStatusRequest,
   successPaymentRequest,
@@ -59,7 +58,7 @@ const PaymentPage = () => {
         return (
           typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()
         );
-      } catch (err) {
+      } catch {
         return true;
       }
     };
@@ -67,11 +66,7 @@ const PaymentPage = () => {
     if (!isAuthenticated || isTokenExpired(token)) {
       // clear any stale auth and redirect to login with return path
       if (isTokenExpired(token)) {
-        // remove local auth state and show a helpful toast
-        userApi.logout().catch(() => {});
-        dispatch(logout());
-        sessionStorage.clear();
-        addToast("Session expired — please sign in again", "warning");
+        dispatch(logoutRequest({ reason: "expired", skipApi: true }));
       }
 
       navigate("/login", {

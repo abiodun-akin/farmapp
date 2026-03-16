@@ -1,9 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-import { userApi } from "../api/userApi";
 import {
   clearError,
+  fetchSessionRequest,
   loginRequest,
-  logout,
+  logoutRequest,
+  socialAuthStartRequest,
   signupRequest,
 } from "../redux/slices/userSlice";
 
@@ -23,14 +24,16 @@ export const useAuth = () => {
     dispatch(loginRequest({ email, password }));
   };
 
-  const handleLogout = async () => {
-    try {
-      await userApi.logout();
-    } catch (error) {
-    }
+  const handleLogout = (reason = "manual") => {
+    dispatch(logoutRequest({ reason }));
+  };
 
-    dispatch(logout());
-    sessionStorage.clear();
+  const restoreSession = () => {
+    dispatch(fetchSessionRequest());
+  };
+
+  const startSocialAuth = (provider, mode = "login") => {
+    dispatch(socialAuthStartRequest({ provider, mode }));
   };
 
   const handleClearError = () => {
@@ -46,6 +49,8 @@ export const useAuth = () => {
     signup,
     login,
     logout: handleLogout,
+    restoreSession,
+    startSocialAuth,
     clearError: handleClearError,
   };
 };

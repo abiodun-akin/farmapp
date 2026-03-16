@@ -20,7 +20,7 @@ const localStorageMock = {
   clear: vi.fn(),
 };
 
-global.localStorage = localStorageMock;
+globalThis.localStorage = localStorageMock;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -38,7 +38,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Suppress console warnings in tests (optional)
-global.console = {
+globalThis.console = {
   ...console,
   warn: vi.fn(),
   error: vi.fn(),
@@ -46,8 +46,12 @@ global.console = {
 };
 
 // Setup environment variables for tests
-process.env.VITE_API_URL = 'http://localhost:8888';
-process.env.VITE_PAYSTACK_PUBLIC_KEY = 'test-key';
+if (!globalThis.process) {
+  globalThis.process = { env: {} };
+}
+globalThis.process.env = globalThis.process.env || {};
+globalThis.process.env.VITE_API_URL = 'http://localhost:8888';
+globalThis.process.env.VITE_PAYSTACK_PUBLIC_KEY = 'test-key';
 
 // Custom matchers
 expect.extend({

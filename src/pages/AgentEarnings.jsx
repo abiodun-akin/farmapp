@@ -138,7 +138,7 @@ const AgentEarnings = () => {
   }
 
   const wallet = agentWallet || { availableBalance: 0, lifetimeEarned: 0 };
-  const withdrawalThreshold = parseInt(process.env.REACT_APP_AGENT_WITHDRAWAL_THRESHOLD) || 5000;
+  const withdrawalThreshold = Number(import.meta.env.VITE_AGENT_WITHDRAWAL_THRESHOLD || 5000);
   const canWithdraw = wallet.availableBalance >= withdrawalThreshold;
 
   return (

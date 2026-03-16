@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminAgentDetail = () => {
   const { agentId } = useParams();
@@ -19,14 +19,15 @@ const AdminAgentDetail = () => {
     maxRedemptions: "",
     validTo: "",
   });
+  const sagaApi = useSagaApi();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const [agentRes, promoRes] = await Promise.all([
-        adminApi.getUser(agentId),
-        adminApi.getAgentPromoCodes(agentId),
+        sagaApi({ service: "adminApi", method: "getUser", args: [agentId] }),
+        sagaApi({ service: "adminApi", method: "getAgentPromoCodes", args: [agentId] }),
       ]);
       setAgent(agentRes.data.user);
       setPromoCodes(promoRes.data.promoCodes || []);
@@ -35,11 +36,11 @@ const AdminAgentDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [agentId, sagaApi]);
 
   useEffect(() => {
     load();
-  }, [agentId]);
+  }, [load]);
 
   const handleCreatePromo = async () => {
     setPromoMsg(null);
@@ -48,14 +49,21 @@ const AdminAgentDetail = () => {
       return;
     }
     try {
-      await adminApi.createAgentPromoCode(agentId, {
-        code: newCode.code.trim().toUpperCase() || undefined, // omit to auto-generate
-        rebateType: newCode.rebateType,
-        rebateValue: Number(newCode.rebateValue),
-        maxRedemptions: newCode.maxRedemptions
-          ? Number(newCode.maxRedemptions)
-          : null,
-        validTo: newCode.validTo || null,
+      await sagaApi({
+        service: "adminApi",
+        method: "createAgentPromoCode",
+        args: [
+          agentId,
+          {
+            code: newCode.code.trim().toUpperCase() || undefined,
+            rebateType: newCode.rebateType,
+            rebateValue: Number(newCode.rebateValue),
+            maxRedemptions: newCode.maxRedemptions
+              ? Number(newCode.maxRedemptions)
+              : null,
+            validTo: newCode.validTo || null,
+          },
+        ],
       });
       setNewCode({
         code: "",

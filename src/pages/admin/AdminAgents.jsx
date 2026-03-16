@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const TABS = [
   { key: "applications", label: "Applications" },
@@ -30,14 +30,15 @@ const AdminAgents = () => {
   const [notes, setNotes] = useState({});
   const [actionMsg, setActionMsg] = useState(null);
   const navigate = useNavigate();
+  const sagaApi = useSagaApi();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const [appsRes, wdRes] = await Promise.all([
-        adminApi.getAgentApplications(),
-        adminApi.getAgentWithdrawals(),
+        sagaApi({ service: "adminApi", method: "getAgentApplications" }),
+        sagaApi({ service: "adminApi", method: "getAgentWithdrawals" }),
       ]);
       setApplications(appsRes.data.applications || []);
       setWithdrawals(wdRes.data.withdrawals || []);
@@ -46,16 +47,20 @@ const AdminAgents = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const reviewApplication = async (id, decision) => {
     setActionMsg(null);
     try {
-      await adminApi.reviewAgentApplication(id, decision, notes[id] || "");
+      await sagaApi({
+        service: "adminApi",
+        method: "reviewAgentApplication",
+        args: [id, decision, notes[id] || ""],
+      });
       setActionMsg({ type: "success", text: `Application ${decision}` });
       load();
     } catch (err) {
@@ -69,7 +74,11 @@ const AdminAgents = () => {
   const reviewWithdrawal = async (id, decision) => {
     setActionMsg(null);
     try {
-      await adminApi.reviewAgentWithdrawal(id, decision, notes[id] || "");
+      await sagaApi({
+        service: "adminApi",
+        method: "reviewAgentWithdrawal",
+        args: [id, decision, notes[id] || ""],
+      });
       setActionMsg({ type: "success", text: `Withdrawal marked as ${decision}` });
       load();
     } catch (err) {

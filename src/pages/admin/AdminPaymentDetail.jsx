@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
-import { adminApi } from "../../api/adminApi";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminPaymentDetail = () => {
   const { paymentId } = useParams();
@@ -14,23 +14,28 @@ const AdminPaymentDetail = () => {
   const [disputeReason, setDisputeReason] = useState("");
   const [disputeEvidence, setDisputeEvidence] = useState("");
   const [activeTab, setActiveTab] = useState("details");
+  const sagaApi = useSagaApi();
 
-  useEffect(() => {
-    loadPayment();
-  }, [paymentId]);
-
-  const loadPayment = async () => {
+  const loadPayment = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await adminApi.getPayment(paymentId);
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getPayment",
+        args: [paymentId],
+      });
       setPayment(response.data.payment);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Unable to load payment details");
     } finally {
       setLoading(false);
     }
-  };
+  }, [paymentId, sagaApi]);
+
+  useEffect(() => {
+    loadPayment();
+  }, [loadPayment]);
 
   const handleVerify = async () => {
     if (
@@ -43,7 +48,11 @@ const AdminPaymentDetail = () => {
 
     try {
       setActionLoading(true);
-      await adminApi.verifyPayment(paymentId);
+      await sagaApi({
+        service: "adminApi",
+        method: "verifyPayment",
+        args: [paymentId],
+      });
       alert("Payment verified successfully");
       loadPayment();
     } catch (err) {
@@ -69,7 +78,11 @@ const AdminPaymentDetail = () => {
 
     try {
       setActionLoading(true);
-      await adminApi.refundPayment(paymentId, refundReason);
+      await sagaApi({
+        service: "adminApi",
+        method: "refundPayment",
+        args: [paymentId, refundReason],
+      });
       alert("Refund initiated successfully");
       setRefundReason("");
       loadPayment();
@@ -88,7 +101,11 @@ const AdminPaymentDetail = () => {
 
     try {
       setActionLoading(true);
-      await adminApi.disputePayment(paymentId, disputeReason, disputeEvidence);
+      await sagaApi({
+        service: "adminApi",
+        method: "disputePayment",
+        args: [paymentId, disputeReason, disputeEvidence],
+      });
       alert("Dispute recorded successfully");
       setDisputeReason("");
       setDisputeEvidence("");

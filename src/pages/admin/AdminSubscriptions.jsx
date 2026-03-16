@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import Pagination from "../../components/Pagination";
-import { adminApi } from "../../api/adminApi";
 import { exportToCSV } from "../../utils/csvExport";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminSubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const sagaApi = useSagaApi();
 
-  const loadSubscriptions = async (page = 1) => {
+  const loadSubscriptions = useCallback(async (page = 1) => {
     try {
       setLoading(true);
-      const response = await adminApi.getSubscriptionsCancelled({ 
-        limit: 15, 
-        page 
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getSubscriptionsCancelled",
+        args: [{ limit: 15, page }],
       });
       setSubscriptions(response.data.subscriptions || []);
       setCurrentPage(response.data.pagination.page);
@@ -23,11 +25,11 @@ const AdminSubscriptions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi]);
 
   useEffect(() => {
     loadSubscriptions(1);
-  }, []);
+  }, [loadSubscriptions]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

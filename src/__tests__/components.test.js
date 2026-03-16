@@ -66,12 +66,11 @@ describe('Component Utilities', () => {
 
     it('should handle form submission', () => {
       let submitted = false;
-      const handleSubmit = (e) => {
+      const handleSubmit = () => {
         submitted = true;
       };
 
-      const event = {};
-      handleSubmit(event);
+      handleSubmit();
       expect(submitted).toBe(true);
     });
 

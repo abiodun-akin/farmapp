@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/paymentSlice";
@@ -27,11 +27,46 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
   }, []);
 
   // Watch for payment data and open modal when it's ready
+  const openPaystackModal = useCallback(() => {
+    if (!paymentData?.paymentData?.reference) {
+      console.error("No payment reference available");
+      setPaymentInProgress(false);
+      return;
+    }
+
+    const reference = paymentData.paymentData.reference;
+
+    const handler = window.PaystackPop.setup({
+      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+      email: user?.email || "user@example.com",
+      amount: amount * 100,
+      currency: "NGN",
+      ref: reference,
+      metadata: {
+        plan,
+        reference,
+      },
+      callback: function (response) {
+        console.log("Payment successful:", response);
+        setPaymentInProgress(false);
+        setPendingVerificationRef(response.reference);
+        dispatch(verifyPaymentRequest({ reference: response.reference, plan }));
+      },
+      onClose: function () {
+        console.log("Payment modal closed");
+        setPaymentInProgress(false);
+        onClose();
+      },
+    });
+
+    handler.openIframe();
+  }, [amount, dispatch, onClose, paymentData, plan, user?.email]);
+
   useEffect(() => {
     if (paymentInProgress && !loading && paymentData && !error) {
       openPaystackModal();
     }
-  }, [paymentData, loading, paymentInProgress, error]);
+  }, [paymentData, loading, paymentInProgress, error, openPaystackModal]);
 
   const initializePayment = async () => {
     if (!window.PaystackPop) {
@@ -72,41 +107,6 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
       setPendingVerificationRef(null);
     }
   }, [pendingVerificationRef, loading, verifyResult, error, onSuccess, plan, addToast]);
-
-  const openPaystackModal = () => {
-    if (!paymentData?.paymentData?.reference) {
-      console.error("No payment reference available");
-      setPaymentInProgress(false);
-      return;
-    }
-
-    const reference = paymentData.paymentData.reference;
-
-    const handler = window.PaystackPop.setup({
-      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-      email: user?.email || "user@example.com",
-      amount: amount * 100,
-      currency: "NGN",
-      ref: reference,
-      metadata: {
-        plan,
-        reference,
-      },
-      callback: function (response) {
-        console.log("Payment successful:", response);
-        setPaymentInProgress(false);
-        setPendingVerificationRef(response.reference);
-        dispatch(verifyPaymentRequest({ reference: response.reference, plan }));
-      },
-      onClose: function () {
-        console.log("Payment modal closed");
-        setPaymentInProgress(false);
-        onClose();
-      },
-    });
-
-    handler.openIframe();
-  };
 
   const isProcessing = loading || paymentInProgress;
   const isDisabled = isProcessing || !paystackReady;

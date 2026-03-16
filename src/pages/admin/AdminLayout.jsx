@@ -3,8 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
-import { logout } from "../../redux/slices/userSlice";
-import { userApi } from "../../api/userApi";
+import { logoutRequest } from "../../redux/slices/userSlice";
 import FarmConnectLogo from "../../components/FarmConnectLogo";
 import "./AdminLayout.css";
 
@@ -12,13 +11,8 @@ const AdminLayout = ({ title, children }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await userApi.logout();
-    } catch (_error) {
-    }
-
-    dispatch(logout());
+  const handleLogout = () => {
+    dispatch(logoutRequest({ reason: "manual" }));
     navigate("/login", { replace: true });
   };
 

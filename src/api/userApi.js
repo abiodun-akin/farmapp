@@ -1,4 +1,5 @@
 import api from "../config/api";
+import { API_REST_BASE_URL } from "../config/api";
 
 // User API endpoints
 export const userAPI = {
@@ -8,6 +9,11 @@ export const userAPI = {
   login: (email, password) => api.post("/auth/login", { email, password }),
 
   logout: () => api.post("/auth/logout"),
+
+  getSession: () => api.get("/auth/session"),
+
+  getSocialAuthUrl: (provider, mode = "login") =>
+    `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
 };
 
 // Profile API endpoints
@@ -19,6 +25,11 @@ export const userApi = {
   login: (email, password) => api.post("/auth/login", { email, password }),
 
   logout: () => api.post("/auth/logout"),
+
+  getSession: () => api.get("/auth/session"),
+
+  getSocialAuthUrl: (provider, mode = "login") =>
+    `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
 
   // Profile management
   initializeProfile: (profileType) =>
@@ -35,6 +46,11 @@ export const userApi = {
   getPublicProfile: (userId) => api.get(`/profile/${userId}`),
 
   updateProfile: (profileData) => api.put("/profile", profileData),
+
+  requestDataExport: () => api.post("/user/request-data"),
+
+  requestAccountDelete: (reason) =>
+    api.post("/user/request-delete-account", { reason }),
 
   // Matching
   getMatches: (params = {}) =>

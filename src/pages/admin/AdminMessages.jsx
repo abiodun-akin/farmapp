@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import Pagination from "../../components/Pagination";
-import { adminApi } from "../../api/adminApi";
 import { exportToCSV, prepareMessagesForCSV } from "../../utils/csvExport";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState([]);
@@ -10,28 +10,30 @@ const AdminMessages = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const sagaApi = useSagaApi();
 
-  const loadMessages = async (page = 1) => {
+  const loadMessages = useCallback(async (page = 1) => {
     try {
       setLoading(true);
-      const response = await adminApi.getFlaggedMessages({ 
-        limit: 15, 
-        page 
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getFlaggedMessages",
+        args: [{ limit: 15, page }],
       });
       setMessages(response.data.messages || []);
       setCurrentPage(response.data.pagination.page);
       setTotalPages(response.data.pagination.pages);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Unable to load flagged messages");
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi]);
 
   useEffect(() => {
     loadMessages(1);
-  }, []);
+  }, [loadMessages]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -41,9 +43,13 @@ const AdminMessages = () => {
 
   const handleAction = async (messageId, action) => {
     try {
-      await adminApi.approveMessage(messageId, action);
+      await sagaApi({
+        service: "adminApi",
+        method: "approveMessage",
+        args: [messageId, action],
+      });
       loadMessages(currentPage);
-    } catch (err) {
+    } catch {
       setError("Unable to update message status");
     }
   };

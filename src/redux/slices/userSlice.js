@@ -65,6 +65,39 @@ const userSlice = createSlice({
       localStorage.removeItem("user");
     },
 
+    fetchSessionRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchSessionSuccess: (state, action) => {
+      const { user, token } = action.payload;
+      state.loading = false;
+      state.error = null;
+      state.user = user;
+      state.token = token;
+      state.isAuthenticated = true;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    },
+    fetchSessionFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    },
+
+    socialAuthStartRequest: (state) => {
+      state.error = null;
+    },
+
+    logoutRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+
     // Logout
     logout: (state) => {
       state.user = null;
@@ -116,6 +149,11 @@ export const {
   loginRequest,
   loginSuccess,
   loginFailure,
+  fetchSessionRequest,
+  fetchSessionSuccess,
+  fetchSessionFailure,
+  socialAuthStartRequest,
+  logoutRequest,
   logout,
   clearError,
   setProfile,

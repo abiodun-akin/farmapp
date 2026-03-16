@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import "./VendorProfileForm.css";
-import { userApi } from "../api/userApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { useForm } from "../hooks/useForm";
 import { setProfile } from "../redux/slices/userSlice";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 import {
   nigerianStates,
   vendorBusinessTypes,
@@ -23,12 +23,12 @@ import {
 const VendorProfileForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [customInterests, setCustomInterests] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
@@ -61,7 +61,7 @@ const VendorProfileForm = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await userApi.getProfile();
+        const response = await sagaApi({ service: "userApi", method: "getProfile" });
         const profile = response.data?.profile;
 
         if (!profile || profile.profileType !== "vendor") {
@@ -90,12 +90,13 @@ const VendorProfileForm = () => {
         setCustomInterests(profile.vendorDetails?.otherInterests || "");
 
         dispatch(setProfile(profile));
-      } catch (err) {
+      } catch {
+        // Profile may not exist yet for first-time users.
       }
     };
 
     loadProfile();
-  }, []);
+  }, [dispatch, handleArrayChange, sagaApi]);
 
   /**
    * Handle multi-select for nested arrays
@@ -182,7 +183,11 @@ const VendorProfileForm = () => {
         },
       };
 
-      const response = await userApi.completeVendorProfile(submitData);
+      const response = await sagaApi({
+        service: "userApi",
+        method: "completeVendorProfile",
+        args: [submitData],
+      });
 
       setSuccess(true);
 

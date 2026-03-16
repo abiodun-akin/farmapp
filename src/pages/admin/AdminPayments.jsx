@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
 import Pagination from "../../components/Pagination";
-import { adminApi } from "../../api/adminApi";
 import { exportToCSV, preparePaymentsForCSV } from "../../utils/csvExport";
+import useSagaApi from "../../hooks/useSagaApi";
 
 const AdminPayments = () => {
   const [payments, setPayments] = useState([]);
@@ -14,30 +14,37 @@ const AdminPayments = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
+  const sagaApi = useSagaApi();
 
-  const loadPayments = async (page = 1, filterStatus = "all", searchTerm = "") => {
+  const loadPayments = useCallback(async (page = 1, filterStatus = "all", searchTerm = "") => {
     try {
       setLoading(true);
-      const response = await adminApi.getPayments({
-        status: filterStatus,
-        search: searchTerm,
-        page,
-        limit: 15,
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "getPayments",
+        args: [
+          {
+            status: filterStatus,
+            search: searchTerm,
+            page,
+            limit: 15,
+          },
+        ],
       });
       setPayments(response.data.payments || []);
       setCurrentPage(response.data.pagination.page);
       setTotalPages(response.data.pagination.pages);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Unable to load payments");
     } finally {
       setLoading(false);
     }
-  };
+  }, [sagaApi]);
 
   useEffect(() => {
-    loadPayments(1, status, search);
-  }, []);
+    loadPayments();
+  }, [loadPayments]);
 
   const handleSearch = (e) => {
     e.preventDefault();

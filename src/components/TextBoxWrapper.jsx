@@ -4,7 +4,6 @@ function TextBoxWrapper({
   fieldType,
   fieldName,
   fieldId,
-  handleChange,
   ...props
 }) {
   return (

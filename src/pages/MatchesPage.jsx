@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { userApi } from "../api/userApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 
 const MatchesPage = ({ title = "Matches" }) => {
   const navigate = useNavigate();
@@ -11,12 +11,13 @@ const MatchesPage = ({ title = "Matches" }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const matchResponse = await userApi.getMatches();
+        const matchResponse = await sagaApi({ service: "userApi", method: "getMatches" });
         setMatches(matchResponse.data?.matches || []);
       } catch (err) {
         setError(err.response?.data?.error || "Unable to load matches");
@@ -26,7 +27,7 @@ const MatchesPage = ({ title = "Matches" }) => {
     };
 
     loadData();
-  }, []);
+  }, [sagaApi]);
   const canViewMatches = canAccessFeature(subscriptionStatusType, "core");
 
   if (loading || subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;

@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { userApi } from "../api/userApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { API_BASE_URL } from "../config/api";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import useSagaApi from "../hooks/useSagaApi";
 
 const MessagesPage = () => {
   const navigate = useNavigate();
@@ -16,7 +16,8 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
+  const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   const selectedConversation = useMemo(
@@ -32,12 +33,10 @@ const MessagesPage = () => {
     const loadConversations = async () => {
       setLoading(true);
       try {
-        const response = await userApi.getConversations();
+        const response = await sagaApi({ service: "userApi", method: "getConversations" });
         const list = response.data?.conversations || [];
         setConversations(list);
-        if (!selectedMatchId && list.length > 0) {
-          setSelectedMatchId(list[0].match_id);
-        }
+        setSelectedMatchId((prev) => prev || list[0]?.match_id || "");
       } catch (err) {
         setError(err.response?.data?.error || "Unable to load conversations");
       } finally {
@@ -46,7 +45,7 @@ const MessagesPage = () => {
     };
 
     loadConversations();
-  }, [canUseMessaging]);
+  }, [canUseMessaging, sagaApi]);
 
   useEffect(() => {
     if (!selectedMatchId || !canUseMessaging) {
@@ -56,7 +55,11 @@ const MessagesPage = () => {
 
     const loadMessages = async () => {
       try {
-        const response = await userApi.getMessages(selectedMatchId);
+        const response = await sagaApi({
+          service: "userApi",
+          method: "getMessages",
+          args: [selectedMatchId],
+        });
         setMessages(response.data?.messages || []);
       } catch (err) {
         setError(err.response?.data?.error || "Unable to load messages");
@@ -64,13 +67,13 @@ const MessagesPage = () => {
     };
 
     loadMessages();
-  }, [selectedMatchId, canUseMessaging]);
+  }, [selectedMatchId, canUseMessaging, sagaApi]);
 
   useEffect(() => {
     if (!canUseMessaging) {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
       }
       return;
     }
@@ -93,15 +96,16 @@ const MessagesPage = () => {
       });
     });
 
-    setSocket(socketClient);
+    socketRef.current = socketClient;
 
     return () => {
       socketClient.disconnect();
-      setSocket(null);
+      socketRef.current = null;
     };
   }, [canUseMessaging, selectedMatchId]);
 
   useEffect(() => {
+    const socket = socketRef.current;
     if (!socket || !selectedMatchId || !canUseMessaging) return undefined;
 
     socket.emit("join-conversation", { matchId: selectedMatchId });
@@ -109,7 +113,7 @@ const MessagesPage = () => {
     return () => {
       socket.emit("leave-conversation", { matchId: selectedMatchId });
     };
-  }, [socket, selectedMatchId, canUseMessaging]);
+  }, [selectedMatchId, canUseMessaging]);
 
   const handleSend = async () => {
     if (!selectedMatchId || !newMessage.trim()) {
@@ -117,13 +121,17 @@ const MessagesPage = () => {
     }
 
     try {
-      if (socket?.connected) {
-        socket.emit("send-message", {
+      if (socketRef.current?.connected) {
+        socketRef.current.emit("send-message", {
           matchId: selectedMatchId,
           content: newMessage.trim(),
         });
       } else {
-        await userApi.sendMessage(selectedMatchId, newMessage.trim());
+        await sagaApi({
+          service: "userApi",
+          method: "sendMessage",
+          args: [selectedMatchId, newMessage.trim()],
+        });
       }
       setNewMessage("");
     } catch (err) {

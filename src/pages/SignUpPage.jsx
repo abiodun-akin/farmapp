@@ -1,14 +1,14 @@
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { useEffect } from "react";
-import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { FaGoogle, FaWindows } from "react-icons/fa";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { signup, loading, error, isAuthenticated } = useAuth();
+  const { signup, loading, error, isAuthenticated, startSocialAuth } = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -16,14 +16,8 @@ const SignUpPage = () => {
     signup(data.name, data.email, data.password, data.promoCode || null);
   };
 
-  // Log state changes after Redux updates
   useEffect(() => {
-    console.log("Authenticated:", isAuthenticated);
-    console.log("Error:", error);
-
-    // Redirect to home page on successful signup
     if (isAuthenticated && !error) {
-      console.log("Signup successful, redirecting to home...");
       navigate("/");
     }
   }, [isAuthenticated, error, navigate]);
@@ -162,14 +156,11 @@ const SignUpPage = () => {
           </Flex>
 
           <Flex align="center" justify="between" wrap="wrap" gap="3">
-            <Button variant="outline" color="gray" highContrast>
+            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("google", "signup")}>
               <FaGoogle /> Google
             </Button>
-            <Button variant="outline" color="gray" highContrast>
-              <FaFacebook /> facebook
-            </Button>
-            <Button variant="outline" color="gray" highContrast>
-              <FaApple /> Apple
+            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("microsoft", "signup")}>
+              <FaWindows /> Microsoft
             </Button>
           </Flex>
         </div>
