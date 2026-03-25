@@ -8,6 +8,15 @@ export const userAPI = {
 
   login: (email, password) => api.post("/auth/login", { email, password }),
 
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+
+  resetPassword: (token, password) =>
+    api.post("/auth/reset-password", { token, password }),
+
+  sendVerificationEmail: () => api.post("/auth/send-verification"),
+
+  verifyEmail: (token) => api.post("/auth/verify-email", { token }),
+
   logout: () => api.post("/auth/logout"),
 
   getSession: () => api.get("/auth/session"),
@@ -23,6 +32,15 @@ export const userApi = {
     api.post("/auth/signup", { name, email, password, promoCode }),
 
   login: (email, password) => api.post("/auth/login", { email, password }),
+
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+
+  resetPassword: (token, password) =>
+    api.post("/auth/reset-password", { token, password }),
+
+  sendVerificationEmail: () => api.post("/auth/send-verification"),
+
+  verifyEmail: (token) => api.post("/auth/verify-email", { token }),
 
   logout: () => api.post("/auth/logout"),
 
@@ -70,14 +88,22 @@ export const userApi = {
     api.post("/matches/create-from-interest", { farmerId, vendorId, reason }),
 
   // Messaging
-  sendMessage: (matchId, content) =>
-    api.post("/messages/send", { match_id: matchId, content }),
+  sendMessage: (matchId, content, attachment = null) =>
+    api.post("/messages/send", { match_id: matchId, content, attachment }),
 
   getConversations: (pagination = {}) =>
     api.get("/messages/conversations", { params: pagination }),
 
   getMessages: (matchId, pagination = {}) =>
     api.get(`/messages/${matchId}`, { params: pagination }),
+
+  searchMessages: (matchId, query, pagination = {}) =>
+    api.get(`/messages/${matchId}/search`, {
+      params: {
+        q: query,
+        ...pagination,
+      },
+    }),
 
   flagMessage: (messageId, reason) =>
     api.put(`/messages/${messageId}/flag`, { reason }),

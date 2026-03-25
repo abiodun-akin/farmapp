@@ -3,7 +3,10 @@ import "@radix-ui/themes/styles.css";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./index.css";
 import Landing from "./pages/Landing";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import LoginPage from "./pages/LoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import SignUpPage from "./pages/SignUpPage";
 import PricingPage from "./pages/PricingPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -50,6 +53,9 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/auth/social/callback" element={<SocialAuthCallbackPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route

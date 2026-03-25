@@ -108,6 +108,12 @@ const LoginPage = () => {
                 <RouterLink to="/signup">Create Account</RouterLink>
               </Link>
             </Text>
+            <Text size="2" color="gray">
+              Forgot your password?{" "}
+              <Link asChild ml="1">
+                <RouterLink to="/forgot-password">Reset it</RouterLink>
+              </Link>
+            </Text>
             <Text size="2" color="gray" align={"center"}>
               By signing in, you agree to our <Link href="#">Terms</Link>.
             </Text>

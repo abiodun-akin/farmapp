@@ -1,5 +1,6 @@
 import React from 'react';
 import Navigation from '../components/Navigation';
+import EmailVerificationBanner from '../components/EmailVerificationBanner';
 import './MainLayout.css';
 
 /**
@@ -21,6 +22,7 @@ function MainLayout({ children }) {
       }}
     >
       <Navigation />
+      <EmailVerificationBanner />
       <main className="main-content">
         {children}
       </main>

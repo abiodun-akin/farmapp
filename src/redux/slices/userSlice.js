@@ -7,6 +7,11 @@ const initialState = {
   token: localStorage.getItem("token") || null,
   loading: false,
   error: null,
+  statusMessage: null,
+  passwordResetRequested: false,
+  passwordResetCompleted: false,
+  emailVerificationSent: false,
+  emailVerified: false,
   isAuthenticated: !!(
     localStorage.getItem("token") && localStorage.getItem("user")
   ),
@@ -20,6 +25,7 @@ const userSlice = createSlice({
     signupRequest: (state) => {
       state.loading = true;
       state.error = null;
+      state.statusMessage = null;
       state.isAuthenticated = false;
     },
     signupSuccess: (state, action) => {
@@ -34,6 +40,7 @@ const userSlice = createSlice({
     signupFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
+      state.statusMessage = null;
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
@@ -45,6 +52,7 @@ const userSlice = createSlice({
     loginRequest: (state) => {
       state.loading = true;
       state.error = null;
+      state.statusMessage = null;
     },
     loginSuccess: (state, action) => {
       const { user, token } = action.payload;
@@ -58,6 +66,7 @@ const userSlice = createSlice({
     loginFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
+      state.statusMessage = null;
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
@@ -93,6 +102,99 @@ const userSlice = createSlice({
       state.error = null;
     },
 
+    forgotPasswordRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.statusMessage = null;
+      state.passwordResetRequested = false;
+    },
+    forgotPasswordSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = action.payload;
+      state.passwordResetRequested = true;
+    },
+    forgotPasswordFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.statusMessage = null;
+      state.passwordResetRequested = false;
+    },
+
+    resetPasswordRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.statusMessage = null;
+      state.passwordResetCompleted = false;
+    },
+    resetPasswordSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = action.payload;
+      state.passwordResetCompleted = true;
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      sessionStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("profile");
+      localStorage.removeItem("subscription");
+      Object.keys(localStorage).forEach((key) => {
+        if (key !== "theme") {
+          localStorage.removeItem(key);
+        }
+      });
+    },
+    resetPasswordFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.statusMessage = null;
+      state.passwordResetCompleted = false;
+    },
+
+    sendVerificationRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.statusMessage = null;
+      state.emailVerificationSent = false;
+    },
+    sendVerificationSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = action.payload;
+      state.emailVerificationSent = true;
+    },
+    sendVerificationFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.statusMessage = null;
+      state.emailVerificationSent = false;
+    },
+
+    verifyEmailRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.statusMessage = null;
+      state.emailVerified = false;
+    },
+    verifyEmailSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = action.payload;
+      state.emailVerified = true;
+      if (state.user) {
+        state.user = { ...state.user, isEmailVerified: true };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
+    verifyEmailFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.statusMessage = null;
+      state.emailVerified = false;
+    },
+
     logoutRequest: (state) => {
       state.loading = true;
       state.error = null;
@@ -105,6 +207,9 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      state.statusMessage = null;
+      state.passwordResetRequested = false;
+      state.passwordResetCompleted = false;
       sessionStorage.clear();
       // Clear all auth-related localStorage
       localStorage.removeItem("token");
@@ -139,6 +244,15 @@ const userSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+
+    clearAuthFeedback: (state) => {
+      state.error = null;
+      state.statusMessage = null;
+      state.passwordResetRequested = false;
+      state.passwordResetCompleted = false;
+      state.emailVerificationSent = false;
+      state.emailVerified = false;
+    },
   },
 });
 
@@ -153,9 +267,22 @@ export const {
   fetchSessionSuccess,
   fetchSessionFailure,
   socialAuthStartRequest,
+  forgotPasswordRequest,
+  forgotPasswordSuccess,
+  forgotPasswordFailure,
+  resetPasswordRequest,
+  resetPasswordSuccess,
+  resetPasswordFailure,
+  sendVerificationRequest,
+  sendVerificationSuccess,
+  sendVerificationFailure,
+  verifyEmailRequest,
+  verifyEmailSuccess,
+  verifyEmailFailure,
   logoutRequest,
   logout,
   clearError,
+  clearAuthFeedback,
   setProfile,
   updateProfileSuccess,
 } = userSlice.actions;

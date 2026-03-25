@@ -15,6 +15,7 @@ import {
   certifications,
   getLGAsForState,
 } from "../data/nigerianGeoData";
+import { africanCountries } from "../data/africanCountries";
 
 /**
  * Vendor Profile Form Component
@@ -33,6 +34,7 @@ const VendorProfileForm = () => {
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
+    country: "Nigeria",
     location: "",
     state: "",
     lga: "",
@@ -58,6 +60,8 @@ const VendorProfileForm = () => {
     ? getLGAsForState(formData.state)
     : [];
 
+  const isNigeria = formData.country === "Nigeria";
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -69,6 +73,7 @@ const VendorProfileForm = () => {
         }
 
         handleArrayChange("phone", profile.phone || "");
+        handleArrayChange("country", profile.country || "Nigeria");
         handleArrayChange("location", profile.location || "");
         handleArrayChange("state", profile.state || "");
         handleArrayChange("lga", profile.lga || "");
@@ -155,11 +160,11 @@ const VendorProfileForm = () => {
 
     try {
       // Validate required fields
-      if (!formData.phone || !formData.location || !formData.state) {
+      if (!formData.phone || !formData.location || !formData.country || !formData.state) {
         throw new Error("Please fill in all required fields");
       }
 
-      if (!formData.lga) {
+      if (isNigeria && !formData.lga) {
         throw new Error("Please select your Local Government Area");
       }
 
@@ -277,6 +282,28 @@ const VendorProfileForm = () => {
           <h2>Contact & Location</h2>
 
           <div className="form-group">
+            <label htmlFor="country">Country *</label>
+            <select
+              id="country"
+              name="country"
+              value={formData.country}
+              onChange={(event) => {
+                handleChange(event);
+                handleArrayChange("state", "");
+                handleArrayChange("lga", "");
+              }}
+              required
+            >
+              <option value="">Select Country</option>
+              {africanCountries.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="phone">Phone Number *</label>
             <input
               type="tel"
@@ -292,47 +319,61 @@ const VendorProfileForm = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="state">State *</label>
-              <select
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select State</option>
-                {nigerianStates.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="state">State/Region *</label>
+              {isNigeria ? (
+                <select
+                  id="state"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select State</option>
+                  {nigerianStates.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id="state"
+                  name="state"
+                  type="text"
+                  value={formData.state}
+                  onChange={handleChange}
+                  placeholder="Enter state or region"
+                  required
+                />
+              )}
               {errors.state && <span className="error">{errors.state}</span>}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="lga">Local Government Area *</label>
-              <select
-                id="lga"
-                name="lga"
-                value={formData.lga}
-                onChange={handleChange}
-                required
-                disabled={!formData.state}
-              >
-                <option value="">Select LGA</option>
-                {availableLGAs.map((lga) => (
-                  <option key={lga} value={lga}>
-                    {lga}
-                  </option>
-                ))}
-              </select>
-              {!formData.state && (
-                <small className="hint">
-                  Please select a state first
-                </small>
-              )}
-            </div>
+            {isNigeria && (
+              <div className="form-group">
+                <label htmlFor="lga">Local Government Area *</label>
+                <select
+                  id="lga"
+                  name="lga"
+                  value={formData.lga}
+                  onChange={handleChange}
+                  required
+                  disabled={!formData.state}
+                >
+                  <option value="">Select LGA</option>
+                  {availableLGAs.map((lga) => (
+                    <option key={lga} value={lga}>
+                      {lga}
+                    </option>
+                  ))}
+                </select>
+                {!formData.state && (
+                  <small className="hint">
+                    Please select a state first
+                  </small>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-group">

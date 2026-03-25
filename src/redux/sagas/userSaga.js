@@ -4,11 +4,23 @@ import {
   fetchSessionFailure,
   fetchSessionRequest,
   fetchSessionSuccess,
+  forgotPasswordFailure,
+  forgotPasswordRequest,
+  forgotPasswordSuccess,
   loginFailure,
   loginRequest,
   loginSuccess,
   logout,
   logoutRequest,
+  resetPasswordFailure,
+  resetPasswordRequest,
+  resetPasswordSuccess,
+  sendVerificationFailure,
+  sendVerificationRequest,
+  sendVerificationSuccess,
+  verifyEmailFailure,
+  verifyEmailRequest,
+  verifyEmailSuccess,
   socialAuthStartRequest,
   signupFailure,
   signupRequest,
@@ -89,10 +101,69 @@ function* socialAuthStartSaga(action) {
   yield call([window.location, "assign"], redirectUrl);
 }
 
+function* forgotPasswordSaga(action) {
+  try {
+    const { email } = action.payload;
+    const response = yield call(userAPI.forgotPassword, email);
+    yield put(forgotPasswordSuccess(response.data.message));
+    yield put(addToast({ message: response.data.message, type: "success" }));
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error || error.message || "Unable to request password reset";
+    yield put(forgotPasswordFailure(errorMessage));
+    yield put(addToast({ message: errorMessage, type: "error" }));
+  }
+}
+
+function* resetPasswordSaga(action) {
+  try {
+    const { token, password } = action.payload;
+    const response = yield call(userAPI.resetPassword, token, password);
+    yield put(resetPasswordSuccess(response.data.message));
+    yield put(addToast({ message: response.data.message, type: "success" }));
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error || error.message || "Unable to reset password";
+    yield put(resetPasswordFailure(errorMessage));
+    yield put(addToast({ message: errorMessage, type: "error" }));
+  }
+}
+
+function* sendVerificationSaga() {
+  try {
+    const response = yield call(userAPI.sendVerificationEmail);
+    yield put(sendVerificationSuccess(response.data.message));
+    yield put(addToast({ message: response.data.message, type: "success" }));
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error || error.message || "Unable to send verification email";
+    yield put(sendVerificationFailure(errorMessage));
+    yield put(addToast({ message: errorMessage, type: "error" }));
+  }
+}
+
+function* verifyEmailSaga(action) {
+  try {
+    const { token } = action.payload;
+    const response = yield call(userAPI.verifyEmail, token);
+    yield put(verifyEmailSuccess(response.data.message));
+    yield put(addToast({ message: response.data.message, type: "success" }));
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error || error.message || "Email verification failed";
+    yield put(verifyEmailFailure(errorMessage));
+    yield put(addToast({ message: errorMessage, type: "error" }));
+  }
+}
+
 export function* userSaga() {
   yield takeEvery(signupRequest.type, signupSaga);
   yield takeEvery(loginRequest.type, loginSaga);
   yield takeEvery(fetchSessionRequest.type, fetchSessionSaga);
+  yield takeEvery(forgotPasswordRequest.type, forgotPasswordSaga);
+  yield takeEvery(resetPasswordRequest.type, resetPasswordSaga);
+  yield takeEvery(sendVerificationRequest.type, sendVerificationSaga);
+  yield takeEvery(verifyEmailRequest.type, verifyEmailSaga);
   yield takeEvery(logoutRequest.type, logoutSaga);
   yield takeEvery(socialAuthStartRequest.type, socialAuthStartSaga);
 }

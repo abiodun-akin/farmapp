@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
 import useSagaApi from "../hooks/useSagaApi";
+import { africanCountries } from "../data/africanCountries";
 
 const MatchesPage = ({ title = "Matches" }) => {
   const navigate = useNavigate();
@@ -11,13 +12,24 @@ const MatchesPage = ({ title = "Matches" }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filterCountry, setFilterCountry] = useState("");
+  const [filterState, setFilterState] = useState("");
   const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const matchResponse = await sagaApi({ service: "userApi", method: "getMatches" });
+        const matchResponse = await sagaApi({
+          service: "userApi",
+          method: "getMatches",
+          args: [
+            {
+              ...(filterCountry ? { country: filterCountry } : {}),
+              ...(filterState ? { state: filterState } : {}),
+            },
+          ],
+        });
         setMatches(matchResponse.data?.matches || []);
       } catch (err) {
         setError(err.response?.data?.error || "Unable to load matches");
@@ -27,7 +39,7 @@ const MatchesPage = ({ title = "Matches" }) => {
     };
 
     loadData();
-  }, [sagaApi]);
+  }, [sagaApi, filterCountry, filterState]);
   const canViewMatches = canAccessFeature(subscriptionStatusType, "core");
 
   if (loading || subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
@@ -73,6 +85,37 @@ const MatchesPage = ({ title = "Matches" }) => {
           ? "View and connect with farmers who match your services."
           : "View and connect with vendors that match your needs."}
       </p>
+
+      <div style={{ display: "flex", gap: "8px", marginTop: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
+        <select
+          value={filterCountry}
+          onChange={(event) => setFilterCountry(event.target.value)}
+          style={{ padding: "8px", border: "1px solid #ddd", borderRadius: "6px", minWidth: "220px" }}
+        >
+          <option value="">All Countries</option>
+          {africanCountries.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          value={filterState}
+          onChange={(event) => setFilterState(event.target.value)}
+          placeholder="Filter by state/region"
+          style={{ padding: "8px", border: "1px solid #ddd", borderRadius: "6px", minWidth: "220px" }}
+        />
+        <button
+          onClick={() => {
+            setFilterCountry("");
+            setFilterState("");
+          }}
+          style={{ padding: "8px 12px", border: "1px solid #ddd", background: "#fff", borderRadius: "6px", cursor: "pointer" }}
+        >
+          Clear Filters
+        </button>
+      </div>
 
       {error && <p style={{ color: "#c62828" }}>{error}</p>}
 
