@@ -1,21 +1,22 @@
-import { Card, Flex, Text, Button } from "@radix-ui/themes";
+import { Button, Card, Flex, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PaystackPayment from "../components/PaystackPayment";
+import useSagaApi from "../hooks/useSagaApi";
+import useToast from "../hooks/useToast";
 import FullPageLayout from "../layouts/FullPageLayout";
-import { logoutRequest } from "../redux/slices/userSlice";
 import {
+  clearPaymentFlowState,
+  closePaymentRequest,
   fetchSubscriptionStatusRequest,
   successPaymentRequest,
-  closePaymentRequest,
-  clearPaymentFlowState,
 } from "../redux/slices/paymentSlice";
-import useToast from "../hooks/useToast";
+import { logoutRequest } from "../redux/slices/userSlice";
 
 const PLANS = {
-  basic: {
-    name: "Basic Plan",
+  premium: {
+    name: "Premium Plan",
     amount: 5000,
     description: "Get started with our 30 days free trial.",
     features: [
@@ -38,7 +39,14 @@ const PaymentPage = () => {
   const [isCardAuthSuccess, setIsCardAuthSuccess] = useState(false);
   const [subscriptionDetails, setSubscriptionDetails] = useState(null);
   const [isTrialAuth, setIsTrialAuth] = useState(false);
-  const [pendingFinalizeReference, setPendingFinalizeReference] = useState(null);
+  const [pendingFinalizeReference, setPendingFinalizeReference] =
+    useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [invoiceError, setInvoiceError] = useState("");
+  const [downgradeLoading, setDowngradeLoading] = useState(false);
+  const [downgradeMessage, setDowngradeMessage] = useState("");
+  const sagaApi = useSagaApi();
   const { isAuthenticated } = useSelector((state) => state.user);
   const {
     successResult,
@@ -87,14 +95,43 @@ const PaymentPage = () => {
     }
   }, [searchParams, navigate, isAuthenticated, dispatch, addToast]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const loadInvoices = async () => {
+      try {
+        setInvoicesLoading(true);
+        setInvoiceError("");
+        const response = await sagaApi({
+          service: "userApi",
+          method: "getInvoices",
+        });
+        setInvoices(response?.data?.invoices || []);
+      } catch (err) {
+        setInvoiceError(
+          err?.response?.data?.error || "Unable to load invoices",
+        );
+      } finally {
+        setInvoicesLoading(false);
+      }
+    };
+
+    loadInvoices();
+  }, [isAuthenticated, sagaApi]);
+
   const handlePaymentSuccess = (data) => {
     const planFromUrl = searchParams.get("plan");
     setPendingFinalizeReference(data.reference);
-    dispatch(successPaymentRequest({ reference: data.reference, plan: planFromUrl }));
+    dispatch(
+      successPaymentRequest({ reference: data.reference, plan: planFromUrl }),
+    );
   };
 
   useEffect(() => {
-    const shouldAuthorizeCard = subscription?.status === "trial" && !subscription?.isCardAuthorized;
+    const shouldAuthorizeCard =
+      subscription?.status === "trial" && !subscription?.isCardAuthorized;
     setIsTrialAuth(Boolean(shouldAuthorizeCard));
   }, [subscription]);
 
@@ -104,7 +141,10 @@ const PaymentPage = () => {
     if (successResult?.isCardAuthorization) {
       setIsCardAuthSuccess(true);
       setPaymentSuccess(true);
-      addToast("Card authorized! You'll be charged ₦5,000 after your trial ends.", "success");
+      addToast(
+        "Card authorized! You'll be charged ₦5,000 after your trial ends.",
+        "success",
+      );
       setPendingFinalizeReference(null);
       setTimeout(() => navigate("/profile"), 2500);
       return;
@@ -113,7 +153,10 @@ const PaymentPage = () => {
     if (successResult?.subscription) {
       setPaymentSuccess(true);
       setSubscriptionDetails(successResult.subscription);
-      addToast("Payment successful! Your subscription is now active.", "success");
+      addToast(
+        "Payment successful! Your subscription is now active.",
+        "success",
+      );
       setPendingFinalizeReference(null);
       setTimeout(() => navigate("/profile"), 2000);
     }
@@ -135,24 +178,79 @@ const PaymentPage = () => {
     dispatch(closePaymentRequest());
   };
 
+  const handleScheduleDowngrade = async () => {
+    try {
+      setDowngradeLoading(true);
+      setDowngradeMessage("");
+      const response = await sagaApi({
+        service: "userApi",
+        method: "scheduleDowngrade",
+      });
+      setDowngradeMessage(
+        response?.data?.message || "Downgrade to free access scheduled",
+      );
+      dispatch(fetchSubscriptionStatusRequest({ force: true }));
+    } catch (err) {
+      setDowngradeMessage(
+        err?.response?.data?.error || "Unable to schedule downgrade",
+      );
+    } finally {
+      setDowngradeLoading(false);
+    }
+  };
+
   // Card Authorization Success State
   if (paymentSuccess && isCardAuthSuccess) {
     return (
       <FullPageLayout>
-        <Flex direction="column" align="center" justify="center" p="8" style={{ minHeight: "100vh" }}>
-          <Card style={{ backgroundColor: "white", padding: "40px", maxWidth: "500px", textAlign: "center", border: "2px solid #27ae60" }}>
+        <Flex
+          direction="column"
+          align="center"
+          justify="center"
+          p="8"
+          style={{ minHeight: "100vh" }}
+        >
+          <Card
+            style={{
+              backgroundColor: "white",
+              padding: "40px",
+              maxWidth: "500px",
+              textAlign: "center",
+              border: "2px solid #27ae60",
+            }}
+          >
             <div style={{ fontSize: "48px", marginBottom: "20px" }}>✅</div>
-            <Text size="7" weight="bold" style={{ color: "#27ae60" }}>Card Authorized!</Text>
-            <Text size="4" style={{ color: "#555", marginTop: "16px", display: "block" }}>
+            <Text size="7" weight="bold" style={{ color: "#27ae60" }}>
+              Card Authorized!
+            </Text>
+            <Text
+              size="4"
+              style={{ color: "#555", marginTop: "16px", display: "block" }}
+            >
               Your card has been saved for future billing.
             </Text>
-            <div style={{ margin: "24px 0", padding: "20px", background: "#f0f7f4", borderRadius: "8px", border: "1px solid #27ae60" }}>
+            <div
+              style={{
+                margin: "24px 0",
+                padding: "20px",
+                background: "#f0f7f4",
+                borderRadius: "8px",
+                border: "1px solid #27ae60",
+              }}
+            >
               <Text size="3" style={{ color: "#333" }}>
-                ₦5,000 will be charged automatically when your free trial expires.
-                You can cancel anytime before then.  
+                ₦5,000 will be charged automatically when your free trial
+                expires. You can cancel anytime before then.
               </Text>
             </div>
-            <Button onClick={() => navigate("/profile")} style={{ backgroundColor: "#27ae60", color: "white", padding: "10px 24px" }}>
+            <Button
+              onClick={() => navigate("/profile")}
+              style={{
+                backgroundColor: "#27ae60",
+                color: "white",
+                padding: "10px 24px",
+              }}
+            >
               Go to Dashboard
             </Button>
           </Card>
@@ -345,6 +443,116 @@ const PaymentPage = () => {
               Processing your payment...
             </Text>
           )}
+
+          {subscription?.status &&
+            ["active", "trial"].includes(subscription.status) && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  paddingTop: "16px",
+                  borderTop: "1px solid #ececec",
+                }}
+              >
+                <Text size="2" weight="bold">
+                  Subscription Controls
+                </Text>
+                <Text
+                  size="2"
+                  color="gray"
+                  style={{ display: "block", marginTop: "6px" }}
+                >
+                  Status: {subscription.status}{" "}
+                  {subscription?.plan ? `• Plan: ${subscription.plan}` : ""}
+                </Text>
+                <Button
+                  onClick={handleScheduleDowngrade}
+                  disabled={downgradeLoading}
+                  variant="soft"
+                  color="orange"
+                  style={{ marginTop: "10px" }}
+                >
+                  {downgradeLoading
+                    ? "Scheduling..."
+                    : "Schedule Downgrade to Free"}
+                </Button>
+                {downgradeMessage && (
+                  <Text
+                    size="2"
+                    style={{
+                      display: "block",
+                      marginTop: "8px",
+                      color: "#8a5d00",
+                    }}
+                  >
+                    {downgradeMessage}
+                  </Text>
+                )}
+              </div>
+            )}
+
+          <div
+            style={{
+              marginTop: "20px",
+              paddingTop: "16px",
+              borderTop: "1px solid #ececec",
+            }}
+          >
+            <Text size="2" weight="bold">
+              Recent Invoices
+            </Text>
+            {invoicesLoading ? (
+              <Text
+                size="2"
+                color="gray"
+                style={{ display: "block", marginTop: "8px" }}
+              >
+                Loading invoices...
+              </Text>
+            ) : invoiceError ? (
+              <Text
+                size="2"
+                style={{ display: "block", marginTop: "8px", color: "#c0392b" }}
+              >
+                {invoiceError}
+              </Text>
+            ) : invoices.length === 0 ? (
+              <Text
+                size="2"
+                color="gray"
+                style={{ display: "block", marginTop: "8px" }}
+              >
+                No invoices available yet.
+              </Text>
+            ) : (
+              <div style={{ marginTop: "10px", display: "grid", gap: "8px" }}>
+                {invoices.slice(0, 5).map((invoice) => (
+                  <div
+                    key={invoice.reference}
+                    style={{
+                      background: "#f8f8f8",
+                      border: "1px solid #ececec",
+                      borderRadius: "8px",
+                      padding: "10px",
+                    }}
+                  >
+                    <Text size="2" weight="bold">
+                      {invoice.reference}
+                    </Text>
+                    <Text size="2" style={{ display: "block", color: "#444" }}>
+                      {invoice.plan} • ₦
+                      {Number(invoice.amount || 0).toLocaleString()} •{" "}
+                      {invoice.status}
+                    </Text>
+                    <Text size="1" color="gray">
+                      {invoice.createdAt
+                        ? new Date(invoice.createdAt).toLocaleDateString()
+                        : ""}
+                    </Text>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
       </Flex>
     </FullPageLayout>

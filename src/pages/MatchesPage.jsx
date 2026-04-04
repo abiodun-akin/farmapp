@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { africanCountries } from "../data/africanCountries";
+import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
-import useSagaApi from "../hooks/useSagaApi";
-import { africanCountries } from "../data/africanCountries";
 
 const MatchesPage = ({ title = "Matches" }) => {
   const navigate = useNavigate();
@@ -14,11 +14,29 @@ const MatchesPage = ({ title = "Matches" }) => {
   const [error, setError] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterState, setFilterState] = useState("");
+  const [filterService, setFilterService] = useState("");
+  const [filterFarmingArea, setFilterFarmingArea] = useState("");
+  const [minScore, setMinScore] = useState("");
+  const [maxDistanceKm, setMaxDistanceKm] = useState("");
   const sagaApi = useSagaApi();
-  const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
+  const { statusType: subscriptionStatusType, subscriptionLoading } =
+    useSubscriptionStatus();
+  const canViewMatches = canAccessFeature(subscriptionStatusType, "core");
 
   useEffect(() => {
+    if (subscriptionLoading) {
+      return;
+    }
+
+    if (!canViewMatches) {
+      setLoading(false);
+      setMatches([]);
+      setError("");
+      return;
+    }
+
     const loadData = async () => {
+      setLoading(true);
       try {
         const matchResponse = await sagaApi({
           service: "userApi",
@@ -27,6 +45,10 @@ const MatchesPage = ({ title = "Matches" }) => {
             {
               ...(filterCountry ? { country: filterCountry } : {}),
               ...(filterState ? { state: filterState } : {}),
+              ...(filterService ? { service: filterService } : {}),
+              ...(filterFarmingArea ? { farmingArea: filterFarmingArea } : {}),
+              ...(minScore ? { minScore } : {}),
+              ...(maxDistanceKm ? { maxDistanceKm } : {}),
             },
           ],
         });
@@ -39,18 +61,47 @@ const MatchesPage = ({ title = "Matches" }) => {
     };
 
     loadData();
-  }, [sagaApi, filterCountry, filterState]);
-  const canViewMatches = canAccessFeature(subscriptionStatusType, "core");
+  }, [
+    sagaApi,
+    filterCountry,
+    filterState,
+    filterService,
+    filterFarmingArea,
+    minScore,
+    maxDistanceKm,
+    canViewMatches,
+    subscriptionLoading,
+  ]);
 
-  if (loading || subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+  if (loading || subscriptionLoading)
+    return <div style={{ padding: "24px" }}>Loading...</div>;
 
   if (!canViewMatches) {
     return (
-      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+      <div
+        style={{
+          padding: "clamp(16px, 4vw, 32px)",
+          textAlign: "center",
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(24px, 4vw, 32px)",
+            color: "#193325",
+            marginBottom: "16px",
+          }}
+        >
           {title}
         </h1>
-        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+        <p
+          style={{
+            fontSize: "clamp(14px, 2vw, 16px)",
+            color: "#666",
+            marginBottom: "24px",
+          }}
+        >
           {subscriptionStatusType === "expired"
             ? "Your subscription has expired. Renew to continue accessing matches."
             : `You need an active subscription to view and connect with ${user?.profileType === "vendor" ? "farmers" : "vendors"}.`}
@@ -86,11 +137,24 @@ const MatchesPage = ({ title = "Matches" }) => {
           : "View and connect with vendors that match your needs."}
       </p>
 
-      <div style={{ display: "flex", gap: "8px", marginTop: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          marginTop: "12px",
+          marginBottom: "8px",
+          flexWrap: "wrap",
+        }}
+      >
         <select
           value={filterCountry}
           onChange={(event) => setFilterCountry(event.target.value)}
-          style={{ padding: "8px", border: "1px solid #ddd", borderRadius: "6px", minWidth: "220px" }}
+          style={{
+            padding: "8px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            minWidth: "220px",
+          }}
         >
           <option value="">All Countries</option>
           {africanCountries.map((country) => (
@@ -104,14 +168,83 @@ const MatchesPage = ({ title = "Matches" }) => {
           value={filterState}
           onChange={(event) => setFilterState(event.target.value)}
           placeholder="Filter by state/region"
-          style={{ padding: "8px", border: "1px solid #ddd", borderRadius: "6px", minWidth: "220px" }}
+          style={{
+            padding: "8px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            minWidth: "220px",
+          }}
+        />
+        {user?.profileType === "farmer" ? (
+          <input
+            type="text"
+            value={filterService}
+            onChange={(event) => setFilterService(event.target.value)}
+            placeholder="Filter by vendor service"
+            style={{
+              padding: "8px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              minWidth: "220px",
+            }}
+          />
+        ) : (
+          <input
+            type="text"
+            value={filterFarmingArea}
+            onChange={(event) => setFilterFarmingArea(event.target.value)}
+            placeholder="Filter by farming area"
+            style={{
+              padding: "8px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              minWidth: "220px",
+            }}
+          />
+        )}
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value={minScore}
+          onChange={(event) => setMinScore(event.target.value)}
+          placeholder="Minimum score"
+          style={{
+            padding: "8px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            minWidth: "160px",
+          }}
+        />
+        <input
+          type="number"
+          min="1"
+          value={maxDistanceKm}
+          onChange={(event) => setMaxDistanceKm(event.target.value)}
+          placeholder="Max distance (km)"
+          style={{
+            padding: "8px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            minWidth: "180px",
+          }}
         />
         <button
           onClick={() => {
             setFilterCountry("");
             setFilterState("");
+            setFilterService("");
+            setFilterFarmingArea("");
+            setMinScore("");
+            setMaxDistanceKm("");
           }}
-          style={{ padding: "8px 12px", border: "1px solid #ddd", background: "#fff", borderRadius: "6px", cursor: "pointer" }}
+          style={{
+            padding: "8px 12px",
+            border: "1px solid #ddd",
+            background: "#fff",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
         >
           Clear Filters
         </button>
@@ -142,7 +275,9 @@ const MatchesPage = ({ title = "Matches" }) => {
                 {match.userProfile?.bio || "No bio available"}
               </p>
               <button
-                onClick={() => navigate("/messages", { state: { matchId: match._id } })}
+                onClick={() =>
+                  navigate("/messages", { state: { matchId: match._id } })
+                }
                 style={{
                   background: "#2d8659",
                   color: "#fff",

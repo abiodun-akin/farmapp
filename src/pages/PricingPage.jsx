@@ -23,11 +23,19 @@ const PricingPage = () => {
 
   const plans = [
     {
-      id: "basic",
-      name: "Basic Plan",
+      id: "premium",
+      name: "Premium Plan",
       price: "₦5,000",
       description: "Get started with our 30 days free trial.",
-      features: ["Free signup", "Free listing", "Unlimited listing", "Basic support", "Analytics dashboard", "Access to community", "And many more..."],
+      features: [
+        "Free signup",
+        "Free listing",
+        "Unlimited listing",
+        "Basic support",
+        "Analytics dashboard",
+        "Access to community",
+        "And many more...",
+      ],
     },
     // {
     //   id: "pro",

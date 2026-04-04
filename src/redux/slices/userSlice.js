@@ -12,6 +12,8 @@ const initialState = {
   passwordResetCompleted: false,
   emailVerificationSent: false,
   emailVerified: false,
+  twoFactorRequired: false,
+  twoFactorChallengeToken: null,
   isAuthenticated: !!(
     localStorage.getItem("token") && localStorage.getItem("user")
   ),
@@ -53,6 +55,8 @@ const userSlice = createSlice({
       state.loading = true;
       state.error = null;
       state.statusMessage = null;
+      state.twoFactorRequired = false;
+      state.twoFactorChallengeToken = null;
     },
     loginSuccess: (state, action) => {
       const { user, token } = action.payload;
@@ -60,8 +64,23 @@ const userSlice = createSlice({
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
+      state.twoFactorRequired = false;
+      state.twoFactorChallengeToken = null;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+    },
+    loginTwoFactorRequired: (state, action) => {
+      const { challengeToken, message } = action.payload;
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = message || "Two-factor authentication required";
+      state.isAuthenticated = false;
+      state.user = null;
+      state.token = null;
+      state.twoFactorRequired = true;
+      state.twoFactorChallengeToken = challengeToken;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -70,8 +89,63 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
+      state.twoFactorRequired = false;
+      state.twoFactorChallengeToken = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+    },
+
+    verifyTwoFactorRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.statusMessage = null;
+    },
+    verifyTwoFactorSuccess: (state, action) => {
+      const { user, token, message } = action.payload;
+      state.loading = false;
+      state.error = null;
+      state.statusMessage = message || null;
+      state.user = user;
+      state.token = token;
+      state.isAuthenticated = true;
+      state.twoFactorRequired = false;
+      state.twoFactorChallengeToken = null;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    },
+    verifyTwoFactorFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    getRecoveryCodesRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    getRecoveryCodesSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.recoveryCodeStatus = action.payload;
+    },
+    getRecoveryCodesFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    regenerateRecoveryCodesRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    regenerateRecoveryCodesSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.newRecoveryCodes = action.payload;
+      state.statusMessage = "Recovery codes generated. Save them securely!";
+    },
+    regenerateRecoveryCodesFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.newRecoveryCodes = null;
     },
 
     fetchSessionRequest: (state) => {
@@ -177,6 +251,8 @@ const userSlice = createSlice({
       state.error = null;
       state.statusMessage = null;
       state.emailVerified = false;
+      state.twoFactorRequired = false;
+      state.twoFactorChallengeToken = null;
     },
     verifyEmailSuccess: (state, action) => {
       state.loading = false;
@@ -217,8 +293,9 @@ const userSlice = createSlice({
       localStorage.removeItem("profile");
       localStorage.removeItem("subscription");
       // Clear all localStorage to prevent data leakage
-      Object.keys(localStorage).forEach(key => {
-        if (key !== 'theme') { // Keep theme preference
+      Object.keys(localStorage).forEach((key) => {
+        if (key !== "theme") {
+          // Keep theme preference
           localStorage.removeItem(key);
         }
       });
@@ -231,7 +308,7 @@ const userSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(state.user));
       }
     },
-    
+
     updateProfileSuccess: (state, action) => {
       state.loading = false;
       if (state.user) {
@@ -262,7 +339,17 @@ export const {
   signupFailure,
   loginRequest,
   loginSuccess,
+  loginTwoFactorRequired,
   loginFailure,
+  verifyTwoFactorRequest,
+  verifyTwoFactorSuccess,
+  verifyTwoFactorFailure,
+  getRecoveryCodesRequest,
+  getRecoveryCodesSuccess,
+  getRecoveryCodesFailure,
+  regenerateRecoveryCodesRequest,
+  regenerateRecoveryCodesSuccess,
+  regenerateRecoveryCodesFailure,
   fetchSessionRequest,
   fetchSessionSuccess,
   fetchSessionFailure,

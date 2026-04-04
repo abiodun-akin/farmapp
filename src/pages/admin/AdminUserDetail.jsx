@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import AdminLayout from "./AdminLayout";
 import useSagaApi from "../../hooks/useSagaApi";
+import AdminLayout from "./AdminLayout";
 
 const AdminUserDetail = () => {
   const { userId } = useParams();
@@ -12,6 +12,8 @@ const AdminUserDetail = () => {
   const [reason, setReason] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [pwMsg, setPwMsg] = useState(null);
+  const [downgradeReason, setDowngradeReason] = useState("");
+  const [downgradeMsg, setDowngradeMsg] = useState(null);
   const sagaApi = useSagaApi();
 
   const loadUser = useCallback(async () => {
@@ -108,6 +110,34 @@ const AdminUserDetail = () => {
     }
   };
 
+  const handleManualDowngrade = async (immediate) => {
+    setDowngradeMsg(null);
+    try {
+      const response = await sagaApi({
+        service: "adminApi",
+        method: "manualDowngradeSubscription",
+        args: [
+          userId,
+          {
+            immediate,
+            reason: downgradeReason || "Admin manual downgrade",
+          },
+        ],
+      });
+      setDowngradeMsg({
+        type: "success",
+        text: response?.data?.message || "Downgrade action completed",
+      });
+      loadUser();
+    } catch (err) {
+      setDowngradeMsg({
+        type: "error",
+        text:
+          err?.response?.data?.error || "Unable to process manual downgrade",
+      });
+    }
+  };
+
   return (
     <AdminLayout title="User Detail">
       {loading && <div className="admin-card">Loading...</div>}
@@ -177,13 +207,23 @@ const AdminUserDetail = () => {
             {pwMsg.text}
           </div>
         )}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px",
+            alignItems: "center",
+          }}
+        >
           <input
             className="admin-input"
             type="password"
             placeholder="New password (min 8 chars, 1 upper, 1 number)"
             value={newPassword}
-            onChange={(e) => { setNewPassword(e.target.value); setPwMsg(null); }}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              setPwMsg(null);
+            }}
             style={{ minWidth: 280 }}
           />
           <button className="admin-button danger" onClick={handleResetPassword}>
@@ -191,7 +231,52 @@ const AdminUserDetail = () => {
           </button>
         </div>
         <p style={{ fontSize: 11, color: "var(--admin-muted)", marginTop: 8 }}>
-          Communicate the new password to the user securely. Admin accounts cannot be reset here.
+          Communicate the new password to the user securely. Admin accounts
+          cannot be reset here.
+        </p>
+      </div>
+
+      <div className="admin-card">
+        <h3>Subscription Downgrade</h3>
+        {downgradeMsg && (
+          <div
+            className={`admin-pill ${downgradeMsg.type === "error" ? "high" : "low"}`}
+            style={{ marginBottom: 12 }}
+          >
+            {downgradeMsg.text}
+          </div>
+        )}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px",
+            alignItems: "center",
+          }}
+        >
+          <input
+            className="admin-input"
+            placeholder="Downgrade reason (optional)"
+            value={downgradeReason}
+            onChange={(e) => setDowngradeReason(e.target.value)}
+            style={{ minWidth: 300 }}
+          />
+          <button
+            className="admin-button danger"
+            onClick={() => handleManualDowngrade(true)}
+          >
+            Downgrade Now
+          </button>
+          <button
+            className="admin-button"
+            onClick={() => handleManualDowngrade(false)}
+          >
+            Schedule Downgrade
+          </button>
+        </div>
+        <p style={{ fontSize: 11, color: "var(--admin-muted)", marginTop: 8 }}>
+          Downgrade now immediately removes paid entitlement. Schedule downgrade
+          applies at subscription end date.
         </p>
       </div>
 

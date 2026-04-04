@@ -1,46 +1,47 @@
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import "./index.css";
-import Landing from "./pages/Landing";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import LoginPage from "./pages/LoginPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage";
-import SignUpPage from "./pages/SignUpPage";
-import PricingPage from "./pages/PricingPage";
-import PaymentPage from "./pages/PaymentPage";
-import ProfileTypeSelector from "./pages/ProfileTypeSelector";
-import FarmerProfileForm from "./pages/FarmerProfileForm";
-import VendorProfileForm from "./pages/VendorProfileForm";
-import FarmerDashboard from "./pages/FarmerDashboard";
-import VendorDashboard from "./pages/VendorDashboard";
-import DashboardRedirect from "./pages/DashboardRedirect";
-import MatchesPage from "./pages/MatchesPage";
-import MessagesPage from "./pages/MessagesPage";
-import SubscriptionPage from "./pages/SubscriptionPage";
-import SettingsPage from "./pages/SettingsPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminUserDetail from "./pages/admin/AdminUserDetail";
-import AdminViolations from "./pages/admin/AdminViolations";
-import AdminMessages from "./pages/admin/AdminMessages";
-import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
-import AdminPayments from "./pages/admin/AdminPayments";
-import AdminPaymentDetail from "./pages/admin/AdminPaymentDetail";
-import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
-import AgentApplicationForm from "./pages/AgentApplicationForm";
-import AdminAgents from "./pages/admin/AdminAgents";
-import AdminAgentDetail from "./pages/admin/AdminAgentDetail";
-import AgentEarnings from "./pages/AgentEarnings";
-import Toast from "./components/Toast";
+import AdminRoute from "./components/AdminRoute";
 import AuthSessionManager from "./components/AuthSessionManager";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
-import AdminRoute from "./components/AdminRoute";
+import Toast from "./components/Toast";
+import "./index.css";
 import MainLayout from "./layouts/MainLayout";
+import AdminAgentDetail from "./pages/admin/AdminAgentDetail";
+import AdminAgents from "./pages/admin/AdminAgents";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminModerationPage from "./pages/admin/AdminModerationPage";
+import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
+import AdminPaymentDetail from "./pages/admin/AdminPaymentDetail";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
+import AdminUserDetail from "./pages/admin/AdminUserDetail";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminViolations from "./pages/admin/AdminViolations";
+import AgentApplicationForm from "./pages/AgentApplicationForm";
+import AgentEarnings from "./pages/AgentEarnings";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import DashboardRedirect from "./pages/DashboardRedirect";
+import FarmerDashboard from "./pages/FarmerDashboard";
+import FarmerProfileForm from "./pages/FarmerProfileForm";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import Landing from "./pages/Landing";
+import LoginPage from "./pages/LoginPage";
+import MatchesPage from "./pages/MatchesPage";
+import MessagesPage from "./pages/MessagesPage";
+import PaymentPage from "./pages/PaymentPage";
+import PricingPage from "./pages/PricingPage";
+import ProfileTypeSelector from "./pages/ProfileTypeSelector";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import SettingsPage from "./pages/SettingsPage";
+import SignUpPage from "./pages/SignUpPage";
 import SocialAuthCallbackPage from "./pages/SocialAuthCallbackPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import VendorDashboard from "./pages/VendorDashboard";
+import VendorProfileForm from "./pages/VendorProfileForm";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 function App() {
   return (
@@ -241,6 +242,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminMessages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/moderation"
+              element={
+                <AdminRoute>
+                  <AdminModerationPage />
                 </AdminRoute>
               }
             />

@@ -26,9 +26,38 @@ const api = axios.create({
 // Send cookies/credentials with requests (needed when server sets cookies)
 api.defaults.withCredentials = true;
 
+let refreshPromise = null;
+
+const isAuthRoute = (url = "") => {
+  return String(url).includes("/auth/");
+};
+
+const refreshSession = async () => {
+  if (!refreshPromise) {
+    refreshPromise = api
+      .post("/auth/refresh", {}, { _skipAuthRefresh: true })
+      .then((response) => {
+        const refreshedToken = response?.data?.token;
+        if (refreshedToken) {
+          localStorage.setItem("token", refreshedToken);
+        }
+        return refreshedToken;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+};
+
 // Request interceptor - Add JWT token to headers
 api.interceptors.request.use(
   (config) => {
+    if (config._skipAuthRefresh) {
+      return config;
+    }
+
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -37,26 +66,66 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - Handle auth errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("farmconnect:auth-expired", {
-          detail: {
-            status: error.response?.status,
-            code: error.response?.data?.code || null,
-            message: error.response?.data?.error || "Session expired",
-          },
-        })
-      );
+  async (error) => {
+    const originalRequest = error.config || {};
+    const isUnauthorized = error.response?.status === 401;
+
+    if (!isUnauthorized) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
+
+    if (
+      originalRequest._skipAuthRefresh ||
+      originalRequest._retry ||
+      isAuthRoute(originalRequest.url)
+    ) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("farmconnect:auth-expired", {
+            detail: {
+              status: error.response?.status,
+              code: error.response?.data?.code || null,
+              message: error.response?.data?.error || "Session expired",
+            },
+          }),
+        );
+      }
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    try {
+      const refreshedToken = await refreshSession();
+      if (refreshedToken) {
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
+      }
+      return api(originalRequest);
+    } catch (refreshError) {
+      localStorage.removeItem("token");
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("farmconnect:auth-expired", {
+            detail: {
+              status: refreshError.response?.status || 401,
+              code: refreshError.response?.data?.code || null,
+              message: refreshError.response?.data?.error || "Session expired",
+            },
+          }),
+        );
+      }
+
+      return Promise.reject(refreshError);
+    }
+  },
 );
 
 export default api;

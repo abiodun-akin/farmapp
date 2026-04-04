@@ -13,33 +13,37 @@ export const adminApi = {
   suspendUser: (userId, reason) =>
     api.post(`/admin/users/${userId}/suspend`, { reason }),
 
-  unsuspendUser: (userId) =>
-    api.post(`/admin/users/${userId}/unsuspend`),
+  unsuspendUser: (userId) => api.post(`/admin/users/${userId}/unsuspend`),
 
   recordViolation: (userId, type = "default") =>
     api.post(`/admin/users/${userId}/record-violation`, { type }),
 
-  getViolations: (params = {}) =>
-    api.get("/admin/violations", { params }),
+  getViolations: (params = {}) => api.get("/admin/violations", { params }),
 
   getFlaggedMessages: (params = {}) =>
     api.get("/admin/messages/flagged", { params }),
 
-  approveMessage: (messageId, action) =>
-    api.put(`/messages/${messageId}/admin/approve`, { action }),
+  approveMessage: (messageId, data = {}) =>
+    api.put(`/admin/messages/${messageId}/approve`, data),
+
+  deleteMessage: (messageId, data = {}) =>
+    api.delete(`/admin/messages/${messageId}`, { data }),
+
+  warnMessageSender: (messageId, data = {}) =>
+    api.post(`/admin/messages/${messageId}/warn-sender`, data),
 
   getSubscriptionsCancelled: (params = {}) =>
     api.get("/admin/subscriptions/cancelled", { params }),
 
+  manualDowngradeSubscription: (userId, options = {}) =>
+    api.post(`/admin/subscriptions/${userId}/downgrade`, options),
+
   // Payment Management APIs
-  getPayments: (params = {}) =>
-    api.get("/admin/payments", { params }),
+  getPayments: (params = {}) => api.get("/admin/payments", { params }),
 
-  getPayment: (paymentId) =>
-    api.get(`/admin/payments/${paymentId}`),
+  getPayment: (paymentId) => api.get(`/admin/payments/${paymentId}`),
 
-  verifyPayment: (paymentId) =>
-    api.post(`/admin/payments/${paymentId}/verify`),
+  verifyPayment: (paymentId) => api.post(`/admin/payments/${paymentId}/verify`),
 
   refundPayment: (paymentId, reason) =>
     api.post(`/admin/payments/${paymentId}/refund`, { reason }),
@@ -47,8 +51,7 @@ export const adminApi = {
   disputePayment: (paymentId, reason, evidence) =>
     api.post(`/admin/payments/${paymentId}/dispute`, { reason, evidence }),
 
-  getPaymentStats: () =>
-    api.get("/admin/stats/overview"),
+  getPaymentStats: () => api.get("/admin/stats/overview"),
 
   getPaymentDailyStats: (days = 30) =>
     api.get("/admin/stats/daily", { params: { days } }),
@@ -79,4 +82,3 @@ export const adminApi = {
   resetUserPassword: (userId, newPassword) =>
     api.post(`/admin/users/${userId}/reset-password`, { newPassword }),
 };
-

@@ -1,16 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
-  clearError,
   clearAuthFeedback,
+  clearError,
   fetchSessionRequest,
   forgotPasswordRequest,
   loginRequest,
   logoutRequest,
   resetPasswordRequest,
   sendVerificationRequest,
-  socialAuthStartRequest,
   signupRequest,
+  socialAuthStartRequest,
   verifyEmailRequest,
+  verifyTwoFactorRequest,
 } from "../redux/slices/userSlice";
 
 export const useAuth = () => {
@@ -20,10 +21,22 @@ export const useAuth = () => {
   const loading = useSelector((state) => state.user.loading);
   const error = useSelector((state) => state.user.error);
   const statusMessage = useSelector((state) => state.user.statusMessage);
-  const passwordResetRequested = useSelector((state) => state.user.passwordResetRequested);
-  const passwordResetCompleted = useSelector((state) => state.user.passwordResetCompleted);
-  const emailVerificationSent = useSelector((state) => state.user.emailVerificationSent);
+  const passwordResetRequested = useSelector(
+    (state) => state.user.passwordResetRequested,
+  );
+  const passwordResetCompleted = useSelector(
+    (state) => state.user.passwordResetCompleted,
+  );
+  const emailVerificationSent = useSelector(
+    (state) => state.user.emailVerificationSent,
+  );
   const emailVerified = useSelector((state) => state.user.emailVerified);
+  const twoFactorRequired = useSelector(
+    (state) => state.user.twoFactorRequired,
+  );
+  const twoFactorChallengeToken = useSelector(
+    (state) => state.user.twoFactorChallengeToken,
+  );
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
 
   const signup = (name, email, password, promoCode = null) => {
@@ -48,6 +61,10 @@ export const useAuth = () => {
 
   const verifyEmail = (token) => {
     dispatch(verifyEmailRequest({ token }));
+  };
+
+  const verifyTwoFactor = (challengeToken, code) => {
+    dispatch(verifyTwoFactorRequest({ challengeToken, code }));
   };
 
   const handleLogout = (reason = "manual") => {
@@ -80,6 +97,8 @@ export const useAuth = () => {
     passwordResetCompleted,
     emailVerificationSent,
     emailVerified,
+    twoFactorRequired,
+    twoFactorChallengeToken,
     isAuthenticated,
     signup,
     login,
@@ -87,6 +106,7 @@ export const useAuth = () => {
     resetPassword,
     sendVerificationEmail,
     verifyEmail,
+    verifyTwoFactor,
     logout: handleLogout,
     restoreSession,
     startSocialAuth,

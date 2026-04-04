@@ -1,5 +1,4 @@
-import api from "../config/api";
-import { API_REST_BASE_URL } from "../config/api";
+import api, { API_REST_BASE_URL } from "../config/api";
 
 // User API endpoints
 export const userAPI = {
@@ -7,6 +6,18 @@ export const userAPI = {
     api.post("/auth/signup", { name, email, password, promoCode }),
 
   login: (email, password) => api.post("/auth/login", { email, password }),
+
+  verifyTwoFactor: (challengeToken, code) =>
+    api.post("/auth/2fa/verify", { challengeToken, code }),
+
+  enableTwoFactor: () => api.post("/auth/2fa/enable"),
+
+  disableTwoFactor: () => api.post("/auth/2fa/disable"),
+
+  getRecoveryCodes: () => api.get("/auth/2fa/recovery-codes"),
+
+  regenerateRecoveryCodes: () =>
+    api.post("/auth/2fa/recovery-codes/regenerate"),
 
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 
@@ -20,6 +31,8 @@ export const userAPI = {
   logout: () => api.post("/auth/logout"),
 
   getSession: () => api.get("/auth/session"),
+
+  refreshSession: () => api.post("/auth/refresh"),
 
   getSocialAuthUrl: (provider, mode = "login") =>
     `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
@@ -33,6 +46,18 @@ export const userApi = {
 
   login: (email, password) => api.post("/auth/login", { email, password }),
 
+  verifyTwoFactor: (challengeToken, code) =>
+    api.post("/auth/2fa/verify", { challengeToken, code }),
+
+  enableTwoFactor: () => api.post("/auth/2fa/enable"),
+
+  disableTwoFactor: () => api.post("/auth/2fa/disable"),
+
+  getRecoveryCodes: () => api.get("/auth/2fa/recovery-codes"),
+
+  regenerateRecoveryCodes: () =>
+    api.post("/auth/2fa/recovery-codes/regenerate"),
+
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 
   resetPassword: (token, password) =>
@@ -45,6 +70,8 @@ export const userApi = {
   logout: () => api.post("/auth/logout"),
 
   getSession: () => api.get("/auth/session"),
+
+  refreshSession: () => api.post("/auth/refresh"),
 
   getSocialAuthUrl: (provider, mode = "login") =>
     `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
@@ -71,8 +98,7 @@ export const userApi = {
     api.post("/user/request-delete-account", { reason }),
 
   // Matching
-  getMatches: (params = {}) =>
-    api.get("/matches", { params }),
+  getMatches: (params = {}) => api.get("/matches", { params }),
 
   getMatchDetails: (matchId) => api.get(`/matches/${matchId}`),
 
@@ -110,6 +136,11 @@ export const userApi = {
 
   getUnreadCount: () => api.get("/messages/stats/unread"),
 
+  // Subscription lifecycle
+  scheduleDowngrade: () => api.post("/payment/downgrade"),
+
+  getInvoices: () => api.get("/payment/invoices"),
+
   // Admin endpoints
   getFlaggedMessages: (pagination = {}) =>
     api.get("/messages/admin/flagged", { params: pagination }),
@@ -117,8 +148,7 @@ export const userApi = {
   approveMessage: (messageId, action) =>
     api.put(`/messages/${messageId}/admin/approve`, { action }),
 
-  getMessageAnalysisStats: () =>
-    api.get("/messages/admin/ai-analysis"),
+  getMessageAnalysisStats: () => api.get("/messages/admin/ai-analysis"),
 
   // Agent endpoints
   applyAsAgent: (data) => api.post("/agents/apply", data),

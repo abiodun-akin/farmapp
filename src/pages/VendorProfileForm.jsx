@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import "./VendorProfileForm.css";
-import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
-import { useForm } from "../hooks/useForm";
-import { setProfile } from "../redux/slices/userSlice";
-import { canAccessFeature } from "../utils/subscriptionHelper";
-import useSagaApi from "../hooks/useSagaApi";
+import { useNavigate } from "react-router-dom";
+import { africanCountries } from "../data/africanCountries";
 import {
+  certifications,
+  getLGAsForState,
   nigerianStates,
   vendorBusinessTypes,
   vendorInterests,
   yearsOfExperience,
-  certifications,
-  getLGAsForState,
 } from "../data/nigerianGeoData";
-import { africanCountries } from "../data/africanCountries";
+import { useForm } from "../hooks/useForm";
+import useSagaApi from "../hooks/useSagaApi";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
+import { setProfile } from "../redux/slices/userSlice";
+import { canAccessFeature } from "../utils/subscriptionHelper";
+import "./VendorProfileForm.css";
 
 /**
  * Vendor Profile Form Component
@@ -30,7 +30,8 @@ const VendorProfileForm = () => {
   const [customInterests, setCustomInterests] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const sagaApi = useSagaApi();
-  const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
+  const { statusType: subscriptionStatusType, subscriptionLoading } =
+    useSubscriptionStatus();
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
@@ -40,6 +41,7 @@ const VendorProfileForm = () => {
     lga: "",
     latitude: "",
     longitude: "",
+    profileImageUrl: "",
     bio: "",
     vendorDetails: {
       businessType: "",
@@ -56,16 +58,17 @@ const VendorProfileForm = () => {
   });
 
   // Get available LGAs for selected state
-  const availableLGAs = formData.state
-    ? getLGAsForState(formData.state)
-    : [];
+  const availableLGAs = formData.state ? getLGAsForState(formData.state) : [];
 
   const isNigeria = formData.country === "Nigeria";
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await sagaApi({ service: "userApi", method: "getProfile" });
+        const response = await sagaApi({
+          service: "userApi",
+          method: "getProfile",
+        });
         const profile = response.data?.profile;
 
         if (!profile || profile.profileType !== "vendor") {
@@ -77,8 +80,15 @@ const VendorProfileForm = () => {
         handleArrayChange("location", profile.location || "");
         handleArrayChange("state", profile.state || "");
         handleArrayChange("lga", profile.lga || "");
-        handleArrayChange("latitude", profile.latitude ? String(profile.latitude) : "");
-        handleArrayChange("longitude", profile.longitude ? String(profile.longitude) : "");
+        handleArrayChange(
+          "latitude",
+          profile.latitude ? String(profile.latitude) : "",
+        );
+        handleArrayChange(
+          "longitude",
+          profile.longitude ? String(profile.longitude) : "",
+        );
+        handleArrayChange("profileImageUrl", profile.profileImageUrl || "");
         handleArrayChange("bio", profile.bio || "");
         handleArrayChange("vendorDetails", {
           businessType: profile.vendorDetails?.businessType || "",
@@ -86,7 +96,8 @@ const VendorProfileForm = () => {
           yearsInBusiness: profile.vendorDetails?.yearsInBusiness || "",
           certifications: profile.vendorDetails?.certifications || [],
           operatingAreas: profile.vendorDetails?.operatingAreas || [],
-          businessRegistration: profile.vendorDetails?.businessRegistration || "",
+          businessRegistration:
+            profile.vendorDetails?.businessRegistration || "",
           offersCredit: profile.vendorDetails?.offersCredit || false,
           interests: profile.vendorDetails?.interests || [],
           otherInterests: profile.vendorDetails?.otherInterests || "",
@@ -137,15 +148,17 @@ const VendorProfileForm = () => {
           handleArrayChange("longitude", longitude.toString());
           handleArrayChange(
             "location",
-            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`,
           );
           setGeoLoading(false);
         },
         (error) => {
           console.error("Geolocation error:", error);
-          setError("Failed to get your location. Please enable location services.");
+          setError(
+            "Failed to get your location. Please enable location services.",
+          );
           setGeoLoading(false);
-        }
+        },
       );
     } else {
       setError("Geolocation is not supported by your browser.");
@@ -160,7 +173,12 @@ const VendorProfileForm = () => {
 
     try {
       // Validate required fields
-      if (!formData.phone || !formData.location || !formData.country || !formData.state) {
+      if (
+        !formData.phone ||
+        !formData.location ||
+        !formData.country ||
+        !formData.state
+      ) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -181,10 +199,11 @@ const VendorProfileForm = () => {
         ...formData,
         vendorDetails: {
           ...formData.vendorDetails,
-          otherInterests:
-            formData.vendorDetails.interests.includes("Other (Please specify)")
-              ? customInterests
-              : "",
+          otherInterests: formData.vendorDetails.interests.includes(
+            "Other (Please specify)",
+          )
+            ? customInterests
+            : "",
         },
       };
 
@@ -202,7 +221,7 @@ const VendorProfileForm = () => {
           setProfile({
             ...response.data.profile,
             profileType: "vendor",
-          })
+          }),
         );
       } else {
         // If API doesn't return profile, at least ensure profileType is set
@@ -234,15 +253,35 @@ const VendorProfileForm = () => {
 
   const canUseProfile = canAccessFeature(subscriptionStatusType, "profile");
 
-  if (subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+  if (subscriptionLoading)
+    return <div style={{ padding: "24px" }}>Loading...</div>;
 
   if (!canUseProfile) {
     return (
-      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+      <div
+        style={{
+          padding: "clamp(16px, 4vw, 32px)",
+          textAlign: "center",
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(24px, 4vw, 32px)",
+            color: "#193325",
+            marginBottom: "16px",
+          }}
+        >
           Complete Your Profile
         </h1>
-        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+        <p
+          style={{
+            fontSize: "clamp(14px, 2vw, 16px)",
+            color: "#666",
+            marginBottom: "24px",
+          }}
+        >
           You need an active subscription to complete and manage your profile.
         </p>
         <button
@@ -368,9 +407,7 @@ const VendorProfileForm = () => {
                   ))}
                 </select>
                 {!formData.state && (
-                  <small className="hint">
-                    Please select a state first
-                  </small>
+                  <small className="hint">Please select a state first</small>
                 )}
               </div>
             )}
@@ -397,7 +434,9 @@ const VendorProfileForm = () => {
                 {geoLoading ? "Getting Location..." : "📍 Use GPS"}
               </button>
             </div>
-            {errors.location && <span className="error">{errors.location}</span>}
+            {errors.location && (
+              <span className="error">{errors.location}</span>
+            )}
             <small className="hint">
               {formData.latitude &&
                 `Coordinates: ${formData.latitude}, ${formData.longitude}`}
@@ -415,7 +454,9 @@ const VendorProfileForm = () => {
               id="businessType"
               name="businessType"
               value={formData.vendorDetails.businessType}
-              onChange={(e) => handleNestedChange("businessType", e.target.value)}
+              onChange={(e) =>
+                handleNestedChange("businessType", e.target.value)
+              }
               required
             >
               <option value="">Select Business Type</option>
@@ -435,9 +476,11 @@ const VendorProfileForm = () => {
                   <input
                     type="checkbox"
                     checked={formData.vendorDetails.servicesOffered.includes(
-                      service
+                      service,
                     )}
-                    onChange={() => handleMultiSelect("servicesOffered", service)}
+                    onChange={() =>
+                      handleMultiSelect("servicesOffered", service)
+                    }
                   />
                   <span>{service}</span>
                 </label>
@@ -452,7 +495,9 @@ const VendorProfileForm = () => {
                 id="yearsInBusiness"
                 name="yearsInBusiness"
                 value={formData.vendorDetails.yearsInBusiness}
-                onChange={(e) => handleNestedChange("yearsInBusiness", e.target.value)}
+                onChange={(e) =>
+                  handleNestedChange("yearsInBusiness", e.target.value)
+                }
                 required
               >
                 <option value="">Select Years</option>
@@ -499,7 +544,6 @@ const VendorProfileForm = () => {
         <div className="form-section">
           <h2>Service Coverage & Details</h2>
 
-
           <div className="form-group">
             <label>Certifications & Compliance</label>
             <div className="checkbox-group">
@@ -507,7 +551,9 @@ const VendorProfileForm = () => {
                 <label key={cert} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.vendorDetails.certifications.includes(cert)}
+                    checked={formData.vendorDetails.certifications.includes(
+                      cert,
+                    )}
                     onChange={() => handleMultiSelect("certifications", cert)}
                   />
                   <span>{cert}</span>
@@ -523,7 +569,9 @@ const VendorProfileForm = () => {
                 <label key={interest} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.vendorDetails.interests.includes(interest)}
+                    checked={formData.vendorDetails.interests.includes(
+                      interest,
+                    )}
                     onChange={() => handleMultiSelect("interests", interest)}
                   />
                   <span>{interest}</span>
@@ -533,7 +581,7 @@ const VendorProfileForm = () => {
           </div>
 
           {formData.vendorDetails.interests.includes(
-            "Other (Please specify)"
+            "Other (Please specify)",
           ) && (
             <div className="form-group">
               <label htmlFor="customInterests">
@@ -562,6 +610,32 @@ const VendorProfileForm = () => {
           </div>
 
           <div className="form-group">
+            <label htmlFor="profileImageUrl">Profile Image URL</label>
+            <input
+              type="url"
+              id="profileImageUrl"
+              name="profileImageUrl"
+              value={formData.profileImageUrl || ""}
+              onChange={handleChange}
+              placeholder="https://example.com/your-business-logo.jpg"
+            />
+            {formData.profileImageUrl && (
+              <img
+                src={formData.profileImageUrl}
+                alt="Profile preview"
+                style={{
+                  marginTop: "10px",
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "1px solid #ddd",
+                }}
+              />
+            )}
+          </div>
+
+          <div className="form-group">
             <label htmlFor="additionalInfo">Additional Information</label>
             <textarea
               id="additionalInfo"
@@ -576,11 +650,7 @@ const VendorProfileForm = () => {
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="submit-button"
-          disabled={submitting}
-        >
+        <button type="submit" className="submit-button" disabled={submitting}>
           {submitting ? "Saving Profile..." : "Complete Profile"}
         </button>
       </form>

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
-import AdminLayout from "./AdminLayout";
+import { useEffect, useState } from "react";
 import useSagaApi from "../../hooks/useSagaApi";
+import AdminLayout from "./AdminLayout";
 
 const formatNaira = (amount = 0) => `₦${Number(amount || 0).toLocaleString()}`;
 
 const AdminDashboard = () => {
   const [overview, setOverview] = useState(null);
+  const [messageMetrics, setMessageMetrics] = useState(null);
+  const [riskMetrics, setRiskMetrics] = useState(null);
   const [flaggedMessages, setFlaggedMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,13 +16,18 @@ const AdminDashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const dashboardRes = await sagaApi({ service: "adminApi", method: "getDashboard" });
+        const dashboardRes = await sagaApi({
+          service: "adminApi",
+          method: "getDashboard",
+        });
         const flaggedRes = await sagaApi({
           service: "adminApi",
           method: "getFlaggedMessages",
           args: [{ limit: 5, page: 1 }],
         });
         setOverview(dashboardRes.data.overview);
+        setMessageMetrics(dashboardRes.data.messages || null);
+        setRiskMetrics(dashboardRes.data.risks || null);
         setFlaggedMessages(flaggedRes.data.messages || []);
       } catch {
         setError("Unable to load admin dashboard");
@@ -69,6 +76,26 @@ const AdminDashboard = () => {
           <div className="admin-card">
             <h3>Agent Available Balance</h3>
             <p>{formatNaira(overview.totalAgentAvailableBalance)}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Declined Agent Applications</h3>
+            <p>{overview.declinedAgentApplications || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Total Flagged Messages</h3>
+            <p>{messageMetrics?.totalFlagged || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Weekly Flagged Messages</h3>
+            <p>{messageMetrics?.recentlyFlagged || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>High Risk Users</h3>
+            <p>{riskMetrics?.highRiskUsers || 0}</p>
+          </div>
+          <div className="admin-card">
+            <h3>Weekly Risk Incidents</h3>
+            <p>{riskMetrics?.weeklyFlaggedMessages || 0}</p>
           </div>
         </div>
       )}

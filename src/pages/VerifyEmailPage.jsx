@@ -1,30 +1,41 @@
 import { Button, Flex, Text } from "@radix-ui/themes";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
+import {
+  clearAuthFeedback,
+  verifyEmailRequest,
+} from "../redux/slices/userSlice";
 
 const VerifyEmailPage = () => {
-  const {
-    verifyEmail,
-    loading,
-    error,
-    statusMessage,
-    emailVerified,
-    clearFeedback,
-  } = useAuth();
+  const { loading, error, statusMessage, emailVerified } = useAuth();
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
+  const verifiedTokenRef = useRef(null);
 
   const token = new URLSearchParams(location.search).get("token");
 
   useEffect(() => {
-    if (token) {
-      verifyEmail(token);
+    if (!token) {
+      return;
     }
 
-    return () => clearFeedback();
-  }, [token, verifyEmail, clearFeedback]);
+    if (verifiedTokenRef.current === token) {
+      return;
+    }
+
+    verifiedTokenRef.current = token;
+    dispatch(verifyEmailRequest({ token }));
+  }, [token, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearAuthFeedback());
+    };
+  }, [dispatch]);
 
   useEffect(() => {
     if (emailVerified) {

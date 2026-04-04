@@ -8,11 +8,26 @@ import AuthLayout from "../layouts/AuthLayout";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated, startSocialAuth } = useAuth();
+  const {
+    login,
+    loading,
+    error,
+    isAuthenticated,
+    twoFactorRequired,
+    twoFactorChallengeToken,
+    verifyTwoFactor,
+    startSocialAuth,
+  } = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
+
+    if (twoFactorRequired) {
+      verifyTwoFactor(twoFactorChallengeToken, data.twoFactorCode);
+      return;
+    }
+
     login(data.email, data.password);
   };
 
@@ -87,6 +102,31 @@ const LoginPage = () => {
             </Form.Message>
           </Form.Field>
 
+          {twoFactorRequired && (
+            <Form.Field
+              name="twoFactorCode"
+              style={{ display: "grid", gap: "var(--space-1)" }}
+            >
+              <Form.Label asChild>
+                <Text size="2" weight="bold">
+                  Verification Code
+                </Text>
+              </Form.Label>
+              <Form.Control asChild>
+                <TextField.Root
+                  size="3"
+                  type="text"
+                  required
+                  placeholder="Enter 6-digit code or recovery code"
+                  title="Enter either a 6-digit TOTP code or an 8-character recovery code"
+                />
+              </Form.Control>
+              <Form.Message size="1" style={{ color: "#666" }}>
+                Enter the 6-digit code from your authenticator app or an 8-character recovery code
+              </Form.Message>
+            </Form.Field>
+          )}
+
           <Form.Submit asChild>
             <Button
               disabled={loading}
@@ -126,10 +166,22 @@ const LoginPage = () => {
           </Flex>
 
           <Flex align="center" justify="between" wrap="wrap" gap="3">
-            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("google", "login")}>
+            <Button
+              variant="outline"
+              color="gray"
+              highContrast
+              type="button"
+              onClick={() => startSocialAuth("google", "login")}
+            >
               <FaGoogle /> Google
             </Button>
-            <Button variant="outline" color="gray" highContrast type="button" onClick={() => startSocialAuth("microsoft", "login")}>
+            <Button
+              variant="outline"
+              color="gray"
+              highContrast
+              type="button"
+              onClick={() => startSocialAuth("microsoft", "login")}
+            >
               <FaWindows /> Microsoft
             </Button>
           </Flex>

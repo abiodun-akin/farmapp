@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import "./FarmerProfileForm.css";
-import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
+import { useNavigate } from "react-router-dom";
+import { africanCountries } from "../data/africanCountries";
+import {
+  animals,
+  certifications,
+  crops,
+  farmerInterests,
+  farmingAreas,
+  farmSizes,
+  getLGAsForState,
+  nigerianStates,
+  yearsOfExperience,
+} from "../data/nigerianGeoData";
 import { useForm } from "../hooks/useForm";
+import useSagaApi from "../hooks/useSagaApi";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { setProfile } from "../redux/slices/userSlice";
 import { canAccessFeature } from "../utils/subscriptionHelper";
-import useSagaApi from "../hooks/useSagaApi";
-import {
-  nigerianStates,
-  farmingAreas,
-  crops,
-  animals,
-  farmSizes,
-  yearsOfExperience,
-  certifications,
-  farmerInterests,
-  getLGAsForState,
-} from "../data/nigerianGeoData";
-import { africanCountries } from "../data/africanCountries";
+import "./FarmerProfileForm.css";
 
 /**
  * Farmer Profile Form Component
@@ -33,7 +33,8 @@ const FarmerProfileForm = () => {
   const [customInterests, setCustomInterests] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const sagaApi = useSagaApi();
-  const { statusType: subscriptionStatusType, subscriptionLoading } = useSubscriptionStatus();
+  const { statusType: subscriptionStatusType, subscriptionLoading } =
+    useSubscriptionStatus();
 
   const { formData, handleChange, handleArrayChange, errors } = useForm({
     phone: "",
@@ -43,6 +44,7 @@ const FarmerProfileForm = () => {
     lga: "",
     latitude: "",
     longitude: "",
+    profileImageUrl: "",
     bio: "",
     farmerDetails: {
       farmingAreas: [],
@@ -58,16 +60,17 @@ const FarmerProfileForm = () => {
   });
 
   // Get available LGAs for selected state
-  const availableLGAs = formData.state
-    ? getLGAsForState(formData.state)
-    : [];
+  const availableLGAs = formData.state ? getLGAsForState(formData.state) : [];
 
   const isNigeria = formData.country === "Nigeria";
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await sagaApi({ service: "userApi", method: "getProfile" });
+        const response = await sagaApi({
+          service: "userApi",
+          method: "getProfile",
+        });
         const profile = response.data?.profile;
 
         if (!profile || profile.profileType !== "farmer") {
@@ -79,8 +82,15 @@ const FarmerProfileForm = () => {
         handleArrayChange("location", profile.location || "");
         handleArrayChange("state", profile.state || "");
         handleArrayChange("lga", profile.lga || "");
-        handleArrayChange("latitude", profile.latitude ? String(profile.latitude) : "");
-        handleArrayChange("longitude", profile.longitude ? String(profile.longitude) : "");
+        handleArrayChange(
+          "latitude",
+          profile.latitude ? String(profile.latitude) : "",
+        );
+        handleArrayChange(
+          "longitude",
+          profile.longitude ? String(profile.longitude) : "",
+        );
+        handleArrayChange("profileImageUrl", profile.profileImageUrl || "");
         handleArrayChange("bio", profile.bio || "");
         handleArrayChange("farmerDetails", {
           farmingAreas: profile.farmerDetails?.farmingAreas || [],
@@ -138,15 +148,17 @@ const FarmerProfileForm = () => {
           handleArrayChange("longitude", longitude.toString());
           handleArrayChange(
             "location",
-            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+            `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`,
           );
           setGeoLoading(false);
         },
         (error) => {
           console.error("Geolocation error:", error);
-          setError("Failed to get your location. Please enable location services.");
+          setError(
+            "Failed to get your location. Please enable location services.",
+          );
           setGeoLoading(false);
-        }
+        },
       );
     } else {
       setError("Geolocation is not supported by your browser.");
@@ -164,7 +176,12 @@ const FarmerProfileForm = () => {
 
     try {
       // Validate required fields
-      if (!formData.phone || !formData.location || !formData.country || !formData.state) {
+      if (
+        !formData.phone ||
+        !formData.location ||
+        !formData.country ||
+        !formData.state
+      ) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -185,10 +202,11 @@ const FarmerProfileForm = () => {
         ...formData,
         farmerDetails: {
           ...formData.farmerDetails,
-          otherInterests:
-            formData.farmerDetails.interests.includes("Other (Please specify)")
-              ? customInterests
-              : "",
+          otherInterests: formData.farmerDetails.interests.includes(
+            "Other (Please specify)",
+          )
+            ? customInterests
+            : "",
         },
       };
 
@@ -206,7 +224,7 @@ const FarmerProfileForm = () => {
           setProfile({
             ...response.data.profile,
             profileType: "farmer",
-          })
+          }),
         );
       } else {
         // If API doesn't return profile, at least ensure profileType is set
@@ -238,15 +256,35 @@ const FarmerProfileForm = () => {
 
   const canUseProfile = canAccessFeature(subscriptionStatusType, "profile");
 
-  if (subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+  if (subscriptionLoading)
+    return <div style={{ padding: "24px" }}>Loading...</div>;
 
   if (!canUseProfile) {
     return (
-      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+      <div
+        style={{
+          padding: "clamp(16px, 4vw, 32px)",
+          textAlign: "center",
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(24px, 4vw, 32px)",
+            color: "#193325",
+            marginBottom: "16px",
+          }}
+        >
           Complete Your Profile
         </h1>
-        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+        <p
+          style={{
+            fontSize: "clamp(14px, 2vw, 16px)",
+            color: "#666",
+            marginBottom: "24px",
+          }}
+        >
           You need an active subscription to complete and manage your profile.
         </p>
         <button
@@ -372,9 +410,7 @@ const FarmerProfileForm = () => {
                   ))}
                 </select>
                 {!formData.state && (
-                  <small className="hint">
-                    Please select a state first
-                  </small>
+                  <small className="hint">Please select a state first</small>
                 )}
               </div>
             )}
@@ -401,7 +437,9 @@ const FarmerProfileForm = () => {
                 {geoLoading ? "Getting Location..." : "📍 Use GPS"}
               </button>
             </div>
-            {errors.location && <span className="error">{errors.location}</span>}
+            {errors.location && (
+              <span className="error">{errors.location}</span>
+            )}
             <small className="hint">
               {formData.latitude &&
                 `Coordinates: ${formData.latitude}, ${formData.longitude}`}
@@ -436,7 +474,9 @@ const FarmerProfileForm = () => {
                 <label key={crop} className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.farmerDetails.cropsProduced.includes(crop)}
+                    checked={formData.farmerDetails.cropsProduced.includes(
+                      crop,
+                    )}
                     onChange={() => handleMultiSelect("cropsProduced", crop)}
                   />
                   <span>{crop}</span>
@@ -453,7 +493,7 @@ const FarmerProfileForm = () => {
                   <input
                     type="checkbox"
                     checked={formData.farmerDetails.animalsRaised.includes(
-                      animal
+                      animal,
                     )}
                     onChange={() => handleMultiSelect("animalsRaised", animal)}
                   />
@@ -515,7 +555,7 @@ const FarmerProfileForm = () => {
                   <input
                     type="checkbox"
                     checked={formData.farmerDetails.certifications.includes(
-                      cert
+                      cert,
                     )}
                     onChange={() => handleMultiSelect("certifications", cert)}
                   />
@@ -533,7 +573,7 @@ const FarmerProfileForm = () => {
                   <input
                     type="checkbox"
                     checked={formData.farmerDetails.interests.includes(
-                      interest
+                      interest,
                     )}
                     onChange={() => handleMultiSelect("interests", interest)}
                   />
@@ -544,7 +584,7 @@ const FarmerProfileForm = () => {
           </div>
 
           {formData.farmerDetails.interests.includes(
-            "Other (Please specify)"
+            "Other (Please specify)",
           ) && (
             <div className="form-group">
               <label htmlFor="customInterests">
@@ -573,6 +613,32 @@ const FarmerProfileForm = () => {
           </div>
 
           <div className="form-group">
+            <label htmlFor="profileImageUrl">Profile Image URL</label>
+            <input
+              type="url"
+              id="profileImageUrl"
+              name="profileImageUrl"
+              value={formData.profileImageUrl || ""}
+              onChange={handleChange}
+              placeholder="https://example.com/your-photo.jpg"
+            />
+            {formData.profileImageUrl && (
+              <img
+                src={formData.profileImageUrl}
+                alt="Profile preview"
+                style={{
+                  marginTop: "10px",
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "1px solid #ddd",
+                }}
+              />
+            )}
+          </div>
+
+          <div className="form-group">
             <label htmlFor="additionalInfo">Additional Information</label>
             <textarea
               id="additionalInfo"
@@ -587,11 +653,7 @@ const FarmerProfileForm = () => {
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="submit-button"
-          disabled={submitting}
-        >
+        <button type="submit" className="submit-button" disabled={submitting}>
           {submitting ? "Saving Profile..." : "Complete Profile"}
         </button>
       </form>
