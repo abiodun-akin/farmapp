@@ -58,6 +58,16 @@ export const userApi = {
   regenerateRecoveryCodes: () =>
     api.post("/auth/2fa/recovery-codes/regenerate"),
 
+  // TOTP Authenticator App
+  initiateTwoFactorSetup: (options = {}) =>
+    api.post("/auth/2fa/setup", options),
+
+  verifyTwoFactorSetup: (options = {}) =>
+    api.post("/auth/2fa/setup/verify", options),
+
+  setTwoFactorMethod: (method) =>
+    api.put("/auth/2fa/method", { method }),
+
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 
   resetPassword: (token, password) =>
