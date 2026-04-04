@@ -10,6 +10,9 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
   const [error, setError] = useState("");
   const [recoveryCodes, setRecoveryCodes] = useState(null);
   const [showSecret, setShowSecret] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleMethodSelect = async (selectedMethod) => {
     setMethod(selectedMethod);
@@ -101,6 +104,37 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
     }
     if (onClose) {
       onClose();
+    }
+  };
+
+  const handleDownloadCodes = () => {
+    const text = recoveryCodes.join("\n");
+    const element = document.createElement("a");
+    const file = new Blob([text], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = `farmconnect-recovery-codes-${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const handleEmailCodes = async () => {
+    setEmailLoading(true);
+    setEmailError("");
+    try {
+      await sagaApi({
+        service: "userApi",
+        method: "sendRecoveryCodesEmail",
+      });
+      setEmailSent(true);
+    } catch (err) {
+      setEmailError(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Failed to send recovery codes email",
+      );
+    } finally {
+      setEmailLoading(false);
     }
   };
 
@@ -290,17 +324,52 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                   {recoveryCodes.join("\n")}
                 </Box>
 
-                <Button
-                  variant="soft"
-                  size="1"
-                  onClick={() => {
-                    const text = recoveryCodes.join("\n");
-                    navigator.clipboard.writeText(text);
-                    alert("Codes copied to clipboard");
-                  }}
-                >
-                  Copy Codes
-                </Button>
+                <Flex direction="column" gap="2" style={{ marginTop: "12px" }}>
+                  <Button
+                    variant="soft"
+                    size="1"
+                    onClick={() => {
+                      const text = recoveryCodes.join("\n");
+                      navigator.clipboard.writeText(text);
+                      alert("Codes copied to clipboard");
+                    }}
+                  >
+                    📋 Copy Codes
+                  </Button>
+
+                  <Button
+                    variant="soft"
+                    size="1"
+                    onClick={handleDownloadCodes}
+                  >
+                    ⬇️ Download as File
+                  </Button>
+
+                  <Button
+                    variant="soft"
+                    size="1"
+                    onClick={handleEmailCodes}
+                    disabled={emailLoading || emailSent}
+                  >
+                    {emailLoading
+                      ? "Sending..."
+                      : emailSent
+                        ? "✓ Email Queued"
+                        : "📧 Send to Email"}
+                  </Button>
+
+                  {emailError && (
+                    <Text color="red" size="2">
+                      {emailError}
+                    </Text>
+                  )}
+
+                  {emailSent && (
+                    <Text color="green" size="2">
+                      Recovery codes email has been sent to {user?.email}
+                    </Text>
+                  )}
+                </Flex>
               </Flex>
             </Card>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import TwoFactorSetupModal from "../components/TwoFactorSetupModal";
 import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { logoutRequest, setProfile } from "../redux/slices/userSlice";
@@ -17,6 +18,11 @@ const SettingsPage = () => {
   const [twoFactorMessage, setTwoFactorMessage] = useState("");
   const [recoveryCodeStatus, setRecoveryCodeStatus] = useState(null);
   const [recoveryCodesBusy, setRecoveryCodesBusy] = useState(false);
+  const [emailCodesSending, setEmailCodesSending] = useState(false);
+  const [emailCodesError, setEmailCodesError] = useState("");
+  const [emailCodesSent, setEmailCodesSent] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } =
     useSubscriptionStatus();
@@ -69,29 +75,34 @@ const SettingsPage = () => {
   };
 
   const handleToggleTwoFactor = async () => {
-    setTwoFactorBusy(true);
-    setTwoFactorMessage("");
-    try {
-      if (user?.twoFactorEnabled) {
+    if (user?.twoFactorEnabled) {
+      // Disable 2FA
+      setTwoFactorBusy(true);
+      setTwoFactorMessage("");
+      try {
         await sagaApi({ service: "userApi", method: "disableTwoFactor" });
         dispatch(setProfile({ twoFactorEnabled: false }));
         setTwoFactorMessage("Two-factor authentication disabled");
         setRecoveryCodeStatus(null);
         setShowRecoveryCodes(false);
-      } else {
-        await sagaApi({ service: "userApi", method: "enableTwoFactor" });
-        dispatch(setProfile({ twoFactorEnabled: true }));
-        setTwoFactorMessage("Two-factor authentication enabled");
-        // Fetch recovery codes after enabling
-        handleFetchRecoveryCodes();
+      } catch (err) {
+        setTwoFactorMessage(
+          err?.response?.data?.error || "Unable to disable 2FA",
+        );
+      } finally {
+        setTwoFactorBusy(false);
       }
-    } catch (err) {
-      setTwoFactorMessage(
-        err?.response?.data?.error || "Unable to update 2FA setting",
-      );
-    } finally {
-      setTwoFactorBusy(false);
+    } else {
+      // Enable 2FA - show setup modal
+      setShow2FAModal(true);
     }
+  };
+
+  const handle2FASetupSuccess = (setupResult) => {
+    dispatch(setProfile({ twoFactorEnabled: true }));
+    setTwoFactorMessage("Two-factor authentication enabled successfully!");
+    setRecoveryCodeStatus({ remaining: 10, total: 10 });
+    setShow2FAModal(false);
   };
 
   const handleFetchRecoveryCodes = async () => {
@@ -132,6 +143,52 @@ const SettingsPage = () => {
       alert("Error regenerating recovery codes. Please try again.");
     } finally {
       setRecoveryCodesBusy(false);
+    }
+  };
+
+  const handleSendRecoveryCodesEmail = async () => {
+    setEmailCodesSending(true);
+    setEmailCodesError("");
+    try {
+      await sagaApi({
+        service: "userApi",
+        method: "sendRecoveryCodesEmail",
+      });
+      setEmailCodesSent(true);
+      setTimeout(() => setEmailCodesSent(false), 3000);
+    } catch (err) {
+      setEmailCodesError(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Failed to send recovery codes email",
+      );
+    } finally {
+      setEmailCodesSending(false);
+    }
+  };
+
+  const handleDownloadRecoveryCodes = async () => {
+    try {
+      const response = await sagaApi({
+        service: "userApi",
+        method: "getRecoveryCodes",
+      });
+      const codes = response?.data?.recoveryCodes?.remaining || [];
+      if (!codes || codes.length === 0) {
+        alert("No recovery codes available to download");
+        return;
+      }
+      
+      const text = codes.join("\n");
+      const element = document.createElement("a");
+      const file = new Blob([text], { type: "text/plain" });
+      element.href = URL.createObjectURL(file);
+      element.download = `farmconnect-recovery-codes-${new Date().toISOString().split("T")[0]}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } catch (_err) {
+      alert("Error downloading recovery codes. Please try again.");
     }
   };
 
@@ -543,11 +600,63 @@ const SettingsPage = () => {
                 padding: "8px 12px",
                 fontSize: "clamp(12px, 1.5vw, 13px)",
                 cursor: recoveryCodesBusy ? "not-allowed" : "pointer",
+                marginRight: "8px",
                 opacity: recoveryCodesBusy ? 0.75 : 1,
               }}
             >
               {recoveryCodesBusy ? "Generating..." : "Generate New Codes"}
             </button>
+            <button
+              onClick={handleDownloadRecoveryCodes}
+              disabled={recoveryCodesBusy}
+              style={{
+                background: "#4caf50",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "8px 12px",
+                fontSize: "clamp(12px, 1.5vw, 13px)",
+                cursor: recoveryCodesBusy ? "not-allowed" : "pointer",
+                marginRight: "8px",
+                opacity: recoveryCodesBusy ? 0.75 : 1,
+              }}
+            >
+              ⬇️ Download
+            </button>
+            <button
+              onClick={handleSendRecoveryCodesEmail}
+              disabled={recoveryCodesBusy || emailCodesSending}
+              style={{
+                background: emailCodesSent ? "#2196f3" : "#9c27b0",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "8px 12px",
+                fontSize: "clamp(12px, 1.5vw, 13px)",
+                cursor:
+                  recoveryCodesBusy || emailCodesSending
+                    ? "not-allowed"
+                    : "pointer",
+                opacity: recoveryCodesBusy || emailCodesSending ? 0.75 : 1,
+              }}
+            >
+              {emailCodesSending
+                ? "Sending..."
+                : emailCodesSent
+                  ? "✓ Sent"
+                  : "📧 Email"}
+            </button>
+            {emailCodesError && (
+              <p
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "clamp(12px, 1.5vw, 13px)",
+                  marginTop: "8px",
+                }}
+              >
+                {emailCodesError}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -596,6 +705,16 @@ const SettingsPage = () => {
           Logout
         </button>
       </div>
+
+      {/* 2FA Setup Modal */}
+      {show2FAModal && (
+        <TwoFactorSetupModal
+          onClose={() => setShow2FAModal(false)}
+          onSuccess={handle2FASetupSuccess}
+          user={user}
+          sagaApi={sagaApi}
+        />
+      )}
     </div>
   );
 };
