@@ -101,7 +101,7 @@ const SettingsPage = () => {
         service: "userApi",
         method: "getRecoveryCodes",
       });
-      setRecoveryCodeStatus(response?.recoveryCodes);
+      setRecoveryCodeStatus(response?.data?.recoveryCodes);
     } catch (_err) {
       console.error("Error fetching recovery codes");
     } finally {
@@ -125,7 +125,7 @@ const SettingsPage = () => {
         method: "regenerateRecoveryCodes",
       });
       alert(
-        `New recovery codes generated! Save them in a safe place:\n\n${response?.recoveryCodes?.join("\n")}`,
+        `New recovery codes generated! Save them in a safe place:\n\n${response?.data?.recoveryCodes?.join("\n")}`,
       );
       setRecoveryCodeStatus({ remaining: 10, total: 10 });
     } catch (_err) {
