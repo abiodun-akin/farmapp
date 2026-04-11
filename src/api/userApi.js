@@ -36,6 +36,20 @@ export const userAPI = {
 
   getSocialAuthUrl: (provider, mode = "login") =>
     `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
+
+  getNotificationPreferences: () => api.get("/auth/notification-preferences"),
+
+  updateNotificationPreferences: (notificationPreferences) =>
+    api.put("/auth/notification-preferences", { notificationPreferences }),
+
+  subscribeOfflineNotifications: (phoneNumber, gatewayDomain) =>
+    api.post("/auth/offline-notifications/subscribe", {
+      phoneNumber,
+      gatewayDomain,
+    }),
+
+  unsubscribeOfflineNotifications: () =>
+    api.post("/auth/offline-notifications/unsubscribe"),
 };
 
 // Profile API endpoints
@@ -58,8 +72,7 @@ export const userApi = {
   regenerateRecoveryCodes: () =>
     api.post("/auth/2fa/recovery-codes/regenerate"),
 
-  sendRecoveryCodesEmail: () =>
-    api.post("/auth/2fa/recovery-codes/send-email"),
+  sendRecoveryCodesEmail: () => api.post("/auth/2fa/recovery-codes/send-email"),
 
   // TOTP Authenticator App
   initiateTwoFactorSetup: (options = {}) =>
@@ -68,8 +81,7 @@ export const userApi = {
   verifyTwoFactorSetup: (options = {}) =>
     api.post("/auth/2fa/setup/verify", options),
 
-  setTwoFactorMethod: (method) =>
-    api.put("/auth/2fa/method", { method }),
+  setTwoFactorMethod: (method) => api.put("/auth/2fa/method", { method }),
 
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 
@@ -88,6 +100,20 @@ export const userApi = {
 
   getSocialAuthUrl: (provider, mode = "login") =>
     `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
+
+  getNotificationPreferences: () => api.get("/auth/notification-preferences"),
+
+  updateNotificationPreferences: (notificationPreferences) =>
+    api.put("/auth/notification-preferences", { notificationPreferences }),
+
+  subscribeOfflineNotifications: (phoneNumber, gatewayDomain) =>
+    api.post("/auth/offline-notifications/subscribe", {
+      phoneNumber,
+      gatewayDomain,
+    }),
+
+  unsubscribeOfflineNotifications: () =>
+    api.post("/auth/offline-notifications/unsubscribe"),
 
   // Profile management
   initializeProfile: (profileType) =>

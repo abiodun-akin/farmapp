@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import TwoFactorSetupModal from "../components/TwoFactorSetupModal";
@@ -6,6 +6,34 @@ import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { logoutRequest, setProfile } from "../redux/slices/userSlice";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+
+const defaultNotificationPreferences = {
+  channels: {
+    email: true,
+    sms: false,
+    inApp: true,
+  },
+  offline: {
+    subscribed: false,
+    phoneNumber: "",
+    gatewayDomain: "",
+    fallbackToEmail: true,
+  },
+  eventTypes: {
+    security: true,
+    billing: true,
+    matches: true,
+    messages: false,
+    system: true,
+  },
+  quietHours: {
+    enabled: false,
+    start: "22:00",
+    end: "06:00",
+    timezone: "Africa/Lagos",
+  },
+  digestMode: "instant",
+};
 
 const SettingsPage = () => {
   const dispatch = useDispatch();
@@ -23,10 +51,41 @@ const SettingsPage = () => {
   const [emailCodesSent, setEmailCodesSent] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+  const [notificationPreferences, setNotificationPreferences] = useState(
+    defaultNotificationPreferences,
+  );
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsSaving, setNotificationsSaving] = useState(false);
+  const [notificationsMessage, setNotificationsMessage] = useState("");
+  const [notificationsError, setNotificationsError] = useState("");
   const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } =
     useSubscriptionStatus();
   const canUseSettings = canAccessFeature(subscriptionStatusType, "profile");
+
+  useEffect(() => {
+    const loadNotificationPreferences = async () => {
+      setNotificationsLoading(true);
+      setNotificationsError("");
+      try {
+        const response = await sagaApi({
+          service: "userApi",
+          method: "getNotificationPreferences",
+        });
+        if (response?.data?.notificationPreferences) {
+          setNotificationPreferences(response.data.notificationPreferences);
+        }
+      } catch (_err) {
+        setNotificationsError(
+          "Unable to load notification preferences. You can still update and save manually.",
+        );
+      } finally {
+        setNotificationsLoading(false);
+      }
+    };
+
+    loadNotificationPreferences();
+  }, [sagaApi]);
 
   const handleLogout = () => {
     dispatch(logoutRequest({ reason: "manual" }));
@@ -178,7 +237,7 @@ const SettingsPage = () => {
         alert("No recovery codes available to download");
         return;
       }
-      
+
       const text = codes.join("\n");
       const element = document.createElement("a");
       const file = new Blob([text], { type: "text/plain" });
@@ -189,6 +248,93 @@ const SettingsPage = () => {
       document.body.removeChild(element);
     } catch (_err) {
       alert("Error downloading recovery codes. Please try again.");
+    }
+  };
+
+  const updatePreference = (path, value) => {
+    setNotificationPreferences((prev) => {
+      const next = JSON.parse(JSON.stringify(prev));
+      let cursor = next;
+      for (let i = 0; i < path.length - 1; i++) {
+        cursor[path[i]] = cursor[path[i]] || {};
+        cursor = cursor[path[i]];
+      }
+      cursor[path[path.length - 1]] = value;
+      return next;
+    });
+  };
+
+  const handleSaveNotificationPreferences = async () => {
+    setNotificationsSaving(true);
+    setNotificationsError("");
+    setNotificationsMessage("");
+    try {
+      const response = await sagaApi({
+        service: "userApi",
+        method: "updateNotificationPreferences",
+        args: [notificationPreferences],
+      });
+      if (response?.data?.notificationPreferences) {
+        setNotificationPreferences(response.data.notificationPreferences);
+      }
+      setNotificationsMessage("Notification preferences saved.");
+    } catch (err) {
+      setNotificationsError(
+        err?.response?.data?.error ||
+          "Unable to save notification preferences.",
+      );
+    } finally {
+      setNotificationsSaving(false);
+    }
+  };
+
+  const handleSubscribeOfflineNotifications = async () => {
+    setNotificationsSaving(true);
+    setNotificationsError("");
+    setNotificationsMessage("");
+    try {
+      const response = await sagaApi({
+        service: "userApi",
+        method: "subscribeOfflineNotifications",
+        args: [
+          notificationPreferences?.offline?.phoneNumber,
+          notificationPreferences?.offline?.gatewayDomain,
+        ],
+      });
+      if (response?.data?.notificationPreferences) {
+        setNotificationPreferences(response.data.notificationPreferences);
+      }
+      setNotificationsMessage("Offline notifications subscribed successfully.");
+    } catch (err) {
+      setNotificationsError(
+        err?.response?.data?.error ||
+          "Unable to subscribe to offline notifications.",
+      );
+    } finally {
+      setNotificationsSaving(false);
+    }
+  };
+
+  const handleUnsubscribeOfflineNotifications = async () => {
+    setNotificationsSaving(true);
+    setNotificationsError("");
+    setNotificationsMessage("");
+    try {
+      const response = await sagaApi({
+        service: "userApi",
+        method: "unsubscribeOfflineNotifications",
+      });
+      if (response?.data?.notificationPreferences) {
+        setNotificationPreferences(response.data.notificationPreferences);
+      }
+      setNotificationsMessage("Offline notifications unsubscribed.");
+    } catch (err) {
+      setNotificationsError(
+        err?.response?.data?.error ||
+          "Unable to unsubscribe from offline notifications.",
+      );
+    } finally {
+      setNotificationsSaving(false);
     }
   };
 
@@ -471,6 +617,374 @@ const SettingsPage = () => {
               {loading ? "Processing..." : "Permanently Delete My Account"}
             </button>
           </div>
+        )}
+      </div>
+
+      {/* Notifications Section */}
+      <div
+        style={{
+          marginBottom: "24px",
+          background: "#fff",
+          border: "1px solid #e0e0e0",
+          borderRadius: "10px",
+          padding: "clamp(16px, 3vw, 24px)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "clamp(16px, 2.5vw, 18px)",
+            color: "#193325",
+            marginBottom: "12px",
+          }}
+        >
+          Notifications
+        </h2>
+        <p
+          style={{
+            color: "#666",
+            marginBottom: "12px",
+            fontSize: "clamp(13px, 1.5vw, 14px)",
+          }}
+        >
+          Choose how and when you receive updates. Offline notifications use an
+          SMS gateway email address to avoid extra provider costs.
+        </p>
+
+        {notificationsLoading ? (
+          <p style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}>
+            Loading notification preferences...
+          </p>
+        ) : (
+          <>
+            <div style={{ marginBottom: "12px" }}>
+              <strong>Channels</strong>
+              <div
+                style={{
+                  marginTop: "8px",
+                  display: "flex",
+                  gap: "14px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(notificationPreferences.channels?.email)}
+                    onChange={(e) =>
+                      updatePreference(["channels", "email"], e.target.checked)
+                    }
+                  />{" "}
+                  Email
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(notificationPreferences.channels?.sms)}
+                    onChange={(e) =>
+                      updatePreference(["channels", "sms"], e.target.checked)
+                    }
+                  />{" "}
+                  Offline SMS (gateway)
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(notificationPreferences.channels?.inApp)}
+                    onChange={(e) =>
+                      updatePreference(["channels", "inApp"], e.target.checked)
+                    }
+                  />{" "}
+                  In-app
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <strong>Notification Types</strong>
+              <div
+                style={{
+                  marginTop: "8px",
+                  display: "flex",
+                  gap: "14px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.eventTypes?.security,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["eventTypes", "security"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  Security
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.eventTypes?.billing,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["eventTypes", "billing"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  Billing
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.eventTypes?.matches,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["eventTypes", "matches"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  Matches
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.eventTypes?.messages,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["eventTypes", "messages"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  Message Alerts
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.eventTypes?.system,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["eventTypes", "system"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  System
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <strong>Quiet Hours</strong>
+              <div
+                style={{
+                  marginTop: "8px",
+                  display: "flex",
+                  gap: "14px",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.quietHours?.enabled,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["quietHours", "enabled"],
+                        e.target.checked,
+                      )
+                    }
+                  />{" "}
+                  Enable quiet hours
+                </label>
+                <label>
+                  Start{" "}
+                  <input
+                    type="time"
+                    value={notificationPreferences.quietHours?.start || "22:00"}
+                    onChange={(e) =>
+                      updatePreference(["quietHours", "start"], e.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  End{" "}
+                  <input
+                    type="time"
+                    value={notificationPreferences.quietHours?.end || "06:00"}
+                    onChange={(e) =>
+                      updatePreference(["quietHours", "end"], e.target.value)
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "16px",
+                paddingTop: "12px",
+                borderTop: "1px solid #eaeaea",
+              }}
+            >
+              <strong>
+                Offline Notifications Subscription (Feature Phones)
+              </strong>
+              <p
+                style={{
+                  color: "#666",
+                  fontSize: "clamp(12px, 1.5vw, 13px)",
+                  marginTop: "8px",
+                }}
+              >
+                Provide your phone number and your carrier email-to-SMS gateway
+                domain (example: 2348012345678@carrier-sms.example).
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "8px",
+                }}
+              >
+                <input
+                  type="tel"
+                  placeholder="Phone number (digits only)"
+                  value={notificationPreferences.offline?.phoneNumber || ""}
+                  onChange={(e) =>
+                    updatePreference(["offline", "phoneNumber"], e.target.value)
+                  }
+                  style={{
+                    padding: "8px 10px",
+                    border: "1px solid #ccc",
+                    borderRadius: "6px",
+                    minWidth: "220px",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Gateway domain (e.g. txt.att.net)"
+                  value={notificationPreferences.offline?.gatewayDomain || ""}
+                  onChange={(e) =>
+                    updatePreference(
+                      ["offline", "gatewayDomain"],
+                      e.target.value,
+                    )
+                  }
+                  style={{
+                    padding: "8px 10px",
+                    border: "1px solid #ccc",
+                    borderRadius: "6px",
+                    minWidth: "240px",
+                  }}
+                />
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      notificationPreferences.offline?.fallbackToEmail,
+                    )}
+                    onChange={(e) =>
+                      updatePreference(
+                        ["offline", "fallbackToEmail"],
+                        e.target.checked,
+                      )
+                    }
+                  />
+                  Fallback to email if SMS fails
+                </label>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "10px",
+                }}
+              >
+                <button
+                  onClick={handleSubscribeOfflineNotifications}
+                  disabled={notificationsSaving}
+                  style={{
+                    background: "#2d8659",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "8px 14px",
+                    cursor: notificationsSaving ? "not-allowed" : "pointer",
+                    opacity: notificationsSaving ? 0.75 : 1,
+                  }}
+                >
+                  Subscribe Offline Notifications
+                </button>
+                <button
+                  onClick={handleUnsubscribeOfflineNotifications}
+                  disabled={notificationsSaving}
+                  style={{
+                    background: "#b42318",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "8px 14px",
+                    cursor: notificationsSaving ? "not-allowed" : "pointer",
+                    opacity: notificationsSaving ? 0.75 : 1,
+                  }}
+                >
+                  Unsubscribe Offline
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: "12px" }}>
+              <button
+                onClick={handleSaveNotificationPreferences}
+                disabled={notificationsSaving}
+                style={{
+                  background: "#1976d2",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "10px 16px",
+                  cursor: notificationsSaving ? "not-allowed" : "pointer",
+                  opacity: notificationsSaving ? 0.75 : 1,
+                }}
+              >
+                {notificationsSaving
+                  ? "Saving..."
+                  : "Save Notification Preferences"}
+              </button>
+            </div>
+          </>
+        )}
+
+        {notificationsMessage && (
+          <p style={{ color: "#2d8659", marginTop: "10px" }}>
+            {notificationsMessage}
+          </p>
+        )}
+        {notificationsError && (
+          <p style={{ color: "#b42318", marginTop: "10px" }}>
+            {notificationsError}
+          </p>
         )}
       </div>
 
