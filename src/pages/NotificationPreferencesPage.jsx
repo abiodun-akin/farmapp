@@ -15,6 +15,7 @@ const NotificationPreferencesPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [error, setError] = useState(null);
 
   // Load preferences on mount
   useEffect(() => {
@@ -24,13 +25,18 @@ const NotificationPreferencesPage = () => {
   const loadPreferences = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await notificationPreferencesAPI.getPreferences();
       setPreferences(response.data);
       setUnsavedChanges(false);
     } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Failed to load notification preferences";
+      setError(errorMessage);
       dispatch(
         addToast({
-          message: "Failed to load notification preferences",
+          message: errorMessage,
           type: "error",
         }),
       );
@@ -112,6 +118,34 @@ const NotificationPreferencesPage = () => {
       <Flex justify="center" align="center" minHeight="400px">
         <Spinner />
       </Flex>
+    );
+  }
+
+  if (error || !preferences) {
+    return (
+      <Box style={{ maxWidth: "900px", margin: "0 auto", padding: "24px" }}>
+        <Flex direction="column" gap="4" align="center">
+          <Text as="h1" size="6" weight="bold" color="red">
+            Unable to Load Preferences
+          </Text>
+          <Card
+            style={{
+              background: "#ffebee",
+              borderLeft: "4px solid #f44336",
+              padding: "16px",
+              width: "100%",
+            }}
+          >
+            <Text size="3" color="red">
+              {error ||
+                "Failed to load your notification preferences. Please try again."}
+            </Text>
+          </Card>
+          <Button onClick={() => loadPreferences()} color="blue">
+            Retry Loading
+          </Button>
+        </Flex>
+      </Box>
     );
   }
 
