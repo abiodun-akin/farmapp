@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { africanCountries } from "../data/africanCountries";
 import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
@@ -250,7 +251,13 @@ const MatchesPage = ({ title = "Matches" }) => {
         </button>
       </div>
 
-      {error && <p style={{ color: "#c62828" }}>{error}</p>}
+      {error && (
+        <ErrorDisplay
+          error={error}
+          onRetry={() => window.location.reload()}
+          showDismiss={false}
+        />
+      )}
 
       {matches.length === 0 && (
         <p>No matches available yet. Complete your profile and check again.</p>

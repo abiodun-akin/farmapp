@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { africanCountries } from "../data/africanCountries";
 import {
   animals,
@@ -323,7 +324,16 @@ const FarmerProfileForm = () => {
           Help us understand your farming background and interests
         </p>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <ErrorDisplay
+            error={error}
+            errorCode={
+              error.includes("verification") ? "EMAIL_NOT_VERIFIED" : undefined
+            }
+            onRetry={() => window.location.reload()}
+            showDismiss={false}
+          />
+        )}
 
         {/* Contact Information */}
         <div className="form-section">

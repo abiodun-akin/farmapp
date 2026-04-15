@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ErrorDisplay from "../../components/ErrorDisplay";
 import useSagaApi from "../../hooks/useSagaApi";
 import AdminLayout from "./AdminLayout";
 
@@ -42,7 +43,13 @@ const AdminDashboard = () => {
   return (
     <AdminLayout title="Admin Overview">
       {loading && <div className="admin-card">Loading...</div>}
-      {error && <div className="admin-card">{error}</div>}
+      {error && (
+        <ErrorDisplay
+          error={error}
+          onRetry={() => window.location.reload()}
+          showDismiss={false}
+        />
+      )}
       {overview && (
         <div className="admin-grid">
           <div className="admin-card">

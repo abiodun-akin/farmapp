@@ -2,6 +2,7 @@ import { Button, Card, Flex, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import ErrorDisplay from "../components/ErrorDisplay";
 import PaystackPayment from "../components/PaystackPayment";
 import useSagaApi from "../hooks/useSagaApi";
 import useToast from "../hooks/useToast";
@@ -338,8 +339,8 @@ const PaymentPage = () => {
       <FullPageLayout>
         <Flex
           direction="column"
-          align="center"
           justify="center"
+          align="center"
           p="8"
           style={{ minHeight: "100vh" }}
         >
@@ -348,26 +349,13 @@ const PaymentPage = () => {
               backgroundColor: "white",
               padding: "40px",
               maxWidth: "500px",
-              textAlign: "center",
             }}
           >
-            <Text size="6" weight="bold" style={{ color: "#e74c3c" }}>
-              Payment Error
-            </Text>
-            <Text size="3" style={{ color: "#666", marginTop: "16px" }}>
-              {error}
-            </Text>
-            <Button
-              onClick={() => setError(null)}
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#3498db",
-                color: "white",
-                padding: "10px 24px",
-              }}
-            >
-              Try Again
-            </Button>
+            <ErrorDisplay
+              error={error}
+              onRetry={() => setError(null)}
+              showDismiss={false}
+            />
           </Card>
         </Flex>
       </FullPageLayout>

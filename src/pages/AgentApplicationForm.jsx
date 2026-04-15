@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import ErrorDisplay from "../components/ErrorDisplay";
 import {
   applyAgentRequest,
   clearAgentActionState,
@@ -140,33 +141,15 @@ const AgentApplicationForm = () => {
         <button onClick={() => navigate(-1)} className="back-button">
           <FaArrowLeft /> Back
         </button>
-        <div
-          style={{
-            background: "#ffebee",
-            border: "1px solid #f44336",
-            borderRadius: "8px",
-            padding: "24px",
-            textAlign: "center",
-          }}
-        >
-          <h2 style={{ color: "#f44336", marginBottom: "12px" }}>
-            Unable to Load
-          </h2>
-          <p style={{ color: "#c62828", marginBottom: "16px" }}>{error}</p>
-          <p style={{ color: "#999", fontSize: "14px", marginBottom: "16px" }}>
-            If you haven't verified your email, please check your inbox for a
-            verification link.
-          </p>
-          <Button
-            onClick={() => window.location.reload()}
-            style={{
-              backgroundColor: "#1976d2",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Try Again
-          </Button>
+        <div style={{ maxWidth: "500px", margin: "0 auto" }}>
+          <ErrorDisplay
+            error={error}
+            errorCode={
+              error.includes("verification") ? "EMAIL_NOT_VERIFIED" : undefined
+            }
+            onRetry={() => window.location.reload()}
+            showDismiss={false}
+          />
         </div>
       </div>
     );

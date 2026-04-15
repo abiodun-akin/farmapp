@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminLayout from "./AdminLayout";
+import ErrorDisplay from "../../components/ErrorDisplay";
 import Pagination from "../../components/Pagination";
-import { exportToCSV, prepareUsersForCSV } from "../../utils/csvExport";
 import useSagaApi from "../../hooks/useSagaApi";
+import { exportToCSV, prepareUsersForCSV } from "../../utils/csvExport";
+import AdminLayout from "./AdminLayout";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -16,31 +17,34 @@ const AdminUsers = () => {
   const navigate = useNavigate();
   const sagaApi = useSagaApi();
 
-  const loadUsers = useCallback(async (page = 1, searchTerm = "", sort = "createdAt") => {
-    try {
-      setLoading(true);
-      const response = await sagaApi({
-        service: "adminApi",
-        method: "getUsers",
-        args: [
-          {
-            search: searchTerm,
-            page,
-            sortBy: sort,
-            limit: 15,
-          },
-        ],
-      });
-      setUsers(response.data.users || []);
-      setCurrentPage(response.data.pagination.page);
-      setTotalPages(response.data.pagination.pages);
-      setError(null);
-    } catch {
-      setError("Unable to load users");
-    } finally {
-      setLoading(false);
-    }
-  }, [sagaApi]);
+  const loadUsers = useCallback(
+    async (page = 1, searchTerm = "", sort = "createdAt") => {
+      try {
+        setLoading(true);
+        const response = await sagaApi({
+          service: "adminApi",
+          method: "getUsers",
+          args: [
+            {
+              search: searchTerm,
+              page,
+              sortBy: sort,
+              limit: 15,
+            },
+          ],
+        });
+        setUsers(response.data.users || []);
+        setCurrentPage(response.data.pagination.page);
+        setTotalPages(response.data.pagination.pages);
+        setError(null);
+      } catch {
+        setError("Unable to load users");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [sagaApi],
+  );
 
   useEffect(() => {
     loadUsers();
@@ -66,7 +70,7 @@ const AdminUsers = () => {
 
   const handleExport = () => {
     const csv = prepareUsersForCSV(users);
-    exportToCSV(csv, `users-export-${new Date().toISOString().split('T')[0]}`);
+    exportToCSV(csv, `users-export-${new Date().toISOString().split("T")[0]}`);
   };
 
   return (
@@ -82,7 +86,7 @@ const AdminUsers = () => {
           <button className="admin-button primary" type="submit">
             Search
           </button>
-          <select 
+          <select
             className="admin-input"
             value={sortBy}
             onChange={(e) => handleSort(e.target.value)}
@@ -92,7 +96,7 @@ const AdminUsers = () => {
             <option value="activityScore">Activity Score</option>
             <option value="lastLogin">Last Login</option>
           </select>
-          <button 
+          <button
             className="admin-button"
             type="button"
             onClick={handleExport}
@@ -105,7 +109,13 @@ const AdminUsers = () => {
 
       <div className="admin-card">
         {loading && <div>Loading users...</div>}
-        {error && <div>{error}</div>}
+        {error && (
+          <ErrorDisplay
+            error={error}
+            onRetry={() => loadUsers(1, search, sortBy)}
+            showDismiss={false}
+          />
+        )}
         <table className="admin-table">
           <thead>
             <tr>
@@ -152,7 +162,7 @@ const AdminUsers = () => {
         </table>
       </div>
 
-      <Pagination 
+      <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
