@@ -6,18 +6,15 @@ import { Box, Card, Flex, Switch, Text } from "@radix-ui/themes";
  * Controls notifications for auth-related events
  */
 const AuthNotificationPreferences = ({ preferences, onPreferenceChange }) => {
-  if (!preferences || !preferences.events?.auth) return null;
+  if (!preferences || !preferences.auth) return null;
 
-  const authEvents = preferences.events.auth;
+  const authEvents = preferences.auth;
 
   const handleToggle = (eventKey) => {
     onPreferenceChange({
-      events: {
-        ...preferences.events,
-        auth: {
-          ...authEvents,
-          [eventKey]: !authEvents[eventKey],
-        },
+      auth: {
+        ...authEvents,
+        [eventKey]: !authEvents[eventKey],
       },
     });
   };

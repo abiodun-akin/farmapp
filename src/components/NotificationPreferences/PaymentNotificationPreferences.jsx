@@ -9,18 +9,15 @@ const PaymentNotificationPreferences = ({
   preferences,
   onPreferenceChange,
 }) => {
-  if (!preferences || !preferences.events?.payment) return null;
+  if (!preferences || !preferences.payment) return null;
 
-  const paymentEvents = preferences.events.payment;
+  const paymentEvents = preferences.payment;
 
   const handleToggle = (eventKey) => {
     onPreferenceChange({
-      events: {
-        ...preferences.events,
-        payment: {
-          ...paymentEvents,
-          [eventKey]: !paymentEvents[eventKey],
-        },
+      payment: {
+        ...paymentEvents,
+        [eventKey]: !paymentEvents[eventKey],
       },
     });
   };

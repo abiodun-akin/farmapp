@@ -8,18 +8,15 @@ const ActivityNotificationPreferences = ({
   preferences,
   onPreferenceChange,
 }) => {
-  if (!preferences || !preferences.events?.activity) return null;
+  if (!preferences || !preferences.activity) return null;
 
-  const activityEvents = preferences.events.activity;
+  const activityEvents = preferences.activity;
 
   const handleToggle = (eventKey) => {
     onPreferenceChange({
-      events: {
-        ...preferences.events,
-        activity: {
-          ...activityEvents,
-          [eventKey]: !activityEvents[eventKey],
-        },
+      activity: {
+        ...activityEvents,
+        [eventKey]: !activityEvents[eventKey],
       },
     });
   };
