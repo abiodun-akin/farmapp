@@ -106,8 +106,14 @@ const FarmerProfileForm = () => {
         setCustomInterests(profile.farmerDetails?.otherInterests || "");
 
         dispatch(setProfile(profile));
-      } catch {
-        // Profile may not exist yet for first-time users.
+      } catch (err) {
+        // Track error for display - could be email verification required or API error
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "Unable to load profile. Please verify your email or try again.";
+        setError(errorMessage);
+        console.error("Error loading profile:", err);
       }
     };
 

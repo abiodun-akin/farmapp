@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import * as Form from "@radix-ui/react-form";
-import { Button, Flex, Text, TextArea, Link } from "@radix-ui/themes";
+import { Button, Link, Text, TextArea } from "@radix-ui/themes";
+import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   applyAgentRequest,
   clearAgentActionState,
@@ -30,13 +30,18 @@ const AgentApplicationForm = () => {
   const [validationError, setValidationError] = useState(null);
 
   const derivedAgent = agentStatus?.agent || {};
-  const currentAgentStatus = derivedAgent.status || agentStatus?.agentStatus || user?.agentStatus || "none";
-  const isApprovedAgent = Boolean(
-    derivedAgent.isAgent
-    || agentStatus?.isAgent
-    || user?.isAgent
-    || currentAgentStatus === "approved"
-  ) && currentAgentStatus === "approved";
+  const currentAgentStatus =
+    derivedAgent.status ||
+    agentStatus?.agentStatus ||
+    user?.agentStatus ||
+    "none";
+  const isApprovedAgent =
+    Boolean(
+      derivedAgent.isAgent ||
+      agentStatus?.isAgent ||
+      user?.isAgent ||
+      currentAgentStatus === "approved",
+    ) && currentAgentStatus === "approved";
 
   useEffect(() => {
     if (user) {
@@ -75,10 +80,12 @@ const AgentApplicationForm = () => {
     }
 
     setValidationError(null);
-    dispatch(applyAgentRequest({
-      motivation: data.motivation,
-      contactPhone: data.contactPhone,
-    }));
+    dispatch(
+      applyAgentRequest({
+        motivation: data.motivation,
+        contactPhone: data.contactPhone,
+      }),
+    );
   };
 
   // If already approved agent
@@ -91,7 +98,8 @@ const AgentApplicationForm = () => {
         <div className="agent-success-card">
           <h2>You're Already an Agent! ✓</h2>
           <p>
-            You have been approved as an agent and can start earning through referrals.
+            You have been approved as an agent and can start earning through
+            referrals.
           </p>
           <Button
             onClick={() => navigate("/agent-earnings")}
@@ -114,12 +122,51 @@ const AgentApplicationForm = () => {
         <div className="agent-pending-card">
           <h2>Application Under Review</h2>
           <p>
-            Your agent application is currently being reviewed by our admin team.
-            You'll be notified once we've made a decision.
+            Your agent application is currently being reviewed by our admin
+            team. You'll be notified once we've made a decision.
           </p>
           <p style={{ marginTop: "1rem", fontSize: "0.9rem", color: "gray" }}>
             Expected review time: 1-2 business days
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if initial status fetch failed
+  if (error && !agentStatus) {
+    return (
+      <div className="agent-application-container">
+        <button onClick={() => navigate(-1)} className="back-button">
+          <FaArrowLeft /> Back
+        </button>
+        <div
+          style={{
+            background: "#ffebee",
+            border: "1px solid #f44336",
+            borderRadius: "8px",
+            padding: "24px",
+            textAlign: "center",
+          }}
+        >
+          <h2 style={{ color: "#f44336", marginBottom: "12px" }}>
+            Unable to Load
+          </h2>
+          <p style={{ color: "#c62828", marginBottom: "16px" }}>{error}</p>
+          <p style={{ color: "#999", fontSize: "14px", marginBottom: "16px" }}>
+            If you haven't verified your email, please check your inbox for a
+            verification link.
+          </p>
+          <Button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: "#1976d2",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -143,8 +190,8 @@ const AgentApplicationForm = () => {
         <div className="agent-form-header">
           <h1>Become an Agent</h1>
           <p>
-            Earn rebates by referring farmers and vendors to FarmConnect. Share your unique promo
-            codes and watch your earnings grow!
+            Earn rebates by referring farmers and vendors to FarmConnect. Share
+            your unique promo codes and watch your earnings grow!
           </p>
         </div>
 
@@ -161,7 +208,9 @@ const AgentApplicationForm = () => {
 
         <Form.Root onSubmit={handleSubmit}>
           {(validationError || applyError || error) && (
-            <div className="error-message">{validationError || applyError || error}</div>
+            <div className="error-message">
+              {validationError || applyError || error}
+            </div>
           )}
           {applySuccess && (
             <div className="success-message">
@@ -238,8 +287,7 @@ const AgentApplicationForm = () => {
                 style={{ marginRight: "8px" }}
               />
               <label htmlFor="terms">
-                I agree to the{" "}
-                <Link href="#">Agent Agreement and Terms</Link>
+                I agree to the <Link href="#">Agent Agreement and Terms</Link>
               </label>
             </div>
 
