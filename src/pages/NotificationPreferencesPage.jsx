@@ -1,86 +1,39 @@
 import { Box, Button, Card, Flex, Spinner, Tabs, Text } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import notificationPreferencesAPI from "../api/notificationPreferencesApi";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import ErrorDisplay from "../components/ErrorDisplay";
 import ActivityNotificationPreferences from "../components/NotificationPreferences/ActivityNotificationPreferences";
 import AuthNotificationPreferences from "../components/NotificationPreferences/AuthNotificationPreferences";
 import ChannelPreferences from "../components/NotificationPreferences/ChannelPreferences";
 import PaymentNotificationPreferences from "../components/NotificationPreferences/PaymentNotificationPreferences";
 import QuietHoursPreferences from "../components/NotificationPreferences/QuietHoursPreferences";
-import { addToast } from "../redux/slices/toastSlice";
+import {
+  clearError,
+  fetchPreferencesRequest,
+  resetPreferencesRequest,
+  updatePreferencesLocally,
+  updatePreferencesRequest,
+} from "../redux/slices/notificationPreferencesSlice";
 
 const NotificationPreferencesPage = () => {
   const dispatch = useDispatch();
-  const [preferences, setPreferences] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [unsavedChanges, setUnsavedChanges] = useState(false);
-  const [error, setError] = useState(null);
+  const { preferences, loading, saving, resetting, error, unsavedChanges } =
+    useSelector((state) => state.notificationPreferences);
 
   // Load preferences on mount
   useEffect(() => {
-    loadPreferences();
-  }, []);
-
-  const loadPreferences = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await notificationPreferencesAPI.getPreferences();
-      setPreferences(response.data);
-      setUnsavedChanges(false);
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        "Failed to load notification preferences";
-      setError(errorMessage);
-      dispatch(
-        addToast({
-          message: errorMessage,
-          type: "error",
-        }),
-      );
-      console.error("Error loading preferences:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(fetchPreferencesRequest());
+  }, [dispatch]);
 
   const handlePreferenceChange = (updates) => {
-    setPreferences((prev) => ({
-      ...prev,
-      ...updates,
-    }));
-    setUnsavedChanges(true);
+    dispatch(updatePreferencesLocally(updates));
   };
 
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      const response =
-        await notificationPreferencesAPI.updatePreferences(preferences);
-      setPreferences(response.data.preferences);
-      setUnsavedChanges(false);
-      dispatch(
-        addToast({
-          message: "Notification preferences saved successfully",
-          type: "success",
-        }),
-      );
-    } catch (error) {
-      dispatch(
-        addToast({
-          message: "Failed to save preferences",
-          type: "error",
-        }),
-      );
-      console.error("Error saving preferences:", error);
-    } finally {
-      setSaving(false);
-    }
+  const handleSave = () => {
+    dispatch(updatePreferencesRequest({ preferences }));
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     if (
       !window.confirm(
         "Are you sure you want to reset all preferences to defaults?",
@@ -88,29 +41,12 @@ const NotificationPreferencesPage = () => {
     ) {
       return;
     }
+    dispatch(resetPreferencesRequest());
+  };
 
-    try {
-      setSaving(true);
-      const response = await notificationPreferencesAPI.resetPreferences();
-      setPreferences(response.data.preferences);
-      setUnsavedChanges(false);
-      dispatch(
-        addToast({
-          message: "Preferences reset to defaults",
-          type: "success",
-        }),
-      );
-    } catch (error) {
-      dispatch(
-        addToast({
-          message: "Failed to reset preferences",
-          type: "error",
-        }),
-      );
-      console.error("Error resetting preferences:", error);
-    } finally {
-      setSaving(false);
-    }
+  const handleRetry = () => {
+    dispatch(clearError());
+    dispatch(fetchPreferencesRequest());
   };
 
   if (loading) {
@@ -128,22 +64,11 @@ const NotificationPreferencesPage = () => {
           <Text as="h1" size="6" weight="bold" color="red">
             Unable to Load Preferences
           </Text>
-          <Card
-            style={{
-              background: "#ffebee",
-              borderLeft: "4px solid #f44336",
-              padding: "16px",
-              width: "100%",
-            }}
-          >
-            <Text size="3" color="red">
-              {error ||
-                "Failed to load your notification preferences. Please try again."}
-            </Text>
-          </Card>
-          <Button onClick={() => loadPreferences()} color="blue">
-            Retry Loading
-          </Button>
+          <ErrorDisplay
+            error={error || "Failed to load your notification preferences"}
+            onRetry={handleRetry}
+            showDismiss={false}
+          />
         </Flex>
       </Box>
     );
@@ -235,13 +160,13 @@ const NotificationPreferencesPage = () => {
             color="gray"
             variant="outline"
             onClick={handleReset}
-            disabled={saving}
+            disabled={saving || resetting}
           >
-            Reset to Defaults
+            {resetting ? "Resetting..." : "Reset to Defaults"}
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!unsavedChanges || saving}
+            disabled={!unsavedChanges || saving || resetting}
             color="green"
           >
             {saving ? "Saving..." : "Save Changes"}

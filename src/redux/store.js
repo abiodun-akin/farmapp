@@ -3,10 +3,11 @@ import createSagaMiddleware from "redux-saga";
 import { rootSaga } from "./sagas";
 import agentReducer from "./slices/agentSlice";
 import apiBridgeReducer from "./slices/apiBridgeSlice";
-import reportReducer from "./slices/reportSlice";
-import userReducer from "./slices/userSlice";
+import notificationPreferencesReducer from "./slices/notificationPreferencesSlice";
 import paymentReducer from "./slices/paymentSlice";
+import reportReducer from "./slices/reportSlice";
 import toastReducer from "./slices/toastSlice";
+import userReducer from "./slices/userSlice";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   report: reportReducer,
   payment: paymentReducer,
   toast: toastReducer,
+  notificationPreferences: notificationPreferencesReducer,
 });
 
 const appReducer = (state, action) => {
