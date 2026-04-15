@@ -178,7 +178,7 @@ const SettingsPage = () => {
         alert("No recovery codes available to download");
         return;
       }
-      
+
       const text = codes.join("\n");
       const element = document.createElement("a");
       const file = new Blob([text], { type: "text/plain" });
@@ -317,6 +317,57 @@ const SettingsPage = () => {
           onMouseLeave={(e) => (e.target.style.background = "#2d8659")}
         >
           Edit Profile
+        </button>
+      </div>
+
+      {/* Notification Preferences Section */}
+      <div
+        style={{
+          marginBottom: "24px",
+          background: "#fff",
+          border: "1px solid #e0e0e0",
+          borderRadius: "10px",
+          padding: "clamp(16px, 3vw, 24px)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "clamp(16px, 2.5vw, 18px)",
+            color: "#193325",
+            marginBottom: "12px",
+          }}
+        >
+          Notifications
+        </h2>
+        <p style={{ color: "#666", marginBottom: "16px" }}>
+          <strong>Manage how and when you receive notifications</strong>
+        </p>
+        <p
+          style={{
+            color: "#666",
+            marginBottom: "16px",
+            fontSize: "clamp(13px, 1.5vw, 14px)",
+          }}
+        >
+          Control notification channels (email, SMS, push), notification types,
+          and quiet hours.
+        </p>
+        <button
+          onClick={() => navigate("/settings/notifications")}
+          style={{
+            background: "#2d8659",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 16px",
+            fontSize: "clamp(13px, 1.5vw, 14px)",
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.background = "#1f5f3d")}
+          onMouseLeave={(e) => (e.target.style.background = "#2d8659")}
+        >
+          Manage Notification Preferences
         </button>
       </div>
 

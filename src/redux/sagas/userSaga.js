@@ -238,7 +238,6 @@ function* sendVerificationSaga() {
   try {
     const response = yield call(userAPI.sendVerificationEmail);
     yield put(sendVerificationSuccess(response.data.message));
-    yield put(fetchSessionRequest());
     yield put(addToast({ message: response.data.message, type: "success" }));
   } catch (error) {
     const errorMessage =

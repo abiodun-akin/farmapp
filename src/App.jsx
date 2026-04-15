@@ -31,6 +31,7 @@ import Landing from "./pages/Landing";
 import LoginPage from "./pages/LoginPage";
 import MatchesPage from "./pages/MatchesPage";
 import MessagesPage from "./pages/MessagesPage";
+import NotificationPreferencesPage from "./pages/NotificationPreferencesPage";
 import PaymentPage from "./pages/PaymentPage";
 import PricingPage from "./pages/PricingPage";
 import ProfileTypeSelector from "./pages/ProfileTypeSelector";
@@ -57,7 +58,10 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/auth/social/callback" element={<SocialAuthCallbackPage />} />
+            <Route
+              path="/auth/social/callback"
+              element={<SocialAuthCallbackPage />}
+            />
             <Route path="/pricing" element={<PricingPage />} />
             <Route
               path="/payment"
@@ -176,6 +180,16 @@ function App() {
               }
             />
             <Route
+              path="/settings/notifications"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <NotificationPreferencesPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/analytics"
               element={
                 <PrivateRoute>
@@ -285,22 +299,22 @@ function App() {
                 </AdminRoute>
               }
             />
-              <Route
-                path="/admin/agents"
-                element={
-                  <AdminRoute>
-                    <AdminAgents />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/agents/:agentId"
-                element={
-                  <AdminRoute>
-                    <AdminAgentDetail />
-                  </AdminRoute>
-                }
-              />
+            <Route
+              path="/admin/agents"
+              element={
+                <AdminRoute>
+                  <AdminAgents />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/agents/:agentId"
+              element={
+                <AdminRoute>
+                  <AdminAgentDetail />
+                </AdminRoute>
+              }
+            />
           </Routes>
         </Router>
       </Theme>
