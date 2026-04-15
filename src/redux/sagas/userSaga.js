@@ -1,7 +1,9 @@
-import { call, put, takeEvery } from "redux-saga/effects";
+import { call, delay, put, takeEvery } from "redux-saga/effects";
 import { userAPI } from "../../api/userApi";
+import { fetchSubscriptionStatusRequest } from "../slices/paymentSlice";
 import { addToast } from "../slices/toastSlice";
 import {
+  clearEmailVerificationSent,
   fetchSessionFailure,
   fetchSessionRequest,
   fetchSessionSuccess,
@@ -239,6 +241,11 @@ function* sendVerificationSaga() {
     const response = yield call(userAPI.sendVerificationEmail);
     yield put(sendVerificationSuccess(response.data.message));
     yield put(addToast({ message: response.data.message, type: "success" }));
+
+    // Reset the emailVerificationSent state after 3 seconds to allow resend
+    // and prevent button from staying in "Sending..." state indefinitely
+    yield delay(3000);
+    yield put(clearEmailVerificationSent());
   } catch (error) {
     const errorMessage =
       error.response?.data?.error ||
@@ -253,8 +260,29 @@ function* verifyEmailSaga(action) {
   try {
     const { token } = action.payload;
     const response = yield call(userAPI.verifyEmail, token);
-    yield put(verifyEmailSuccess(response.data.message));
-    yield put(addToast({ message: response.data.message, type: "success" }));
+
+    // Handle updated user and token from verification endpoint
+    const { user, token: newToken, message } = response.data;
+
+    // Update auth state with verified user and new token
+    if (user && newToken) {
+      yield put(verifyEmailSuccess(message || response.data.message));
+      yield put(loginSuccess({ user, token: newToken }));
+      yield put(
+        addToast({
+          message: "Email verified! You can now access all features.",
+          type: "success",
+        }),
+      );
+    } else {
+      // Fallback for older API responses without user/token
+      yield put(verifyEmailSuccess(response.data.message));
+      yield put(addToast({ message: response.data.message, type: "success" }));
+    }
+
+    // Refetch subscription status now that email is verified
+    yield delay(300);
+    yield put(fetchSubscriptionStatusRequest({ force: true }));
   } catch (error) {
     const errorMessage =
       error.response?.data?.error ||

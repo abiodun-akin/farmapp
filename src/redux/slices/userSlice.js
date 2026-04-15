@@ -322,6 +322,10 @@ const userSlice = createSlice({
       state.error = null;
     },
 
+    clearEmailVerificationSent: (state) => {
+      state.emailVerificationSent = false;
+    },
+
     clearAuthFeedback: (state) => {
       state.error = null;
       state.statusMessage = null;
@@ -369,6 +373,7 @@ export const {
   logoutRequest,
   logout,
   clearError,
+  clearEmailVerificationSent,
   clearAuthFeedback,
   setProfile,
   updateProfileSuccess,
