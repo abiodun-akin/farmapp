@@ -45,7 +45,10 @@ const AdminModerationPage = () => {
   }, [isAdmin, pagination.page]);
 
   const handleApproveMessage = async (messageId) => {
-    const reason = prompt("Enter approval reason (optional):", "Approved by admin");
+    const reason = prompt(
+      "Enter approval reason (optional):",
+      "Approved by admin",
+    );
     if (reason === null) return;
 
     setActionInProgress(messageId);
@@ -65,7 +68,9 @@ const AdminModerationPage = () => {
   };
 
   const handleDeleteMessage = async (messageId) => {
-    const sendWarning = window.confirm("Record violation and send warning to sender?");
+    const sendWarning = window.confirm(
+      "Record violation and send warning to sender?",
+    );
     const reason = prompt("Deletion reason:", "Message violates policy");
     if (reason === null) return;
 
@@ -76,7 +81,9 @@ const AdminModerationPage = () => {
         method: "deleteMessage",
         args: [messageId, { reason, sendWarning }],
       });
-      alert(sendWarning ? "Message deleted and warning sent" : "Message deleted");
+      alert(
+        sendWarning ? "Message deleted and warning sent" : "Message deleted",
+      );
       fetchFlaggedMessages();
     } catch (_error) {
       alert("Error deleting message");
@@ -86,7 +93,10 @@ const AdminModerationPage = () => {
   };
 
   const handleWarnSender = async (messageId) => {
-    const reason = prompt("Warning message:", "Your message violated our community guidelines");
+    const reason = prompt(
+      "Warning message:",
+      "Your message violated our community guidelines",
+    );
     if (reason === null) return;
 
     setActionInProgress(messageId);
@@ -116,13 +126,27 @@ const AdminModerationPage = () => {
   }
 
   return (
-    <div style={{ padding: "clamp(16px, 4vw, 32px)", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "24px", color: "#193325" }}>Message Moderation Queue</h1>
+    <div
+      style={{
+        padding: "clamp(16px, 4vw, 32px)",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
+      <h1 style={{ marginBottom: "24px", color: "#193325" }}>
+        Message Moderation Queue
+      </h1>
 
-      {loading && <p style={{ textAlign: "center", color: "#666" }}>Loading flagged messages...</p>}
+      {loading && (
+        <p style={{ textAlign: "center", color: "#666" }}>
+          Loading flagged messages...
+        </p>
+      )}
 
       {!loading && flaggedMessages.length === 0 && (
-        <p style={{ textAlign: "center", color: "#999" }}>No flagged messages to review</p>
+        <p style={{ textAlign: "center", color: "#999" }}>
+          No flagged messages to review
+        </p>
       )}
 
       {!loading && flaggedMessages.length > 0 && (
@@ -146,15 +170,31 @@ const AdminModerationPage = () => {
                 setExpandedMessage(expandedMessage === msg._id ? null : msg._id)
               }
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                }}
+              >
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: "bold", color: "#193325" }}>
+                  <p
+                    style={{ margin: 0, fontWeight: "bold", color: "#193325" }}
+                  >
                     From: {msg.sender}
                   </p>
-                  <p style={{ margin: "4px 0", color: "#666", fontSize: "14px" }}>
+                  <p
+                    style={{ margin: "4px 0", color: "#666", fontSize: "14px" }}
+                  >
                     To: {msg.recipient}
                   </p>
-                  <p style={{ margin: "4px 0", color: "#b42318", fontSize: "13px" }}>
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      color: "#b42318",
+                      fontSize: "13px",
+                    }}
+                  >
                     Risk Score: {msg.aiAnalysisResult?.riskScore || 0}/100
                   </p>
                 </div>
@@ -166,7 +206,13 @@ const AdminModerationPage = () => {
               </div>
 
               {expandedMessage === msg._id && (
-                <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #e0e0e0" }}>
+                <div
+                  style={{
+                    marginTop: "16px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid #e0e0e0",
+                  }}
+                >
                   <div
                     style={{
                       background: "#f5f5f5",
@@ -175,33 +221,60 @@ const AdminModerationPage = () => {
                       marginBottom: "16px",
                     }}
                   >
-                    <p style={{ margin: 0, color: "#333", whiteSpace: "pre-wrap" }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#333",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
                       {msg.content}
                     </p>
                   </div>
 
                   {msg.aiAnalysisResult && (
-                    <div style={{ marginBottom: "16px", padding: "12px", background: "#f0f7ff", borderRadius: "6px" }}>
-                      <h4 style={{ margin: "0 0 8px 0", color: "#0066cc" }}>AI Analysis</h4>
+                    <div
+                      style={{
+                        marginBottom: "16px",
+                        padding: "12px",
+                        background: "#f0f7ff",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <h4 style={{ margin: "0 0 8px 0", color: "#0066cc" }}>
+                        AI Analysis
+                      </h4>
                       <p style={{ margin: "4px 0", fontSize: "13px" }}>
                         <strong>Reason:</strong> {msg.aiAnalysisResult.reason}
                       </p>
                       {msg.aiAnalysisResult.flaggedPatterns?.length > 0 && (
                         <div>
-                          <strong style={{ fontSize: "13px" }}>Flagged Patterns:</strong>
-                          <ul style={{ margin: "4px 0", fontSize: "13px", paddingLeft: "20px" }}>
-                            {msg.aiAnalysisResult.flaggedPatterns.map((p, i) => (
-                              <li key={i}>
-                                {p.category}: {p.pattern}
-                              </li>
-                            ))}
+                          <strong style={{ fontSize: "13px" }}>
+                            Flagged Patterns:
+                          </strong>
+                          <ul
+                            style={{
+                              margin: "4px 0",
+                              fontSize: "13px",
+                              paddingLeft: "20px",
+                            }}
+                          >
+                            {msg.aiAnalysisResult.flaggedPatterns.map(
+                              (p, i) => (
+                                <li key={i}>
+                                  {p.category}: {p.pattern}
+                                </li>
+                              ),
+                            )}
                           </ul>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <div
+                    style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}
+                  >
                     <button
                       onClick={() => handleApproveMessage(msg._id)}
                       disabled={actionInProgress === msg._id}
@@ -211,12 +284,17 @@ const AdminModerationPage = () => {
                         border: "none",
                         padding: "8px 12px",
                         borderRadius: "6px",
-                        cursor: actionInProgress === msg._id ? "not-allowed" : "pointer",
+                        cursor:
+                          actionInProgress === msg._id
+                            ? "not-allowed"
+                            : "pointer",
                         fontSize: "13px",
                         opacity: actionInProgress === msg._id ? 0.7 : 1,
                       }}
                     >
-                      {actionInProgress === msg._id ? "Processing..." : "✓ Approve"}
+                      {actionInProgress === msg._id
+                        ? "Processing..."
+                        : "Approve"}
                     </button>
                     <button
                       onClick={() => handleDeleteMessage(msg._id)}
@@ -227,12 +305,17 @@ const AdminModerationPage = () => {
                         border: "none",
                         padding: "8px 12px",
                         borderRadius: "6px",
-                        cursor: actionInProgress === msg._id ? "not-allowed" : "pointer",
+                        cursor:
+                          actionInProgress === msg._id
+                            ? "not-allowed"
+                            : "pointer",
                         fontSize: "13px",
                         opacity: actionInProgress === msg._id ? 0.7 : 1,
                       }}
                     >
-                      {actionInProgress === msg._id ? "Processing..." : "✕ Delete"}
+                      {actionInProgress === msg._id
+                        ? "Processing..."
+                        : "✕ Delete"}
                     </button>
                     <button
                       onClick={() => handleWarnSender(msg._id)}
@@ -243,12 +326,17 @@ const AdminModerationPage = () => {
                         border: "none",
                         padding: "8px 12px",
                         borderRadius: "6px",
-                        cursor: actionInProgress === msg._id ? "not-allowed" : "pointer",
+                        cursor:
+                          actionInProgress === msg._id
+                            ? "not-allowed"
+                            : "pointer",
                         fontSize: "13px",
                         opacity: actionInProgress === msg._id ? 0.7 : 1,
                       }}
                     >
-                      {actionInProgress === msg._id ? "Processing..." : "⚠ Warn Sender"}
+                      {actionInProgress === msg._id
+                        ? "Processing..."
+                        : "Warn Sender"}
                     </button>
                   </div>
                 </div>

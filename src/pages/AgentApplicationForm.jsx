@@ -97,7 +97,7 @@ const AgentApplicationForm = () => {
           <FaArrowLeft /> Back
         </button>
         <div className="agent-success-card">
-          <h2>You're Already an Agent! ✓</h2>
+          <h2>You're Already an Agent!</h2>
           <p>
             You have been approved as an agent and can start earning through
             referrals.

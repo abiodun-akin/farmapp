@@ -42,7 +42,11 @@ const SettingsPage = () => {
       );
     } catch (err) {
       console.error("Error requesting data:", err);
-      alert("Error submitting request. Please try again.");
+      const errorMsg =
+        err?.response?.data?.error ||
+        err?.message ||
+        "Error submitting request. Please try again.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -169,25 +173,42 @@ const SettingsPage = () => {
 
   const handleDownloadRecoveryCodes = async () => {
     try {
-      const response = await sagaApi({
-        service: "userApi",
-        method: "getRecoveryCodes",
-      });
-      const codes = response?.data?.recoveryCodes?.remaining || [];
-      if (!codes || codes.length === 0) {
-        alert("No recovery codes available to download");
+      // Confirm before regenerating and downloading
+      if (
+        !window.confirm(
+          "Downloading recovery codes will regenerate new ones. Your old codes will no longer work. Continue?",
+        )
+      ) {
         return;
       }
 
-      const text = codes.join("\n");
+      // Regenerate codes to get plain text versions (hashed codes can't be viewed after storage)
+      const response = await sagaApi({
+        service: "userApi",
+        method: "regenerateRecoveryCodes",
+      });
+
+      const recCodes = response?.recoveryCodes || response?.data?.recoveryCodes;
+      if (!recCodes || !Array.isArray(recCodes) || recCodes.length === 0) {
+        alert("Failed to generate recovery codes. Please try again.");
+        return;
+      }
+
+      const text = recCodes.join("\n");
       const element = document.createElement("a");
       const file = new Blob([text], { type: "text/plain" });
       element.href = URL.createObjectURL(file);
       element.download = `farmconnect-recovery-codes-${new Date().toISOString().split("T")[0]}.txt`;
       document.body.appendChild(element);
       element.click();
-      document.body.removeChild(element);
-    } catch (_err) {
+      setTimeout(() => {
+        document.body.removeChild(element);
+        URL.revokeObjectURL(element.href);
+      }, 100);
+
+      alert("Recovery codes downloaded successfully. Keep them safe!");
+    } catch (err) {
+      console.error("Error downloading recovery codes:", err);
       alert("Error downloading recovery codes. Please try again.");
     }
   };
@@ -467,7 +488,7 @@ const SettingsPage = () => {
                 fontWeight: "600",
               }}
             >
-              ⚠️ This action cannot be undone
+              Warning: This action cannot be undone
             </p>
             <p
               style={{
@@ -670,9 +691,11 @@ const SettingsPage = () => {
                 cursor: recoveryCodesBusy ? "not-allowed" : "pointer",
                 marginRight: "8px",
                 opacity: recoveryCodesBusy ? 0.75 : 1,
+                minWidth: "100px",
+                whiteSpace: "nowrap",
               }}
             >
-              ⬇️ Download
+              Download
             </button>
             <button
               onClick={handleSendRecoveryCodesEmail}
@@ -689,13 +712,15 @@ const SettingsPage = () => {
                     ? "not-allowed"
                     : "pointer",
                 opacity: recoveryCodesBusy || emailCodesSending ? 0.75 : 1,
+                minWidth: "100px",
+                whiteSpace: "nowrap",
               }}
             >
               {emailCodesSending
                 ? "Sending..."
                 : emailCodesSent
-                  ? "✓ Sent"
-                  : "📧 Email"}
+                  ? "Sent"
+                  : "Email"}
             </button>
             {emailCodesError && (
               <p

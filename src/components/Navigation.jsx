@@ -1,34 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchAgentStatusRequest } from '../redux/slices/agentSlice';
-import { logoutRequest } from '../redux/slices/userSlice';
-import useSubscriptionStatus from '../hooks/useSubscriptionStatus';
-import { roleConfig } from '../config/theme';
-import FarmConnectLogo from './FarmConnectLogo';
-import './Navigation.css';
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { roleConfig } from "../config/theme";
+import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
+import { fetchAgentStatusRequest } from "../redux/slices/agentSlice";
+import { logoutRequest } from "../redux/slices/userSlice";
+import FarmConnectLogo from "./FarmConnectLogo";
+import "./Navigation.css";
 
 // Icon imports from react-icons
 import {
-  FaHome,
-  FaUser,
-  FaHandshake,
+  FaBars,
+  FaBox,
+  FaChartBar,
+  FaChevronDown,
+  FaClipboardList,
+  FaCog,
   FaComments,
   FaCreditCard,
-  FaShoppingCart,
-  FaChartBar,
-  FaCog,
-  FaBars,
-  FaTimes,
-  FaSignOutAlt,
-  FaShieldAlt,
-  FaUsers,
-  FaFlag,
-  FaBox,
   FaExclamationCircle,
-  FaClipboardList,
-  FaChevronDown,
-} from 'react-icons/fa';
+  FaFlag,
+  FaHandshake,
+  FaHome,
+  FaShieldAlt,
+  FaShoppingCart,
+  FaSignOutAlt,
+  FaTimes,
+  FaUser,
+  FaUsers,
+} from "react-icons/fa";
 
 /**
  * Icon Mapper - maps icon keys to actual icon components
@@ -67,31 +67,35 @@ function NavigationComponent() {
 
   const agentStatus = {
     isAgent: Boolean(agentData?.agent?.isAgent || agentData?.isAgent),
-    status: agentData?.agent?.status || agentData?.agentStatus || 'none',
+    status: agentData?.agent?.status || agentData?.agentStatus || "none",
   };
   const isApprovedAgent = Boolean(
-    agentStatus.isAgent
-    || agentStatus.status === 'approved'
-    || user?.isAgent
-    || user?.agentStatus === 'approved'
+    agentStatus.isAgent ||
+    agentStatus.status === "approved" ||
+    user?.isAgent ||
+    user?.agentStatus === "approved",
   );
-  const isPendingAgent = agentStatus.status === 'pending' || user?.agentStatus === 'pending';
+  const isPendingAgent =
+    agentStatus.status === "pending" || user?.agentStatus === "pending";
   const shouldShowApplyAgent = !isApprovedAgent && !isPendingAgent;
 
   // Handle clicking outside dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target)
+      ) {
         setIsProfileDropdownOpen(false);
       }
     };
 
     if (isProfileDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
 
@@ -106,7 +110,7 @@ function NavigationComponent() {
   }
 
   // Get role-specific menu configuration - use profileType if available, fallback to farmer
-  const userRole = user?.profileType || 'farmer';
+  const userRole = user?.profileType || "farmer";
   const config = roleConfig[userRole] || roleConfig.farmer;
 
   const handleNavigate = (route) => {
@@ -115,8 +119,8 @@ function NavigationComponent() {
   };
 
   const handleLogout = () => {
-    dispatch(logoutRequest({ reason: 'manual' }));
-    navigate('/login', { replace: true });
+    dispatch(logoutRequest({ reason: "manual" }));
+    navigate("/login", { replace: true });
   };
 
   const renderIcon = (iconKey) => {
@@ -125,7 +129,7 @@ function NavigationComponent() {
   };
 
   // Get user name safely
-  const userName = user?.name || 'User';
+  const userName = user?.name || "User";
 
   return (
     <>
@@ -133,8 +137,17 @@ function NavigationComponent() {
       <nav className="navigation-desktop">
         <div className="nav-container">
           {/* Logo */}
-          <div className="nav-logo" onClick={() => navigate('/')}>
-            <FarmConnectLogo size={32} showText={true} />
+          <div
+            className="nav-logo"
+            onClick={() => navigate("/")}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FarmConnectLogo size={32} />
           </div>
 
           {/* Menu Items */}
@@ -161,16 +174,24 @@ function NavigationComponent() {
             >
               <div className="user-avatar">
                 {user?.profileImageUrl ? (
-                  <img src={user.profileImageUrl} alt={userName} className="avatar-image" />
+                  <img
+                    src={user.profileImageUrl}
+                    alt={userName}
+                    className="avatar-image"
+                  />
                 ) : (
-                  <div className="avatar-placeholder">{userName.charAt(0).toUpperCase()}</div>
+                  <div className="avatar-placeholder">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
                 )}
               </div>
               <div className="profile-info">
                 <span className="user-name">{userName}</span>
                 <span className="user-role">{statusDisplay}</span>
               </div>
-              <FaChevronDown className={`dropdown-icon ${isProfileDropdownOpen ? 'open' : ''}`} />
+              <FaChevronDown
+                className={`dropdown-icon ${isProfileDropdownOpen ? "open" : ""}`}
+              />
             </button>
 
             {/* Profile Dropdown Menu */}
@@ -179,9 +200,15 @@ function NavigationComponent() {
                 <div className="dropdown-header">
                   <div className="dropdown-avatar">
                     {user?.profileImageUrl ? (
-                      <img src={user.profileImageUrl} alt={userName} className="avatar-image-lg" />
+                      <img
+                        src={user.profileImageUrl}
+                        alt={userName}
+                        className="avatar-image-lg"
+                      />
                     ) : (
-                      <div className="avatar-placeholder-lg">{userName.charAt(0).toUpperCase()}</div>
+                      <div className="avatar-placeholder-lg">
+                        {userName.charAt(0).toUpperCase()}
+                      </div>
                     )}
                   </div>
                   <div className="dropdown-user-info">
@@ -196,7 +223,7 @@ function NavigationComponent() {
                 <button
                   className="dropdown-item"
                   onClick={() => {
-                    handleNavigate('/profile');
+                    handleNavigate("/profile");
                     setIsProfileDropdownOpen(false);
                   }}
                 >
@@ -207,7 +234,7 @@ function NavigationComponent() {
                 <button
                   className="dropdown-item"
                   onClick={() => {
-                    handleNavigate('/settings');
+                    handleNavigate("/settings");
                     setIsProfileDropdownOpen(false);
                   }}
                 >
@@ -219,7 +246,7 @@ function NavigationComponent() {
                   <button
                     className="dropdown-item"
                     onClick={() => {
-                      handleNavigate('/apply-agent');
+                      handleNavigate("/apply-agent");
                       setIsProfileDropdownOpen(false);
                     }}
                   >
@@ -231,7 +258,7 @@ function NavigationComponent() {
                 <button
                   className="dropdown-item"
                   onClick={() => {
-                    handleNavigate('/agent-earnings');
+                    handleNavigate("/agent-earnings");
                     setIsProfileDropdownOpen(false);
                   }}
                 >
@@ -241,21 +268,24 @@ function NavigationComponent() {
 
                 <div className="dropdown-divider" />
 
-                <button className="dropdown-item logout-item" onClick={handleLogout}>
+                <button
+                  className="dropdown-item logout-item"
+                  onClick={handleLogout}
+                >
                   <FaSignOutAlt className="dropdown-icon" />
                   <span>Logout</span>
                 </button>
               </div>
             )}
+          </div>
         </div>
-      </div>
       </nav>
 
       {/* Mobile Navigation */}
       <nav className="navigation-mobile">
         <div className="mobile-nav-header">
-          <div className="nav-logo-mobile" onClick={() => navigate('/')}>
-            <FarmConnectLogo size={20} showText={true} />
+          <div className="nav-logo-mobile" onClick={() => navigate("/")}>
+            <FarmConnectLogo size={24} />
           </div>
           <button
             className="mobile-menu-toggle"
@@ -280,13 +310,19 @@ function NavigationComponent() {
             <div className="mobile-nav-divider" />
             <button
               className="mobile-user-profile-btn"
-              onClick={() => handleNavigate('/profile')}
+              onClick={() => handleNavigate("/profile")}
             >
               <div className="mobile-avatar">
                 {user?.profileImageUrl ? (
-                  <img src={user.profileImageUrl} alt={userName} className="avatar-image-sm" />
+                  <img
+                    src={user.profileImageUrl}
+                    alt={userName}
+                    className="avatar-image-sm"
+                  />
                 ) : (
-                  <div className="avatar-placeholder-sm">{userName.charAt(0).toUpperCase()}</div>
+                  <div className="avatar-placeholder-sm">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
                 )}
               </div>
               <div className="mobile-profile-info">
@@ -298,7 +334,7 @@ function NavigationComponent() {
             <button
               className="mobile-nav-item"
               onClick={() => {
-                handleNavigate('/settings');
+                handleNavigate("/settings");
               }}
             >
               <FaCog className="mobile-nav-icon" />
@@ -309,7 +345,7 @@ function NavigationComponent() {
               <button
                 className="mobile-nav-item"
                 onClick={() => {
-                  handleNavigate('/apply-agent');
+                  handleNavigate("/apply-agent");
                 }}
               >
                 <FaUsers className="mobile-nav-icon" />
@@ -320,7 +356,7 @@ function NavigationComponent() {
             <button
               className="mobile-nav-item"
               onClick={() => {
-                handleNavigate('/agent-earnings');
+                handleNavigate("/agent-earnings");
               }}
             >
               <FaChartBar className="mobile-nav-icon" />

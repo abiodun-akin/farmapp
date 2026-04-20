@@ -1,4 +1,4 @@
-import { StarIcon } from "@radix-ui/react-icons";
+import { CardStackIcon, StarIcon } from "@radix-ui/react-icons";
 import { Box, Card, Flex, Switch, Text } from "@radix-ui/themes";
 
 /**
@@ -72,7 +72,7 @@ const PaymentNotificationPreferences = ({
             style={{ marginTop: "2px", color: "#f39c12", flexShrink: 0 }}
           />
           <Text size="2" color="orange">
-            Events marked with ⭐ are important for payment tracking and
+            Events marked with a star are important for payment tracking and
             typically cannot be disabled.
           </Text>
         </Flex>
@@ -111,11 +111,14 @@ const PaymentNotificationPreferences = ({
       ))}
 
       <Box style={{ paddingTop: "8px" }}>
-        <Text size="1" color="gray">
-          💳 Transaction History: View detailed payment history in your account
-          dashboard. You'll always receive notifications for successful and
-          failed payments.
-        </Text>
+        <Flex gap="2" align="start">
+          <CardStackIcon style={{ marginTop: "2px", flexShrink: 0 }} />
+          <Text size="1" color="gray">
+            Transaction History: View detailed payment history in your account
+            dashboard. You'll always receive notifications for successful and
+            failed payments.
+          </Text>
+        </Flex>
       </Box>
     </Flex>
   );

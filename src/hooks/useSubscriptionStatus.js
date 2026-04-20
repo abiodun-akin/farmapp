@@ -6,7 +6,10 @@ import {
   getSubscriptionStatusType,
 } from "../utils/subscriptionHelper";
 
-export const useSubscriptionStatus = ({ fetchOnMount = true, forceRefresh = false } = {}) => {
+export const useSubscriptionStatus = ({
+  fetchOnMount = true,
+  forceRefresh = false,
+} = {}) => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.user);
   const userId = user?._id || user?.id;
@@ -27,7 +30,9 @@ export const useSubscriptionStatus = ({ fetchOnMount = true, forceRefresh = fals
 
     const isDifferentUser = subscriptionUserId !== userId;
     const shouldFetch =
-      forceRefresh || isDifferentUser || (!subscriptionLoading && !subscriptionLastFetchedAt);
+      forceRefresh ||
+      isDifferentUser ||
+      (!subscriptionLoading && !subscriptionLastFetchedAt);
 
     if (shouldFetch) {
       dispatch(fetchSubscriptionStatusRequest({ userId, force: forceRefresh }));
@@ -43,7 +48,10 @@ export const useSubscriptionStatus = ({ fetchOnMount = true, forceRefresh = fals
     subscriptionLastFetchedAt,
   ]);
 
-  const statusType = getSubscriptionStatusType(subscription, hasEverSubscribed);
+  // Prefer backend active flag when available to avoid stale/incomplete payload edge cases.
+  const statusType = hasActiveSubscription
+    ? "active"
+    : getSubscriptionStatusType(subscription, hasEverSubscribed);
   const statusDisplay = getSubscriptionDisplayText(statusType);
 
   const refreshSubscription = () => {

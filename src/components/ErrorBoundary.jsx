@@ -1,5 +1,5 @@
-import React from 'react';
-import './ErrorBoundary.css';
+import React from "react";
+import "./ErrorBoundary.css";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -17,14 +17,14 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       error,
       errorInfo,
       errorCount: prevState.errorCount + 1,
     }));
 
     // Log to console in development
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   handleReset = () => {
@@ -40,7 +40,9 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="error-boundary-container">
           <div className="error-boundary-content">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon" style={{ fontSize: "28px" }}>
+              !
+            </div>
             <h1>Something went wrong</h1>
             <p className="error-message">
               We're sorry for the inconvenience. An unexpected error occurred.
@@ -63,11 +65,14 @@ class ErrorBoundary extends React.Component {
             )}
 
             <div className="error-actions">
-              <button onClick={this.handleReset} className="error-button-primary">
+              <button
+                onClick={this.handleReset}
+                className="error-button-primary"
+              >
                 Try Again
               </button>
               <button
-                onClick={() => (window.location.href = '/')}
+                onClick={() => (window.location.href = "/")}
                 className="error-button-secondary"
               >
                 Go Home
@@ -76,7 +81,8 @@ class ErrorBoundary extends React.Component {
 
             {this.state.errorCount > 3 && (
               <p className="error-warning">
-                Multiple errors detected. Please refresh the page or clear your browser cache.
+                Multiple errors detected. Please refresh the page or clear your
+                browser cache.
               </p>
             )}
           </div>

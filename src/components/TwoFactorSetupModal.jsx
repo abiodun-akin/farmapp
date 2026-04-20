@@ -1,5 +1,12 @@
 import { Box, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import { useState } from "react";
+import {
+  FaCheckCircle,
+  FaCopy,
+  FaDownload,
+  FaEnvelope,
+  FaMobileAlt,
+} from "react-icons/fa";
 
 const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
   const [step, setStep] = useState("method"); // method, setup, verify, done
@@ -108,14 +115,19 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
   };
 
   const handleDownloadCodes = () => {
-    const text = recoveryCodes.join("\n");
-    const element = document.createElement("a");
-    const file = new Blob([text], { type: "text/plain" });
-    element.href = URL.createObjectURL(file);
-    element.download = `farmconnect-recovery-codes-${new Date().toISOString().split("T")[0]}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    try {
+      const text = recoveryCodes.join("\n");
+      const element = document.createElement("a");
+      const file = new Blob([text], { type: "text/plain" });
+      element.href = URL.createObjectURL(file);
+      element.download = `farmconnect-recovery-codes-${new Date().toISOString().split("T")[0]}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      URL.revokeObjectURL(element.href);
+    } catch (err) {
+      alert("Error downloading recovery codes. Please try again.");
+    }
   };
 
   const handleEmailCodes = async () => {
@@ -127,6 +139,7 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
         method: "sendRecoveryCodesEmail",
       });
       setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
     } catch (err) {
       setEmailError(
         err?.response?.data?.error ||
@@ -151,16 +164,19 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
+        padding: "16px",
+        overflowY: "auto",
       }}
       onClick={onClose}
     >
       <Card
         style={{
           maxWidth: "500px",
-          width: "90%",
+          width: "100%",
           maxHeight: "90vh",
           overflow: "auto",
-          padding: "24px",
+          padding: "clamp(16px, 4vw, 24px)",
+          margin: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -183,14 +199,25 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                   textAlign: "left",
                   border: "2px solid #e0e0e0",
                   backgroundColor: "#fafafa",
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "12px",
+                  minHeight: "auto",
                 }}
               >
-                <Flex direction="column" gap="2">
-                  <Text weight="bold" size="3">
-                    📱 Authenticator App
-                  </Text>
-                  <Text size="2" color="gray">
+                <Flex direction="column" gap="2" style={{ flex: 1 }}>
+                  <Flex align="center" gap="2">
+                    <FaMobileAlt size={18} />
+                    <Text
+                      weight="bold"
+                      size="3"
+                      style={{ whiteSpace: "normal" }}
+                    >
+                      Authenticator App
+                    </Text>
+                  </Flex>
+                  <Text size="2" color="gray" style={{ whiteSpace: "normal" }}>
                     More secure. Use Google Authenticator, Authy, or Microsoft
                     Authenticator
                   </Text>
@@ -205,14 +232,25 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                   textAlign: "left",
                   border: "2px solid #e0e0e0",
                   backgroundColor: "#fafafa",
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "12px",
+                  minHeight: "auto",
                 }}
               >
-                <Flex direction="column" gap="2">
-                  <Text weight="bold" size="3">
-                    📧 Email Codes
-                  </Text>
-                  <Text size="2" color="gray">
+                <Flex direction="column" gap="2" style={{ flex: 1 }}>
+                  <Flex align="center" gap="2">
+                    <FaEnvelope size={18} />
+                    <Text
+                      weight="bold"
+                      size="3"
+                      style={{ whiteSpace: "normal" }}
+                    >
+                      Email Codes
+                    </Text>
+                  </Flex>
+                  <Text size="2" color="gray" style={{ whiteSpace: "normal" }}>
                     Receive 6-digit codes via email during login
                   </Text>
                 </Flex>
@@ -231,12 +269,19 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
               Scan this QR code with your authenticator app
             </Text>
 
-            <Flex justify="center" style={{ padding: "20px" }}>
+            <Flex
+              justify="center"
+              style={{ padding: "clamp(12px, 2vw, 20px)", overflow: "auto" }}
+            >
               {setupData.qrCode && (
                 <img
                   src={setupData.qrCode}
                   alt="QR Code"
-                  style={{ width: "200px", height: "200px" }}
+                  style={{
+                    width: "clamp(150px, 50vw, 200px)",
+                    height: "auto",
+                    maxWidth: "100%",
+                  }}
                 />
               )}
             </Flex>
@@ -245,6 +290,11 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
               variant="soft"
               onClick={() => setShowSecret(!showSecret)}
               size="2"
+              style={{
+                width: "100%",
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+              }}
             >
               {showSecret ? "Hide" : "Can't Scan?"} Manual Entry Key
             </Button>
@@ -256,6 +306,7 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                   padding: "12px",
                   fontFamily: "monospace",
                   wordBreak: "break-all",
+                  fontSize: "clamp(11px, 1.5vw, 13px)",
                 }}
               >
                 <Text size="2">{setupData.secret}</Text>
@@ -274,7 +325,10 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                 }}
                 placeholder="000000"
                 maxLength="6"
-                style={{ textAlign: "center", fontSize: "24px" }}
+                style={{
+                  textAlign: "center",
+                  fontSize: "clamp(18px, 4vw, 24px)",
+                }}
               />
               {error && (
                 <Text color="red" size="2">
@@ -286,7 +340,7 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
             <Button
               onClick={handleVerifyTOTP}
               disabled={loading || totpCode.length !== 6}
-              style={{ marginTop: "16px" }}
+              style={{ marginTop: "16px", width: "100%" }}
             >
               {loading ? "Verifying..." : "Verify & Enable"}
             </Button>
@@ -296,9 +350,12 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
         {/* Step 3: Done */}
         {step === "done" && recoveryCodes && (
           <Flex direction="column" gap="4">
-            <Text size="5" weight="bold" color="green">
-              ✓ Two-Factor Authentication Enabled
-            </Text>
+            <Flex align="center" gap="2">
+              <FaCheckCircle color="green" size={24} />
+              <Text size="5" weight="bold" color="green">
+                Two-Factor Authentication Enabled
+              </Text>
+            </Flex>
 
             <Card style={{ backgroundColor: "#f0f7f4", padding: "16px" }}>
               <Flex direction="column" gap="2">
@@ -316,9 +373,11 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                     padding: "12px",
                     borderRadius: "4px",
                     fontFamily: "monospace",
-                    fontSize: "12px",
+                    fontSize: "clamp(11px, 1.5vw, 12px)",
                     wordBreak: "break-all",
                     marginTop: "8px",
+                    maxHeight: "150px",
+                    overflowY: "auto",
                   }}
                 >
                   {recoveryCodes.join("\n")}
@@ -327,35 +386,63 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
                 <Flex direction="column" gap="2" style={{ marginTop: "12px" }}>
                   <Button
                     variant="soft"
-                    size="1"
+                    size="2"
                     onClick={() => {
                       const text = recoveryCodes.join("\n");
                       navigator.clipboard.writeText(text);
                       alert("Codes copied to clipboard");
                     }}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                    }}
                   >
-                    📋 Copy Codes
+                    <FaCopy size={16} />
+                    <span style={{ whiteSpace: "normal" }}>Copy Codes</span>
                   </Button>
 
                   <Button
                     variant="soft"
-                    size="1"
+                    size="2"
                     onClick={handleDownloadCodes}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                    }}
                   >
-                    ⬇️ Download as File
+                    <FaDownload size={16} />
+                    <span style={{ whiteSpace: "normal" }}>
+                      Download as File
+                    </span>
                   </Button>
 
                   <Button
                     variant="soft"
-                    size="1"
+                    size="2"
                     onClick={handleEmailCodes}
                     disabled={emailLoading || emailSent}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                    }}
                   >
-                    {emailLoading
-                      ? "Sending..."
-                      : emailSent
-                        ? "✓ Email Queued"
-                        : "📧 Send to Email"}
+                    <FaEnvelope size={16} />
+                    <span style={{ whiteSpace: "normal" }}>
+                      {emailLoading
+                        ? "Sending..."
+                        : emailSent
+                          ? "Email Sent"
+                          : "Send to Email"}
+                    </span>
                   </Button>
 
                   {emailError && (
@@ -373,7 +460,7 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
               </Flex>
             </Card>
 
-            <Button onClick={handleDone} size="3">
+            <Button onClick={handleDone} size="3" style={{ width: "100%" }}>
               Done
             </Button>
           </Flex>

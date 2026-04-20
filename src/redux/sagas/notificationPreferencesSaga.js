@@ -34,9 +34,29 @@ function* fetchPreferencesSaga() {
 function* updatePreferencesSaga(action) {
   try {
     const { preferences } = action.payload;
+
+    // Extract only valid preference keys, filtering out MongoDB metadata
+    const validKeys = [
+      "auth",
+      "payment",
+      "trial",
+      "subscription",
+      "activity",
+      "channels",
+      "frequency",
+      "quietHours",
+    ];
+
+    const cleanPreferences = {};
+    validKeys.forEach((key) => {
+      if (key in preferences) {
+        cleanPreferences[key] = preferences[key];
+      }
+    });
+
     const response = yield call(
       notificationPreferencesAPI.updatePreferences,
-      preferences,
+      cleanPreferences,
     );
     yield put(updatePreferencesSuccess(response.data.preferences));
     yield put(

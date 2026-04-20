@@ -1,9 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  FaBox,
+  FaChartLine,
+  FaHandshake,
+  FaLeaf,
+  FaTractor,
+} from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaLeaf, FaTractor, FaChartLine, FaHandshake, FaBox } from "react-icons/fa";
+import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
-import { canAccessFeature } from "../utils/subscriptionHelper";
+import {
+  canAccessFeature,
+  getSubscriptionDisplayText,
+} from "../utils/subscriptionHelper";
 import "./FarmerDashboard.css";
 
 const FarmerDashboard = () => {
@@ -12,60 +22,127 @@ const FarmerDashboard = () => {
   const [stats, setStats] = useState({
     matches: 0,
     messages: 0,
-    profile: 0,
-    subscriptionStatus: 'inactive'
+    profileComplete: false,
+    subscriptionStatus: "inactive",
   });
   const {
     hasActiveSubscription,
     statusType: subscriptionStatusType,
     subscriptionLoading,
   } = useSubscriptionStatus();
+  const sagaApi = useSagaApi();
 
   useEffect(() => {
-    setStats(prev => ({
-      ...prev,
-      subscriptionStatus: hasActiveSubscription ? 'active' : 'inactive'
-    }));
-  }, [hasActiveSubscription]);
+    const loadStats = async () => {
+      try {
+        const matchResponse = await sagaApi({
+          service: "userApi",
+          method: "getMatches",
+        });
+        // API returns { matches: [...], pagination: {...} }
+        // Axios wraps it in { data: {...}, status, ... }
+        const matchData = matchResponse?.data || matchResponse;
+        const matches = matchData?.matches || [];
+
+        const messageResponse = await sagaApi({
+          service: "userApi",
+          method: "getConversations",
+        });
+        const messageData = messageResponse?.data || messageResponse;
+        const unreadMessages = (messageData?.conversations || []).filter(
+          (conv) => conv.unreadCount > 0,
+        ).length;
+
+        const profileResponse = await sagaApi({
+          service: "userApi",
+          method: "getProfile",
+        });
+        const profileData = profileResponse?.data || profileResponse;
+        const isProfileComplete = Boolean(profileData?.isProfileComplete);
+
+        setStats((prev) => ({
+          ...prev,
+          matches: Array.isArray(matches) ? matches.length : 0,
+          messages: typeof unreadMessages === "number" ? unreadMessages : 0,
+          profileComplete: isProfileComplete,
+          subscriptionStatus: canAccessFeature(subscriptionStatusType, "core")
+            ? "active"
+            : "inactive",
+        }));
+      } catch (error) {
+        console.error("Failed to load dashboard stats:", error);
+        setStats((prev) => ({
+          ...prev,
+          subscriptionStatus: canAccessFeature(subscriptionStatusType, "core")
+            ? "active"
+            : "inactive",
+        }));
+      }
+    };
+
+    if (hasActiveSubscription !== undefined) {
+      loadStats();
+    }
+  }, [hasActiveSubscription, sagaApi, subscriptionStatusType]);
 
   const quickActions = [
-    { 
-      title: "Update Profile", 
-      icon: <FaLeaf />, 
+    {
+      title: "Update Profile",
+      icon: <FaLeaf />,
       route: "/profile/farmer",
-      color: "var(--color-pry-600)"
+      color: "var(--color-pry-600)",
     },
-    { 
-      title: "Find Vendors", 
-      icon: <FaHandshake />, 
+    {
+      title: "Find Vendors",
+      icon: <FaHandshake />,
       route: "/matches",
-      color: "var(--color-pry-700)"
+      color: "var(--color-pry-700)",
     },
-    { 
-      title: "Messages", 
-      icon: <FaBox />, 
+    {
+      title: "Messages",
+      icon: <FaBox />,
       route: "/messages",
-      color: "var(--color-sec-600)"
+      color: "var(--color-sec-600)",
     },
-    { 
-      title: "Subscription", 
-      icon: <FaChartLine />, 
+    {
+      title: "Subscription",
+      icon: <FaChartLine />,
       route: "/subscription",
-      color: "var(--color-pry-800)"
-    }
+      color: "var(--color-pry-800)",
+    },
   ];
 
   const canUseDashboard = canAccessFeature(subscriptionStatusType, "core");
 
-  if (subscriptionLoading) return <div style={{ padding: "24px" }}>Loading...</div>;
+  if (subscriptionLoading)
+    return <div style={{ padding: "24px" }}>Loading...</div>;
 
   if (!canUseDashboard) {
     return (
-      <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", color: "#193325", marginBottom: "16px" }}>
+      <div
+        style={{
+          padding: "clamp(16px, 4vw, 32px)",
+          textAlign: "center",
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(24px, 4vw, 32px)",
+            color: "#193325",
+            marginBottom: "16px",
+          }}
+        >
           Dashboard
         </h1>
-        <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#666", marginBottom: "24px" }}>
+        <p
+          style={{
+            fontSize: "clamp(14px, 2vw, 16px)",
+            color: "#666",
+            marginBottom: "24px",
+          }}
+        >
           {subscriptionStatusType === "expired"
             ? "Your subscription has expired. Renew to continue accessing your dashboard features."
             : "You need an active subscription to access the dashboard and view your matches and connections."}
@@ -95,14 +172,19 @@ const FarmerDashboard = () => {
   return (
     <div className="farmer-dashboard">
       <div className="dashboard-header">
-        <h1>Welcome back, {user?.name || 'Farmer'}!</h1>
-        <p className="subtitle">Manage your farm connections and grow your network</p>
+        <h1>Welcome back, {user?.name || "Farmer"}!</h1>
+        <p className="subtitle">
+          Manage your farm connections and grow your network
+        </p>
       </div>
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--color-pry-100)' }}>
-            <FaHandshake style={{ color: 'var(--color-pry-800)' }} />
+          <div
+            className="stat-icon"
+            style={{ background: "var(--color-pry-100)" }}
+          >
+            <FaHandshake style={{ color: "var(--color-pry-800)" }} />
           </div>
           <div className="stat-content">
             <h3>{stats.matches}</h3>
@@ -111,8 +193,11 @@ const FarmerDashboard = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--color-sec-100)' }}>
-            <FaBox style={{ color: 'var(--color-sec-800)' }} />
+          <div
+            className="stat-icon"
+            style={{ background: "var(--color-sec-100)" }}
+          >
+            <FaBox style={{ color: "var(--color-sec-800)" }} />
           </div>
           <div className="stat-content">
             <h3>{stats.messages}</h3>
@@ -121,21 +206,27 @@ const FarmerDashboard = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--color-pry-100)' }}>
-            <FaTractor style={{ color: 'var(--color-pry-800)' }} />
+          <div
+            className="stat-icon"
+            style={{ background: "var(--color-pry-100)" }}
+          >
+            <FaTractor style={{ color: "var(--color-pry-800)" }} />
           </div>
           <div className="stat-content">
-            <h3>{user?.farmerDetails ? '100%' : '0%'}</h3>
+            <h3>{stats.profileComplete ? "100%" : "0%"}</h3>
             <p>Profile Complete</p>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--color-pry-100)' }}>
-            <FaChartLine style={{ color: 'var(--color-pry-800)' }} />
+          <div
+            className="stat-icon"
+            style={{ background: "var(--color-pry-100)" }}
+          >
+            <FaChartLine style={{ color: "var(--color-pry-800)" }} />
           </div>
           <div className="stat-content">
-            <h3>{stats.subscriptionStatus === 'active' ? 'Active' : 'Inactive'}</h3>
+            <h3>{getSubscriptionDisplayText(subscriptionStatusType)}</h3>
             <p>Subscription</p>
           </div>
         </div>
@@ -165,9 +256,9 @@ const FarmerDashboard = () => {
           <div className="cta-content">
             <h3>Complete Your Profile</h3>
             <p>Add more details to get better matches with vendors</p>
-            <button 
+            <button
               className="cta-button"
-              onClick={() => navigate('/profile/farmer')}
+              onClick={() => navigate("/profile/farmer")}
             >
               Update Profile
             </button>

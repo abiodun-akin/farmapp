@@ -1,3 +1,4 @@
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { Box, Button, Card, Flex, Spinner, Tabs, Text } from "@radix-ui/themes";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -97,13 +98,16 @@ const NotificationPreferencesPage = () => {
               borderRadius: "6px",
             }}
           >
-            <Text size="2" color="brown">
-              ⚠️ You have unsaved changes
-            </Text>
+            <Flex gap="2" align="center">
+              <InfoCircledIcon style={{ color: "#f39c12", flexShrink: 0 }} />
+              <Text size="2" color="brown">
+                You have unsaved changes
+              </Text>
+            </Flex>
           </Card>
         )}
 
-        {/* Tabs with Preference Categories */}
+        {/* Notification Preference Categories */}
         <Tabs.Root defaultValue="channels">
           <Tabs.List>
             <Tabs.Trigger value="channels">Channels</Tabs.Trigger>

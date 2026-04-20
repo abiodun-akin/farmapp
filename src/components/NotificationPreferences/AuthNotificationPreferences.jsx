@@ -1,4 +1,4 @@
-import { StarIcon } from "@radix-ui/react-icons";
+import { InfoCircledIcon, StarIcon } from "@radix-ui/react-icons";
 import { Box, Card, Flex, Switch, Text } from "@radix-ui/themes";
 
 /**
@@ -92,8 +92,8 @@ const AuthNotificationPreferences = ({ preferences, onPreferenceChange }) => {
             style={{ marginTop: "2px", color: "#f39c12", flexShrink: 0 }}
           />
           <Text size="2" color="orange">
-            Events marked with ⭐ are important for account security and cannot
-            be disabled.
+            Events marked with a star are important for account security and
+            cannot be disabled.
           </Text>
         </Flex>
       </Card>
@@ -131,11 +131,14 @@ const AuthNotificationPreferences = ({ preferences, onPreferenceChange }) => {
       ))}
 
       <Box style={{ paddingTop: "8px" }}>
-        <Text size="1" color="gray">
-          💡 Tip: Keep security-related notifications enabled to protect your
-          account. If you disable these, you won't be notified of suspicious
-          activity.
-        </Text>
+        <Flex gap="2" align="start">
+          <InfoCircledIcon style={{ marginTop: "2px", flexShrink: 0 }} />
+          <Text size="1" color="gray">
+            Tip: Keep security-related notifications enabled to protect your
+            account. If you disable these, you won't be notified of suspicious
+            activity.
+          </Text>
+        </Flex>
       </Box>
     </Flex>
   );

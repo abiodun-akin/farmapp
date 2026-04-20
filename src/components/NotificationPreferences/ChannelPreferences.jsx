@@ -1,8 +1,12 @@
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import {
+  BellIcon,
+  EnvelopeClosedIcon,
+  InfoCircledIcon,
+  MobileIcon,
+} from "@radix-ui/react-icons";
 import { Box, Card, Flex, Switch, Text } from "@radix-ui/themes";
 
 /**
- * Channel Preferences Component
  * Controls which notification channels are enabled (Email, SMS, Push)
  */
 const ChannelPreferences = ({ preferences, onPreferenceChange }) => {
@@ -26,9 +30,12 @@ const ChannelPreferences = ({ preferences, onPreferenceChange }) => {
         <Flex direction="column" gap="3">
           <Flex justify="between" align="center">
             <Flex direction="column" gap="1">
-              <Text weight="bold" size="3">
-                📧 Email Notifications
-              </Text>
+              <Flex gap="2" align="center">
+                <EnvelopeClosedIcon style={{ width: "20px", height: "20px" }} />
+                <Text weight="bold" size="3">
+                  Email Notifications
+                </Text>
+              </Flex>
               <Text color="gray" size="2">
                 Receive notifications via email
               </Text>
@@ -58,9 +65,12 @@ const ChannelPreferences = ({ preferences, onPreferenceChange }) => {
         <Flex direction="column" gap="3">
           <Flex justify="between" align="center">
             <Flex direction="column" gap="1">
-              <Text weight="bold" size="3">
-                📱 SMS Notifications
-              </Text>
+              <Flex gap="2" align="center">
+                <MobileIcon style={{ width: "20px", height: "20px" }} />
+                <Text weight="bold" size="3">
+                  SMS Notifications
+                </Text>
+              </Flex>
               <Text color="gray" size="2">
                 Receive notifications via text message
               </Text>
@@ -95,9 +105,12 @@ const ChannelPreferences = ({ preferences, onPreferenceChange }) => {
         <Flex direction="column" gap="3">
           <Flex justify="between" align="center">
             <Flex direction="column" gap="1">
-              <Text weight="bold" size="3">
-                🔔 Push Notifications
-              </Text>
+              <Flex gap="2" align="center">
+                <BellIcon style={{ width: "20px", height: "20px" }} />
+                <Text weight="bold" size="3">
+                  Push Notifications
+                </Text>
+              </Flex>
               <Text color="gray" size="2">
                 Receive notifications in your browser
               </Text>
@@ -140,9 +153,9 @@ const ChannelPreferences = ({ preferences, onPreferenceChange }) => {
           </Text>
           <Text size="2">
             {[
-              preferences.channels.email && "📧 Email",
-              preferences.channels.sms && "📱 SMS",
-              preferences.channels.push && "🔔 Push",
+              preferences.channels.email && "Email",
+              preferences.channels.sms && "SMS",
+              preferences.channels.push && "Push",
             ]
               .filter(Boolean)
               .join(", ") || "No channels enabled"}

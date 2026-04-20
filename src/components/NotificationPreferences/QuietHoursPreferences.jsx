@@ -1,3 +1,9 @@
+import {
+  BellIcon,
+  ClockIcon,
+  EnvelopeClosedIcon,
+  MobileIcon,
+} from "@radix-ui/react-icons";
 import { Box, Card, Flex, Select, Switch, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 
@@ -276,7 +282,12 @@ const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
               </Text>
               <Flex direction="column" gap="2">
                 <Flex justify="between" align="center">
-                  <Text size="2">📧 Email Notifications</Text>
+                  <Flex gap="2" align="center">
+                    <EnvelopeClosedIcon
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    <Text size="2">Email Notifications</Text>
+                  </Flex>
                   <Switch
                     checked={localQuietHours.respectChannels?.email ?? true}
                     onCheckedChange={() => handleChannelToggle("email")}
@@ -284,7 +295,10 @@ const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
                   />
                 </Flex>
                 <Flex justify="between" align="center">
-                  <Text size="2">📱 SMS Notifications</Text>
+                  <Flex gap="2" align="center">
+                    <MobileIcon style={{ width: "16px", height: "16px" }} />
+                    <Text size="2">SMS Notifications</Text>
+                  </Flex>
                   <Switch
                     checked={localQuietHours.respectChannels?.sms ?? true}
                     onCheckedChange={() => handleChannelToggle("sms")}
@@ -292,7 +306,10 @@ const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
                   />
                 </Flex>
                 <Flex justify="between" align="center">
-                  <Text size="2">🔔 Push Notifications</Text>
+                  <Flex gap="2" align="center">
+                    <BellIcon style={{ width: "16px", height: "16px" }} />
+                    <Text size="2">Push Notifications</Text>
+                  </Flex>
                   <Switch
                     checked={localQuietHours.respectChannels?.push ?? true}
                     onCheckedChange={() => handleChannelToggle("push")}
@@ -301,7 +318,7 @@ const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
                 </Flex>
               </Flex>
               <Text size="1" color="gray">
-                Select which notification channels should respect your quiet
+                Choose which notification channels should respect your quiet
                 hours. Important security alerts may still come through.
               </Text>
             </Flex>
@@ -310,11 +327,14 @@ const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
       )}
 
       <Box style={{ paddingTop: "8px" }}>
-        <Text size="1" color="gray">
-          ⏰ During quiet hours, notifications will be queued and delivered when
-          quiet hours end. Critical security alerts may still be sent
-          immediately.
-        </Text>
+        <Flex gap="2" align="start">
+          <ClockIcon style={{ marginTop: "2px", flexShrink: 0 }} />
+          <Text size="1" color="gray">
+            During quiet hours, notifications will be queued and delivered when
+            quiet hours end. Critical security alerts may still be sent
+            immediately.
+          </Text>
+        </Flex>
       </Box>
     </Flex>
   );

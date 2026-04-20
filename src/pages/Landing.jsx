@@ -16,7 +16,8 @@ const Landing = () => {
       {
         id: 1,
         title: "Connect with Trusted Agro Vendors",
-        subtitle: "Find verified suppliers, machinery experts, and service partners near you.",
+        subtitle:
+          "Find verified suppliers, machinery experts, and service partners near you.",
         image:
           "https://images.unsplash.com/photo-1625246333195-78d9c38ad576?auto=format&fit=crop&w=1920&q=75",
         mobileImage:
@@ -27,7 +28,8 @@ const Landing = () => {
       {
         id: 2,
         title: "Build Better Farmer–Vendor Partnerships",
-        subtitle: "Collaborate faster with structured messaging and smarter matching.",
+        subtitle:
+          "Collaborate faster with structured messaging and smarter matching.",
         image:
           "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=1920&q=75",
         mobileImage:
@@ -38,7 +40,8 @@ const Landing = () => {
       {
         id: 3,
         title: "Grow with Flexible Subscription Plans",
-        subtitle: "Activate, renew, and extend your plan seamlessly as your business scales.",
+        subtitle:
+          "Activate, renew, and extend your plan seamlessly as your business scales.",
         image:
           "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=1920&q=75",
         mobileImage:
@@ -47,7 +50,7 @@ const Landing = () => {
         route: isAuthenticated ? "/dashboard" : "/signup",
       },
     ],
-    [isAuthenticated]
+    [isAuthenticated],
   );
 
   useEffect(() => {
@@ -143,7 +146,9 @@ const Landing = () => {
               margin: "0 auto 28px",
             }}
           >
-            FarmConnect is the trusted platform connecting farmers, vendors, and service providers across Nigeria. Build stronger business relationships and grow your agricultural enterprise.
+            FarmConnect is the trusted platform connecting farmers, vendors, and
+            service providers across Nigeria. Build stronger business
+            relationships and grow your agricultural enterprise.
           </p>
 
           <div
@@ -213,28 +218,52 @@ const Landing = () => {
           >
             <div style={{ padding: "16px" }}>
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>🤝</div>
-              <h3 style={{ color: "#193325", fontSize: "clamp(16px, 2.5vw, 18px)", marginBottom: "8px" }}>
+              <h3
+                style={{
+                  color: "#193325",
+                  fontSize: "clamp(16px, 2.5vw, 18px)",
+                  marginBottom: "8px",
+                }}
+              >
                 Verified Connections
               </h3>
-              <p style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}>
+              <p
+                style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}
+              >
                 Connect with trusted farmers and vendors in your region
               </p>
             </div>
             <div style={{ padding: "16px" }}>
-              <div style={{ fontSize: "32px", marginBottom: "8px" }}>📱</div>
-              <h3 style={{ color: "#193325", fontSize: "clamp(16px, 2.5vw, 18px)", marginBottom: "8px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "8px" }}>�</div>
+              <h3
+                style={{
+                  color: "#193325",
+                  fontSize: "clamp(16px, 2.5vw, 18px)",
+                  marginBottom: "8px",
+                }}
+              >
                 Easy Messaging
               </h3>
-              <p style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}>
+              <p
+                style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}
+              >
                 Communicate seamlessly and manage partnerships efficiently
               </p>
             </div>
             <div style={{ padding: "16px" }}>
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>💼</div>
-              <h3 style={{ color: "#193325", fontSize: "clamp(16px, 2.5vw, 18px)", marginBottom: "8px" }}>
+              <h3
+                style={{
+                  color: "#193325",
+                  fontSize: "clamp(16px, 2.5vw, 18px)",
+                  marginBottom: "8px",
+                }}
+              >
                 Flexible Plans
               </h3>
-              <p style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}>
+              <p
+                style={{ color: "#666", fontSize: "clamp(13px, 1.5vw, 14px)" }}
+              >
                 Upgrade or extend your subscription as your business grows
               </p>
             </div>

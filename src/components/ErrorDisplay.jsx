@@ -54,7 +54,7 @@ const ErrorDisplay = ({
               marginTop: "4px",
             }}
           >
-            ⚠️
+            <div style={{ fontSize: "20px", color: "#ff9800" }}>!</div>
           </Text>
           <Flex direction="column" gap="2" style={{ flex: 1 }}>
             <Text weight="bold" size="3" color="red">

@@ -1,10 +1,8 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
-import { logoutRequest } from "../../redux/slices/userSlice";
+import { useDispatch } from "react-redux";
+import { NavLink, useNavigate } from "react-router-dom";
 import FarmConnectLogo from "../../components/FarmConnectLogo";
+import { logoutRequest } from "../../redux/slices/userSlice";
 import "./AdminLayout.css";
 
 const AdminLayout = ({ title, children }) => {
@@ -21,7 +19,7 @@ const AdminLayout = ({ title, children }) => {
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <div className="brand-mark">
-            <FarmConnectLogo size={26} showText={false} />
+            <FarmConnectLogo size={26} />
           </div>
           <div>
             <div className="brand-title">FarmConnect</div>

@@ -6,6 +6,7 @@ import { API_BASE_URL } from "../config/api";
 import useSagaApi from "../hooks/useSagaApi";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 import { canAccessFeature } from "../utils/subscriptionHelper";
+import "./MessagesPage.css";
 
 const MessagesPage = () => {
   const toId = (value) => {
@@ -361,48 +362,23 @@ const MessagesPage = () => {
               showDismiss={false}
             />
           )}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "320px 1fr",
-              gap: "16px",
-            }}
-          >
-            <div
-              style={{
-                border: "1px solid #e0e0e0",
-                borderRadius: "10px",
-                background: "#fff",
-              }}
-            >
+          <div className="messages-main-layout">
+            <div className="messages-sidebar">
               {conversations.length === 0 ? (
-                <p style={{ padding: "12px" }}>No conversations yet.</p>
+                <p className="no-conversations-message">
+                  No conversations yet.
+                </p>
               ) : (
                 conversations.map((conversation) => (
                   <button
                     key={conversation.match_id}
                     onClick={() => setSelectedMatchId(conversation.match_id)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      border: "none",
-                      background:
-                        selectedMatchId === conversation.match_id
-                          ? "#ebf2ee"
-                          : "transparent",
-                      padding: "12px",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #f0f0f0",
-                    }}
+                    className={`conversation-item ${selectedMatchId === conversation.match_id ? "active" : ""}`}
                   >
-                    <strong>{conversation.otherUserEmail}</strong>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#666",
-                        marginTop: "4px",
-                      }}
-                    >
+                    <strong className="conversation-email">
+                      {conversation.otherUserEmail}
+                    </strong>
+                    <div className="conversation-preview">
                       {conversation.lastMessage || "No messages yet"}
                     </div>
                   </button>
@@ -410,165 +386,185 @@ const MessagesPage = () => {
               )}
             </div>
 
-            <div
-              style={{
-                border: "1px solid #e0e0e0",
-                borderRadius: "10px",
-                background: "#fff",
-              }}
-            >
-              <div
-                style={{
-                  padding: "12px",
-                  borderBottom: "1px solid #f0f0f0",
-                  fontWeight: 600,
-                }}
-              >
-                {selectedConversation?.otherUserEmail ||
-                  "Select a conversation"}
-              </div>
-              <div
-                style={{ padding: "12px", borderBottom: "1px solid #f0f0f0" }}
-              >
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search messages..."
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                  }}
-                />
-              </div>
-              <div
-                style={{ height: "360px", overflowY: "auto", padding: "12px" }}
-              >
-                {messages.length === 0 ? (
-                  <p>No messages yet.</p>
-                ) : (
-                  messages.map((message) =>
-                    (() => {
-                      const isOwnMessage =
-                        toId(message.sender_id) === currentUserId;
-                      return (
-                        <div
-                          key={message._id}
-                          style={{
-                            marginBottom: "10px",
-                            padding: "10px",
-                            borderRadius: "8px",
-                            background: isOwnMessage ? "#e7f3ec" : "#f8f8f8",
-                            marginLeft: isOwnMessage ? "48px" : 0,
-                            marginRight: isOwnMessage ? 0 : "48px",
-                          }}
-                        >
-                          <p style={{ margin: 0 }}>{message.content}</p>
-                          {message.attachment?.url && (
-                            <div style={{ marginTop: "6px" }}>
-                              <a
-                                href={message.attachment.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: "#2d8659", fontSize: "13px" }}
-                              >
-                                Attachment:{" "}
-                                {message.attachment.name || "Open file"}
-                              </a>
-                            </div>
-                          )}
-                          <small style={{ color: "#777" }}>
-                            {new Date(message.createdAt).toLocaleString()}
-                          </small>
-                          {isOwnMessage && (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#4f6f5f",
-                                marginTop: "4px",
-                              }}
-                            >
-                              {message.status === "read" ? "Read" : "Sent"}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })(),
-                  )
-                )}
-                {typingUserId && (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#5f7a6a",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {selectedConversation?.otherUserEmail || "User"} is
-                    typing...
-                  </p>
-                )}
-              </div>
-              {pendingAttachment && (
+            <div className="messages-content-area">
+              {!selectedMatchId ? (
                 <div
                   style={{
-                    padding: "0 12px 8px",
-                    color: "#4f6f5f",
-                    fontSize: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    color: "#999",
+                    textAlign: "center",
+                    padding: "24px",
+                    flexDirection: "column",
+                    gap: "12px",
                   }}
                 >
-                  Selected: {pendingAttachment.name}
-                  <button
-                    onClick={() => setPendingAttachment(null)}
+                  <p style={{ fontSize: "16px", fontWeight: 500 }}>
+                    Select a conversation to start messaging
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#bbb" }}>
+                    Choose a contact from the list on the left
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div
                     style={{
-                      marginLeft: "8px",
-                      border: "none",
-                      background: "transparent",
-                      color: "#b42318",
-                      cursor: "pointer",
+                      padding: "12px",
+                      borderBottom: "1px solid #f0f0f0",
+                      fontWeight: 600,
                     }}
                   >
-                    Remove
-                  </button>
-                </div>
+                    {selectedConversation?.otherUserEmail ||
+                      "Select a conversation"}
+                  </div>
+                  <div
+                    style={{
+                      padding: "12px",
+                      borderBottom: "1px solid #f0f0f0",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search messages..."
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      height: "360px",
+                      overflowY: "auto",
+                      padding: "12px",
+                    }}
+                  >
+                    {messages.length === 0 ? (
+                      <p>No messages yet.</p>
+                    ) : (
+                      messages.map((message) =>
+                        (() => {
+                          const isOwnMessage =
+                            toId(message.sender_id) === currentUserId;
+                          return (
+                            <div
+                              key={message._id}
+                              style={{
+                                marginBottom: "10px",
+                                padding: "10px",
+                                borderRadius: "8px",
+                                background: isOwnMessage
+                                  ? "#d4edda"
+                                  : "#e8e8e8",
+                                marginLeft: isOwnMessage ? "48px" : 0,
+                                marginRight: isOwnMessage ? 0 : "48px",
+                                border: isOwnMessage
+                                  ? "1px solid #28a745"
+                                  : "1px solid #999",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 700,
+                                  color: isOwnMessage ? "#155724" : "#333",
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                {isOwnMessage ? "✓ You" : "Them"}
+                              </div>
+                              <p style={{ margin: 0 }}>{message.content}</p>
+                              {message.attachment?.url && (
+                                <div style={{ marginTop: "6px" }}>
+                                  <a
+                                    href={message.attachment.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                      color: "#2d8659",
+                                      fontSize: "13px",
+                                    }}
+                                  >
+                                    Attachment:{" "}
+                                    {message.attachment.name || "Open file"}
+                                  </a>
+                                </div>
+                              )}
+                              <small style={{ color: "#777" }}>
+                                {new Date(message.createdAt).toLocaleString()}
+                              </small>
+                              {isOwnMessage && (
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#4f6f5f",
+                                    marginTop: "4px",
+                                  }}
+                                >
+                                  {message.status === "read" ? "Read" : "Sent"}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })(),
+                      )
+                    )}
+                    {typingUserId && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#5f7a6a",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {selectedConversation?.otherUserEmail || "User"} is
+                        typing...
+                      </p>
+                    )}
+                  </div>
+                  {pendingAttachment && (
+                    <div className="attachment-indicator">
+                      Selected: {pendingAttachment.name}
+                      <button
+                        onClick={() => setPendingAttachment(null)}
+                        className="attachment-remove-button"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                  <div className="message-input-form">
+                    <input
+                      type="file"
+                      onChange={handleAttachmentSelect}
+                      className="file-input-wrapper"
+                      disabled={!selectedMatchId}
+                    />
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={handleMessageChange}
+                      placeholder="Type your message..."
+                      className="message-input-field"
+                      disabled={!selectedMatchId}
+                    />
+                    <button
+                      onClick={handleSend}
+                      className="message-send-button"
+                      disabled={!selectedMatchId}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </>
               )}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  padding: "12px",
-                  borderTop: "1px solid #f0f0f0",
-                }}
-              >
-                <input type="file" onChange={handleAttachmentSelect} />
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={handleMessageChange}
-                  placeholder="Type your message..."
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                  }}
-                />
-                <button
-                  onClick={handleSend}
-                  style={{
-                    background: "#2d8659",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "10px 14px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Send
-                </button>
-              </div>
             </div>
           </div>
         </>
