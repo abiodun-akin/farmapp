@@ -196,6 +196,62 @@
   margin-top: 6px;
 }
 
+.vendor-profile-form .manual-pin-editor {
+  margin-top: 12px;
+  border: 1px solid #d8e7de;
+  border-radius: 8px;
+  background: #f7fbf8;
+  padding: 12px;
+}
+
+.vendor-profile-form .manual-pin-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f5137;
+}
+
+.vendor-profile-form .manual-pin-subtitle {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: #4e6759;
+}
+
+.vendor-profile-form .manual-pin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.vendor-profile-form .manual-pin-controls {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vendor-profile-form .pin-adjust-btn {
+  border: 1px solid #b7cfbf;
+  border-radius: 6px;
+  background: #fff;
+  color: #245b3f;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.vendor-profile-form .pin-adjust-btn:hover {
+  background: #eef6f1;
+}
+
+.vendor-profile-form .manual-pin-map {
+  margin-top: 10px;
+  width: 100%;
+  height: 220px;
+  border: 1px solid #d6ded9;
+  border-radius: 8px;
+}
+
 .vendor-profile-form .checkbox-group {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -273,6 +329,10 @@
   }
 
   .vendor-profile-form .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+
+  .vendor-profile-form .manual-pin-grid {
     grid-template-columns: 1fr;
   }
 }

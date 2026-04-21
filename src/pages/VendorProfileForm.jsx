@@ -63,6 +63,72 @@ const VendorProfileForm = () => {
 
   const isNigeria = formData.country === "Nigeria";
 
+  const toNumericCoordinate = (value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const clampCoordinate = (field, value) => {
+    if (field === "latitude") {
+      return Math.min(90, Math.max(-90, value));
+    }
+    return Math.min(180, Math.max(-180, value));
+  };
+
+  const setCoordinateValue = (field, value) => {
+    const numeric = toNumericCoordinate(value);
+    if (numeric === null) {
+      handleArrayChange(field, "");
+      return;
+    }
+
+    const clamped = clampCoordinate(field, numeric);
+    handleArrayChange(field, String(clamped));
+  };
+
+  const nudgeCoordinate = (field, delta) => {
+    const base = toNumericCoordinate(formData[field]) ?? 0;
+    const nudged = clampCoordinate(field, base + delta);
+    handleArrayChange(field, nudged.toFixed(6));
+  };
+
+  const getManualPinPreviewUrl = () => {
+    const latitude = toNumericCoordinate(formData.latitude);
+    const longitude = toNumericCoordinate(formData.longitude);
+
+    if (latitude === null || longitude === null) {
+      return "";
+    }
+
+    const bounds = `${latitude - 0.03}%2C${longitude - 0.03}%2C${latitude + 0.03}%2C${longitude + 0.03}`;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bounds}&layer=mapnik&marker=${latitude}%2C${longitude}`;
+  };
+
+  const getLocationUpdatePrompt = () => {
+    const lat = Number(formData.latitude);
+    const lng = Number(formData.longitude);
+    const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng);
+    const hasAddressText =
+      !!String(formData.location || "").trim() ||
+      !!String(formData.lga || "").trim() ||
+      !!String(formData.state || "").trim() ||
+      !!String(formData.country || "").trim();
+
+    if (hasCoordinates) {
+      const withinAfrica = lat >= -35 && lat <= 38 && lng >= -20 && lng <= 55;
+      if (!withinAfrica) {
+        return "Your coordinates appear outside supported region and may place your map pin incorrectly. Save profile anyway?";
+      }
+      return "";
+    }
+
+    if (hasAddressText) {
+      return "No GPS coordinates were provided. Buyers may see only an approximate map location. Continue saving your profile?";
+    }
+
+    return "Location details are incomplete and map preview may be unavailable to buyers. Continue saving your profile?";
+  };
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -179,6 +245,12 @@ const VendorProfileForm = () => {
     setSubmitting(true);
 
     try {
+      const locationPrompt = getLocationUpdatePrompt();
+      if (locationPrompt && !window.confirm(locationPrompt)) {
+        setSubmitting(false);
+        return;
+      }
+
       // Validate required fields
       if (
         !formData.phone ||
@@ -315,7 +387,7 @@ const VendorProfileForm = () => {
 
   return (
     <div className="profile-form-container">
-      <form className="vendor-profile-form" onSubmit={handleSubmit}>
+      <form className="vendor-profile-form" onSubmit={handleSubmit} noValidate>
         <h1>Complete Your Vendor Profile</h1>
         <p className="form-subtitle">
           Help farmers find and connect with your services
@@ -457,6 +529,91 @@ const VendorProfileForm = () => {
               {formData.latitude &&
                 `Coordinates: ${formData.latitude}, ${formData.longitude}`}
             </small>
+
+            <div className="manual-pin-editor">
+              <p className="manual-pin-title">Manually correct map pin</p>
+              <p className="manual-pin-subtitle">
+                Fine-tune your latitude and longitude if GPS pin is off.
+              </p>
+
+              <div className="manual-pin-grid">
+                <div className="form-group">
+                  <label htmlFor="manual-latitude">Latitude</label>
+                  <input
+                    id="manual-latitude"
+                    type="number"
+                    step="0.000001"
+                    min="-90"
+                    max="90"
+                    value={formData.latitude}
+                    onChange={(event) =>
+                      setCoordinateValue("latitude", event.target.value)
+                    }
+                    placeholder="e.g. 6.5244"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="manual-longitude">Longitude</label>
+                  <input
+                    id="manual-longitude"
+                    type="number"
+                    step="0.000001"
+                    min="-180"
+                    max="180"
+                    value={formData.longitude}
+                    onChange={(event) =>
+                      setCoordinateValue("longitude", event.target.value)
+                    }
+                    placeholder="e.g. 3.3792"
+                  />
+                </div>
+              </div>
+
+              <div className="manual-pin-controls">
+                <button
+                  type="button"
+                  className="pin-adjust-btn"
+                  onClick={() => nudgeCoordinate("latitude", 0.0005)}
+                >
+                  Move North
+                </button>
+                <button
+                  type="button"
+                  className="pin-adjust-btn"
+                  onClick={() => nudgeCoordinate("latitude", -0.0005)}
+                >
+                  Move South
+                </button>
+                <button
+                  type="button"
+                  className="pin-adjust-btn"
+                  onClick={() => nudgeCoordinate("longitude", 0.0005)}
+                >
+                  Move East
+                </button>
+                <button
+                  type="button"
+                  className="pin-adjust-btn"
+                  onClick={() => nudgeCoordinate("longitude", -0.0005)}
+                >
+                  Move West
+                </button>
+              </div>
+
+              {getManualPinPreviewUrl() ? (
+                <iframe
+                  title="manual-pin-preview-vendor"
+                  className="manual-pin-map"
+                  src={getManualPinPreviewUrl()}
+                  loading="lazy"
+                />
+              ) : (
+                <small className="hint">
+                  Enter both coordinates to preview corrected pin.
+                </small>
+              )}
+            </div>
           </div>
         </div>
 

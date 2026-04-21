@@ -22,6 +22,7 @@ const FarmerDashboard = () => {
   const [stats, setStats] = useState({
     matches: 0,
     messages: 0,
+    listedProducts: 0,
     profileComplete: false,
     subscriptionStatus: "inactive",
   });
@@ -60,10 +61,20 @@ const FarmerDashboard = () => {
         const profileData = profileResponse?.data || profileResponse;
         const isProfileComplete = Boolean(profileData?.isProfileComplete);
 
+        const listingResponse = await sagaApi({
+          service: "userApi",
+          method: "getMyListing",
+        });
+        const listingData = listingResponse?.data || listingResponse;
+        const listedProducts = Array.isArray(listingData?.listing?.products)
+          ? listingData.listing.products.length
+          : 0;
+
         setStats((prev) => ({
           ...prev,
           matches: Array.isArray(matches) ? matches.length : 0,
           messages: typeof unreadMessages === "number" ? unreadMessages : 0,
+          listedProducts,
           profileComplete: isProfileComplete,
           subscriptionStatus: canAccessFeature(subscriptionStatusType, "core")
             ? "active"
@@ -202,6 +213,19 @@ const FarmerDashboard = () => {
           <div className="stat-content">
             <h3>{stats.messages}</h3>
             <p>Unread Messages</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div
+            className="stat-icon"
+            style={{ background: "var(--color-pry-100)" }}
+          >
+            <FaTractor style={{ color: "var(--color-pry-800)" }} />
+          </div>
+          <div className="stat-content">
+            <h3>{stats.listedProducts}</h3>
+            <p>Products Listed</p>
           </div>
         </div>
 

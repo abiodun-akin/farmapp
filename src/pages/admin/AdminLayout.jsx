@@ -39,6 +39,9 @@ const AdminLayout = ({ title, children }) => {
           <NavLink to="/admin/messages" className="admin-link">
             Flagged Messages
           </NavLink>
+          <NavLink to="/admin/listings" className="admin-link">
+            Listings & Products
+          </NavLink>
           <NavLink to="/admin/subscriptions" className="admin-link">
             Subscriptions
           </NavLink>

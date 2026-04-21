@@ -125,6 +125,12 @@ const NavigationBar = () => {
                   </Button>
                   <Button
                     variant="ghost"
+                    onClick={() => handleNavigate("/marketplace")}
+                  >
+                    Marketplace
+                  </Button>
+                  <Button
+                    variant="ghost"
                     onClick={() => handleNavigate("/pricing")}
                   >
                     Pricing
@@ -152,6 +158,12 @@ const NavigationBar = () => {
                   </Button>
                   <Button
                     variant="ghost"
+                    onClick={() => handleNavigate("/marketplace")}
+                  >
+                    Marketplace
+                  </Button>
+                  <Button
+                    variant="ghost"
                     onClick={() => handleNavigate("/pricing")}
                   >
                     Pricing
@@ -172,6 +184,9 @@ const NavigationBar = () => {
                 <RouterLink to="/">Home</RouterLink>
               </Link>
               <Link asChild weight="medium" size="2" color="gray">
+                <RouterLink to="/marketplace">Marketplace</RouterLink>
+              </Link>
+              <Link asChild weight="medium" size="2" color="gray">
                 <RouterLink to="/pricing">Pricing</RouterLink>
               </Link>
               <Link asChild weight="medium" size="2" color="gray">
@@ -185,6 +200,9 @@ const NavigationBar = () => {
             <>
               <Link asChild weight="medium" size="2" color="gray">
                 <RouterLink to="/dashboard">Dashboard</RouterLink>
+              </Link>
+              <Link asChild weight="medium" size="2" color="gray">
+                <RouterLink to="/marketplace">Marketplace</RouterLink>
               </Link>
               <Link asChild weight="medium" size="2" color="gray">
                 <RouterLink to="/pricing">Pricing</RouterLink>

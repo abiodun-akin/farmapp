@@ -35,6 +35,55 @@
   padding: 12px;
 }
 
+.messages-thread {
+  height: 360px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.message-row {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.message-row-own {
+  justify-content: flex-end;
+}
+
+.message-row-other {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  width: min(75%, 520px);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.message-bubble-own {
+  background: #d4edda;
+  border: 1px solid #28a745;
+}
+
+.message-bubble-other {
+  background: #e8e8e8;
+  border: 1px solid #999;
+}
+
+.message-sender-label {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.message-bubble-own .message-sender-label {
+  color: #155724;
+}
+
+.message-bubble-other .message-sender-label {
+  color: #333;
+}
+
 .message-input-form {
   display: flex;
   gap: 8px;

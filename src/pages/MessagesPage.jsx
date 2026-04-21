@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import ErrorDisplay from "../components/ErrorDisplay";
@@ -35,15 +36,64 @@ const MessagesPage = () => {
   const typingStopTimeoutRef = useRef(null);
   const isTypingRef = useRef(false);
   const sagaApi = useSagaApi();
+  const authUser = useSelector((state) => state.user.user);
   const { statusType: subscriptionStatusType, subscriptionLoading } =
     useSubscriptionStatus();
   const currentUserId = useMemo(() => {
+    const reduxId = authUser?._id || authUser?.id;
+    if (reduxId) {
+      return String(reduxId);
+    }
+
     try {
-      return JSON.parse(localStorage.getItem("user") || "{}")._id || "";
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      return String(stored._id || stored.id || "");
     } catch {
       return "";
     }
-  }, []);
+  }, [authUser]);
+
+  const currentUserEmail = useMemo(() => {
+    const reduxEmail = authUser?.email;
+    if (reduxEmail) {
+      return String(reduxEmail).toLowerCase();
+    }
+
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      return String(stored.email || "").toLowerCase();
+    } catch {
+      return "";
+    }
+  }, [authUser]);
+
+  const getSenderIdentity = (message) => {
+    const sender = message?.sender_id;
+    if (sender && typeof sender === "object") {
+      return {
+        id: toId(sender),
+        email: String(sender.email || "").toLowerCase(),
+      };
+    }
+
+    return {
+      id: toId(sender),
+      email: String(message?.senderEmail || "").toLowerCase(),
+    };
+  };
+
+  const isOwnMessage = (message) => {
+    const senderIdentity = getSenderIdentity(message);
+    if (currentUserId && senderIdentity.id) {
+      return senderIdentity.id === currentUserId;
+    }
+
+    if (currentUserEmail && senderIdentity.email) {
+      return senderIdentity.email === currentUserEmail;
+    }
+
+    return false;
+  };
 
   const selectedConversation = useMemo(
     () =>
@@ -439,78 +489,64 @@ const MessagesPage = () => {
                       }}
                     />
                   </div>
-                  <div
-                    style={{
-                      height: "360px",
-                      overflowY: "auto",
-                      padding: "12px",
-                    }}
-                  >
+                  <div className="messages-thread">
                     {messages.length === 0 ? (
                       <p>No messages yet.</p>
                     ) : (
                       messages.map((message) =>
                         (() => {
-                          const isOwnMessage =
-                            toId(message.sender_id) === currentUserId;
+                          const ownMessage = isOwnMessage(message);
+                          const senderIdentity = getSenderIdentity(message);
+                          const senderLabel = ownMessage
+                            ? authUser?.name || authUser?.email || "You"
+                            : senderIdentity.email ||
+                              selectedConversation?.otherUserEmail ||
+                              "Contact";
                           return (
                             <div
                               key={message._id}
-                              style={{
-                                marginBottom: "10px",
-                                padding: "10px",
-                                borderRadius: "8px",
-                                background: isOwnMessage
-                                  ? "#d4edda"
-                                  : "#e8e8e8",
-                                marginLeft: isOwnMessage ? "48px" : 0,
-                                marginRight: isOwnMessage ? 0 : "48px",
-                                border: isOwnMessage
-                                  ? "1px solid #28a745"
-                                  : "1px solid #999",
-                              }}
+                              className={`message-row ${ownMessage ? "message-row-own" : "message-row-other"}`}
                             >
                               <div
-                                style={{
-                                  fontSize: "11px",
-                                  fontWeight: 700,
-                                  color: isOwnMessage ? "#155724" : "#333",
-                                  marginBottom: "4px",
-                                }}
+                                className={`message-bubble ${ownMessage ? "message-bubble-own" : "message-bubble-other"}`}
                               >
-                                {isOwnMessage ? "✓ You" : "Them"}
-                              </div>
-                              <p style={{ margin: 0 }}>{message.content}</p>
-                              {message.attachment?.url && (
-                                <div style={{ marginTop: "6px" }}>
-                                  <a
-                                    href={message.attachment.url}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                <div className="message-sender-label">
+                                  {senderLabel}
+                                </div>
+                                <p style={{ margin: 0 }}>{message.content}</p>
+                                {message.attachment?.url && (
+                                  <div style={{ marginTop: "6px" }}>
+                                    <a
+                                      href={message.attachment.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      style={{
+                                        color: "#2d8659",
+                                        fontSize: "13px",
+                                      }}
+                                    >
+                                      Attachment:{" "}
+                                      {message.attachment.name || "Open file"}
+                                    </a>
+                                  </div>
+                                )}
+                                <small style={{ color: "#777" }}>
+                                  {new Date(message.createdAt).toLocaleString()}
+                                </small>
+                                {isOwnMessage && (
+                                  <div
                                     style={{
-                                      color: "#2d8659",
-                                      fontSize: "13px",
+                                      fontSize: "11px",
+                                      color: "#4f6f5f",
+                                      marginTop: "4px",
                                     }}
                                   >
-                                    Attachment:{" "}
-                                    {message.attachment.name || "Open file"}
-                                  </a>
-                                </div>
-                              )}
-                              <small style={{ color: "#777" }}>
-                                {new Date(message.createdAt).toLocaleString()}
-                              </small>
-                              {isOwnMessage && (
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#4f6f5f",
-                                    marginTop: "4px",
-                                  }}
-                                >
-                                  {message.status === "read" ? "Read" : "Sent"}
-                                </div>
-                              )}
+                                    {message.status === "read"
+                                      ? "Read"
+                                      : "Sent"}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })(),

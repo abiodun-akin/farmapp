@@ -58,8 +58,7 @@ export const userApi = {
   regenerateRecoveryCodes: () =>
     api.post("/auth/2fa/recovery-codes/regenerate"),
 
-  sendRecoveryCodesEmail: () =>
-    api.post("/auth/2fa/recovery-codes/send-email"),
+  sendRecoveryCodesEmail: () => api.post("/auth/2fa/recovery-codes/send-email"),
 
   // TOTP Authenticator App
   initiateTwoFactorSetup: (options = {}) =>
@@ -68,8 +67,7 @@ export const userApi = {
   verifyTwoFactorSetup: (options = {}) =>
     api.post("/auth/2fa/setup/verify", options),
 
-  setTwoFactorMethod: (method) =>
-    api.put("/auth/2fa/method", { method }),
+  setTwoFactorMethod: (method) => api.put("/auth/2fa/method", { method }),
 
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 
@@ -148,6 +146,29 @@ export const userApi = {
     api.put(`/messages/${messageId}/flag`, { reason }),
 
   getUnreadCount: () => api.get("/messages/stats/unread"),
+
+  // Product listings
+  getPublicListings: () => api.get("/listings/public"),
+
+  getMyListing: () => api.get("/listings/mine"),
+
+  createMyListing: (payload) => api.post("/listings", payload),
+
+  updateMyListing: (listingId, payload) =>
+    api.put(`/listings/${listingId}`, payload),
+
+  deleteMyListing: (listingId) => api.delete(`/listings/${listingId}`),
+
+  createListingMessageContext: (listingId) =>
+    api.post(`/listings/${listingId}/message-context`),
+
+  uploadListingImages: (formData, config = {}) =>
+    api.post("/listings/uploads/images", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      ...config,
+    }),
 
   // Subscription lifecycle
   scheduleDowngrade: () => api.post("/payment/downgrade"),

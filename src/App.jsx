@@ -11,6 +11,7 @@ import MainLayout from "./layouts/MainLayout";
 import AdminAgentDetail from "./pages/admin/AdminAgentDetail";
 import AdminAgents from "./pages/admin/AdminAgents";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminListings from "./pages/admin/AdminListings";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminModerationPage from "./pages/admin/AdminModerationPage";
 import AdminPaymentAnalytics from "./pages/admin/AdminPaymentAnalytics";
@@ -28,13 +29,16 @@ import FarmerDashboard from "./pages/FarmerDashboard";
 import FarmerProfileForm from "./pages/FarmerProfileForm";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import Landing from "./pages/Landing";
+import ListingSetupPage from "./pages/ListingSetupPage";
 import LoginPage from "./pages/LoginPage";
 import MatchesPage from "./pages/MatchesPage";
 import MessagesPage from "./pages/MessagesPage";
 import NotificationPreferencesPage from "./pages/NotificationPreferencesPage";
 import PaymentPage from "./pages/PaymentPage";
 import PricingPage from "./pages/PricingPage";
+import ProductListingManagerPage from "./pages/ProductListingManagerPage";
 import ProfileTypeSelector from "./pages/ProfileTypeSelector";
+import PublicListingsPage from "./pages/PublicListingsPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SettingsPage from "./pages/SettingsPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -63,6 +67,7 @@ function App() {
               element={<SocialAuthCallbackPage />}
             />
             <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/marketplace" element={<PublicListingsPage />} />
             <Route
               path="/payment"
               element={
@@ -155,6 +160,26 @@ function App() {
                 <PrivateRoute>
                   <MainLayout>
                     <MessagesPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-listing"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <ListingSetupPage />
+                  </MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-listing/products"
+              element={
+                <PrivateRoute>
+                  <MainLayout>
+                    <ProductListingManagerPage />
                   </MainLayout>
                 </PrivateRoute>
               }
@@ -256,6 +281,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminMessages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/listings"
+              element={
+                <AdminRoute>
+                  <AdminListings />
                 </AdminRoute>
               }
             />

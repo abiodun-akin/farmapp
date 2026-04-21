@@ -6,7 +6,12 @@ import { canAccessFeature } from "../utils/subscriptionHelper";
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total: 0, connected: 0, interested: 0 });
+  const [stats, setStats] = useState({
+    total: 0,
+    connected: 0,
+    interested: 0,
+    listedProducts: 0,
+  });
   const [loading, setLoading] = useState(true);
   const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } =
@@ -35,12 +40,17 @@ const AnalyticsPage = () => {
           method: "getConversations",
           args: [{ limit: 500 }],
         });
+        const listingResponse = await sagaApi({
+          service: "userApi",
+          method: "getMyListing",
+        });
 
         const totalData = totalResponse?.data || totalResponse;
         const connectedData = connectedResponse?.data || connectedResponse;
         const interestedData = interestedResponse?.data || interestedResponse;
         const conversationData =
           conversationsResponse?.data || conversationsResponse;
+        const listingData = listingResponse?.data || listingResponse;
 
         const totalMatches = Array.isArray(totalData?.matches)
           ? totalData.matches
@@ -58,11 +68,15 @@ const AnalyticsPage = () => {
           (c) =>
             c?.lastMessage && ["interested", "connected"].includes(c?.status),
         ).length;
+        const listedProducts = Array.isArray(listingData?.listing?.products)
+          ? listingData.listing.products.length
+          : 0;
 
         setStats({
           total: totalMatches.length,
           connected: Math.max(connectedMatches.length, connectedByMessages),
           interested: interestedMatches.length,
+          listedProducts,
         });
       } catch (error) {
         console.error("Failed to load analytics:", error);
@@ -102,12 +116,17 @@ const AnalyticsPage = () => {
           method: "getConversations",
           args: [{ limit: 500 }],
         });
+        const listingResponse = await sagaApi({
+          service: "userApi",
+          method: "getMyListing",
+        });
 
         const totalData = totalResponse?.data || totalResponse;
         const connectedData = connectedResponse?.data || connectedResponse;
         const interestedData = interestedResponse?.data || interestedResponse;
         const conversationData =
           conversationsResponse?.data || conversationsResponse;
+        const listingData = listingResponse?.data || listingResponse;
 
         const totalMatches = Array.isArray(totalData?.matches)
           ? totalData.matches
@@ -125,11 +144,15 @@ const AnalyticsPage = () => {
           (c) =>
             c?.lastMessage && ["interested", "connected"].includes(c?.status),
         ).length;
+        const listedProducts = Array.isArray(listingData?.listing?.products)
+          ? listingData.listing.products.length
+          : 0;
 
         setStats({
           total: totalMatches.length,
           connected: Math.max(connectedMatches.length, connectedByMessages),
           interested: interestedMatches.length,
+          listedProducts,
         });
       } catch (err) {
         console.error("Failed to reload analytics:", err);
@@ -285,6 +308,29 @@ const AnalyticsPage = () => {
               style={{ margin: "6px 0 0", fontSize: "clamp(28px, 5vw, 36px)" }}
             >
               {stats.connected}
+            </h2>
+          </div>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e0e0e0",
+              borderRadius: "10px",
+              padding: "clamp(14px, 2vw, 24px)",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                color: "#666",
+                fontSize: "clamp(13px, 1.5vw, 14px)",
+              }}
+            >
+              Products Listed
+            </p>
+            <h2
+              style={{ margin: "6px 0 0", fontSize: "clamp(28px, 5vw, 36px)" }}
+            >
+              {stats.listedProducts}
             </h2>
           </div>
         </div>

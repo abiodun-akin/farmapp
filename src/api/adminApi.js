@@ -23,6 +23,17 @@ export const adminApi = {
   getFlaggedMessages: (params = {}) =>
     api.get("/admin/messages/flagged", { params }),
 
+  getListings: (params = {}) => api.get("/admin/listings", { params }),
+
+  moderateListing: (listingId, data = {}) =>
+    api.patch(`/admin/listings/${listingId}/moderation`, data),
+
+  moderateProduct: (listingId, productIndex, data = {}) =>
+    api.patch(
+      `/admin/listings/${listingId}/products/${productIndex}/moderation`,
+      data,
+    ),
+
   approveMessage: (messageId, data = {}) =>
     api.put(`/admin/messages/${messageId}/approve`, data),
 
