@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ErrorDisplay from "../components/ErrorDisplay";
@@ -28,14 +28,7 @@ const MatchesPage = ({ title = "Matches" }) => {
   const canViewMatches = canAccessFeature(subscriptionStatusType, "core");
 
   // Debounced fetch function
-  const fetchMatches = (
-    country,
-    state,
-    service,
-    farmingArea,
-    score,
-    distance,
-  ) => {
+  const fetchMatches = useCallback(() => {
     if (subscriptionLoading || !canViewMatches) return;
 
     setLoading(true);
@@ -44,12 +37,12 @@ const MatchesPage = ({ title = "Matches" }) => {
       method: "getMatches",
       args: [
         {
-          ...(country ? { country } : {}),
-          ...(state ? { state } : {}),
-          ...(service ? { service } : {}),
-          ...(farmingArea ? { farmingArea } : {}),
-          ...(score ? { minScore: score } : {}),
-          ...(distance ? { maxDistanceKm: distance } : {}),
+          ...(filterCountry ? { country: filterCountry } : {}),
+          ...(filterState ? { state: filterState } : {}),
+          ...(filterService ? { service: filterService } : {}),
+          ...(filterFarmingArea ? { farmingArea: filterFarmingArea } : {}),
+          ...(minScore ? { minScore } : {}),
+          ...(maxDistanceKm ? { maxDistanceKm } : {}),
         },
       ],
     })
@@ -63,7 +56,17 @@ const MatchesPage = ({ title = "Matches" }) => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [
+    subscriptionLoading,
+    canViewMatches,
+    sagaApi,
+    filterCountry,
+    filterState,
+    filterService,
+    filterFarmingArea,
+    minScore,
+    maxDistanceKm,
+  ]);
 
   // Initial load
   useEffect(() => {
@@ -78,15 +81,8 @@ const MatchesPage = ({ title = "Matches" }) => {
       return;
     }
 
-    fetchMatches(
-      filterCountry,
-      filterState,
-      filterService,
-      filterFarmingArea,
-      minScore,
-      maxDistanceKm,
-    );
-  }, [subscriptionLoading, canViewMatches]);
+    fetchMatches();
+  }, [subscriptionLoading, canViewMatches, fetchMatches]);
 
   // Debounced filter updates
   useEffect(() => {
@@ -95,14 +91,7 @@ const MatchesPage = ({ title = "Matches" }) => {
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      fetchMatches(
-        filterCountry,
-        filterState,
-        filterService,
-        filterFarmingArea,
-        minScore,
-        maxDistanceKm,
-      );
+      fetchMatches();
     }, 500); // 500ms debounce delay
 
     return () => {
@@ -110,23 +99,13 @@ const MatchesPage = ({ title = "Matches" }) => {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [
-    filterCountry,
-    filterState,
-    filterService,
-    filterFarmingArea,
-    minScore,
-    maxDistanceKm,
-    sagaApi,
-    subscriptionLoading,
-    canViewMatches,
-  ]);
+  }, [fetchMatches]);
 
   // Handle express interest in a match
   const handleExpressInterest = async (matchId) => {
     try {
       setExpressInterestLoading((prev) => ({ ...prev, [matchId]: true }));
-      const response = await sagaApi({
+      await sagaApi({
         service: "userApi",
         method: "expressInterest",
         args: [matchId],
@@ -278,7 +257,7 @@ const MatchesPage = ({ title = "Matches" }) => {
             type="text"
             value={filterState}
             onChange={(event) => setFilterState(event.target.value)}
-            placeholder="State/region"
+            placeholder="Filter by state/region"
             style={{
               padding: "8px 12px",
               border: "1px solid #ddd",

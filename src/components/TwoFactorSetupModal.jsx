@@ -125,7 +125,7 @@ const TwoFactorSetupModal = ({ onClose, onSuccess, user, sagaApi }) => {
       element.click();
       document.body.removeChild(element);
       URL.revokeObjectURL(element.href);
-    } catch (err) {
+    } catch {
       alert("Error downloading recovery codes. Please try again.");
     }
   };

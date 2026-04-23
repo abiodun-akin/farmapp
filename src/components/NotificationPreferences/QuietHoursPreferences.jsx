@@ -12,15 +12,17 @@ import { useEffect, useState } from "react";
  * Controls do-not-disturb / quiet hours settings
  */
 const QuietHoursPreferences = ({ preferences, onPreferenceChange }) => {
-  if (!preferences || !preferences.quietHours) return null;
+  const quietHoursPreferences = preferences?.quietHours || {};
 
-  const [localQuietHours, setLocalQuietHours] = useState(
-    preferences.quietHours,
-  );
+  const [localQuietHours, setLocalQuietHours] = useState(quietHoursPreferences);
 
   useEffect(() => {
-    setLocalQuietHours(preferences.quietHours);
-  }, [preferences.quietHours]);
+    if (preferences?.quietHours) {
+      setLocalQuietHours(preferences.quietHours);
+    }
+  }, [preferences?.quietHours]);
+
+  if (!preferences || !preferences.quietHours) return null;
 
   const handleQuietHoursToggle = () => {
     const updated = {

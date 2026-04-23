@@ -19,13 +19,6 @@ const AuthNotificationPreferences = ({ preferences, onPreferenceChange }) => {
     });
   };
 
-  // Events marked as important (cannot be disabled)
-  const importantEvents = [
-    "email_verification",
-    "two_factor_setup",
-    "password_reset",
-  ];
-
   const eventDetails = [
     {
       key: "signup",

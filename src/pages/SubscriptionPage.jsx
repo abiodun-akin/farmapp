@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useSubscriptionStatus from "../hooks/useSubscriptionStatus";
 
@@ -11,7 +11,6 @@ const SubscriptionPage = () => {
     subscriptionError,
     refreshSubscription,
   } = useSubscriptionStatus();
-  const [localRefresh, setLocalRefresh] = useState(false);
 
   // Calculate days remaining accurately
   const calculateDaysRemaining = (endDate) => {
@@ -34,7 +33,6 @@ const SubscriptionPage = () => {
     // Auto-refresh after payment redirect
     const params = new URLSearchParams(window.location.search);
     if (params.get("refreshed") === "true") {
-      setLocalRefresh(true);
       refreshSubscription();
     }
   }, [refreshSubscription]);

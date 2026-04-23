@@ -22,9 +22,6 @@ const PaymentNotificationPreferences = ({
     });
   };
 
-  // Events marked as important (cannot be disabled)
-  const importantEvents = ["payment_success", "payment_failed"];
-
   const eventDetails = [
     {
       key: "payment_initialized",

@@ -98,7 +98,7 @@ const ActivityNotificationPreferences = ({
             <Flex justify="between" align="center">
               <Flex direction="column" gap="1">
                 <Flex gap="2" align="center">
-                  <Text size="3">{event.icon}</Text>
+                  <Text size="3">{renderIcon(event.icon)}</Text>
                   <Text weight="bold" size="3">
                     {event.label}
                   </Text>

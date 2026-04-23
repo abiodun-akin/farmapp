@@ -94,7 +94,7 @@ describe("MatchesPage filters", () => {
       expect(mockSagaApi.mock.calls.length).toBeGreaterThan(1);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear Filters" }));
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
 
     await waitFor(() => {
       expect(mockSagaApi.mock.calls.length).toBeGreaterThan(2);

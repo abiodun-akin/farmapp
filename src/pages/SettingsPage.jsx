@@ -22,7 +22,7 @@ const SettingsPage = () => {
   const [emailCodesError, setEmailCodesError] = useState("");
   const [emailCodesSent, setEmailCodesSent] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
-  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+  const [, setShowRecoveryCodes] = useState(false);
   const sagaApi = useSagaApi();
   const { statusType: subscriptionStatusType, subscriptionLoading } =
     useSubscriptionStatus();
@@ -102,7 +102,7 @@ const SettingsPage = () => {
     }
   };
 
-  const handle2FASetupSuccess = (setupResult) => {
+  const handle2FASetupSuccess = () => {
     dispatch(setProfile({ twoFactorEnabled: true }));
     setTwoFactorMessage("Two-factor authentication enabled successfully!");
     setRecoveryCodeStatus({ remaining: 10, total: 10 });
@@ -117,8 +117,8 @@ const SettingsPage = () => {
         method: "getRecoveryCodes",
       });
       setRecoveryCodeStatus(response?.data?.recoveryCodes);
-    } catch (_err) {
-      console.error("Error fetching recovery codes");
+    } catch (err) {
+      console.error("Error fetching recovery codes", err);
     } finally {
       setRecoveryCodesBusy(false);
     }
@@ -143,7 +143,8 @@ const SettingsPage = () => {
         `New recovery codes generated! Save them in a safe place:\n\n${response?.data?.recoveryCodes?.join("\n")}`,
       );
       setRecoveryCodeStatus({ remaining: 10, total: 10 });
-    } catch (_err) {
+    } catch (err) {
+      console.error("Error regenerating recovery codes", err);
       alert("Error regenerating recovery codes. Please try again.");
     } finally {
       setRecoveryCodesBusy(false);

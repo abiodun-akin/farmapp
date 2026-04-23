@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useSagaApi from "../../hooks/useSagaApi";
@@ -8,7 +8,7 @@ const AdminModerationPage = () => {
   const { user } = useSelector((state) => state.user);
   const [flaggedMessages, setFlaggedMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
+  const [pagination] = useState({
     page: 1,
     limit: 20,
   });
@@ -19,7 +19,7 @@ const AdminModerationPage = () => {
   // Only admins can access this page
   const isAdmin = user?.isAdmin;
 
-  const fetchFlaggedMessages = async () => {
+  const fetchFlaggedMessages = useCallback(async () => {
     if (!isAdmin) return;
 
     setLoading(true);
@@ -30,19 +30,19 @@ const AdminModerationPage = () => {
         args: [pagination],
       });
       setFlaggedMessages(response?.messages || []);
-    } catch (_error) {
-      console.error("Error fetching flagged messages");
+    } catch (error) {
+      console.error("Error fetching flagged messages", error);
       alert("Failed to load flagged messages");
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, sagaApi, pagination]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchFlaggedMessages();
     }
-  }, [isAdmin, pagination.page]);
+  }, [isAdmin, fetchFlaggedMessages]);
 
   const handleApproveMessage = async (messageId) => {
     const reason = prompt(
@@ -60,7 +60,8 @@ const AdminModerationPage = () => {
       });
       alert("Message approved");
       fetchFlaggedMessages();
-    } catch (_error) {
+    } catch (error) {
+      console.error("Error approving message", error);
       alert("Error approving message");
     } finally {
       setActionInProgress(null);
@@ -85,7 +86,8 @@ const AdminModerationPage = () => {
         sendWarning ? "Message deleted and warning sent" : "Message deleted",
       );
       fetchFlaggedMessages();
-    } catch (_error) {
+    } catch (error) {
+      console.error("Error deleting message", error);
       alert("Error deleting message");
     } finally {
       setActionInProgress(null);
@@ -108,7 +110,8 @@ const AdminModerationPage = () => {
       });
       alert("Warning sent to sender");
       fetchFlaggedMessages();
-    } catch (_error) {
+    } catch (error) {
+      console.error("Error sending warning", error);
       alert("Error sending warning");
     } finally {
       setActionInProgress(null);
