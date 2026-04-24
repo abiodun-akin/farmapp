@@ -67,7 +67,14 @@ function App() {
               element={<SocialAuthCallbackPage />}
             />
             <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/marketplace" element={<PublicListingsPage />} />
+            <Route
+              path="/marketplace"
+              element={
+                <MainLayout>
+                  <PublicListingsPage />
+                </MainLayout>
+              }
+            />
             <Route
               path="/payment"
               element={
