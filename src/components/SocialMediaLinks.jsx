@@ -57,12 +57,17 @@ const SocialMediaLinks = ({ socialMedia, className = "" }) => {
   const handleClick = (social) => {
     let url = socialMedia[social.key];
 
+    if (!url) return;
+
     // Add protocol if missing
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       if (social.key === "website" || social.key === "whatsapp") {
         url = `https://${url}`;
-      } else {
+      } else if (!url.includes(`${social.key}.com`)) {
+        // Only prepend domain if the user didn't already type it
         url = `https://${social.key}.com/${url}`;
+      } else {
+        url = `https://${url}`;
       }
     }
 

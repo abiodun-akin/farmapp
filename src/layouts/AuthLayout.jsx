@@ -49,7 +49,7 @@ const LeftContent = () => (
       style={{
         borderRadius: "var(--radius-3)",
         backgroundColor: "var(--gray-3)",
-        backgroundImage: "url('images/farmconnect.png')",
+        backgroundImage: "url('/images/farmconnect.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -91,7 +91,8 @@ const AuthLayout = ({ title, children }) => (
           left: 0,
           right: 0,
           bottom: 0,
-          background: "linear-gradient(135deg, rgba(200, 240, 200, 0.5) 0%, rgba(200, 240, 200, 0.6) 50%, rgba(200, 240, 200, 0.7) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(200, 240, 200, 0.5) 0%, rgba(200, 240, 200, 0.6) 50%, rgba(200, 240, 200, 0.7) 100%)",
           pointerEvents: "none",
         }}
       />
