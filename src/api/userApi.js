@@ -87,6 +87,8 @@ export const userApi = {
   getSocialAuthUrl: (provider, mode = "login") =>
     `${API_REST_BASE_URL}/auth/social/${provider}/start?mode=${mode}`,
 
+  exchangeSocialCode: (code) => api.post("/auth/social/exchange", { code }),
+
   // Profile management
   initializeProfile: (profileType) =>
     api.post("/profile/initialize", { profileType }),

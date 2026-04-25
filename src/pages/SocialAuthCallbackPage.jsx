@@ -1,44 +1,68 @@
 import { Card, Flex, Spinner, Text, Button } from "@radix-ui/themes";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import AuthLayout from "../layouts/AuthLayout";
-import { useAuth } from "../hooks/useAuth";
+import { fetchSessionSuccess } from "../redux/slices/userSlice";
+import api from "../config/api";
 
 const SocialAuthCallbackPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const { restoreSession, loading, error, isAuthenticated } = useAuth();
+  const handled = useRef(false);
+  const [exchangeError, setExchangeError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const provider = searchParams.get("provider") || "social";
   const callbackError = searchParams.get("error");
   const status = searchParams.get("status");
+  const exchangeCode = searchParams.get("code");
 
   useEffect(() => {
-    if (status === "success" && !callbackError) {
-      restoreSession();
-    }
-  }, [callbackError, restoreSession, status]);
+    if (handled.current) return;
+    handled.current = true;
 
-  useEffect(() => {
-    if (isAuthenticated && !error) {
-      navigate("/", { replace: true });
+    if (callbackError || status !== "success" || !exchangeCode) {
+      setLoading(false);
+      return;
     }
-  }, [error, isAuthenticated, navigate]);
+
+    // Remove the code from browser history immediately
+    window.history.replaceState({}, "", "/auth/social/callback");
+
+    api
+      .post("/auth/social/exchange", { code: exchangeCode })
+      .then(({ data }) => {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        dispatch(fetchSessionSuccess({ user: data.user, token: data.token }));
+        navigate("/", { replace: true });
+      })
+      .catch((err) => {
+        setExchangeError(
+          err.response?.data?.error || "Sign-in failed. Please try again.",
+        );
+        setLoading(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const displayError = callbackError || exchangeError;
 
   return (
     <AuthLayout title="Signing You In">
       <Card style={{ padding: "24px" }}>
         <Flex direction="column" align="center" gap="4">
-          {!callbackError && loading && <Spinner size="3" />}
+          {!displayError && loading && <Spinner size="3" />}
           <Text align="center" size="4" weight="bold">
-            {callbackError
+            {displayError
               ? `${provider} sign-in failed`
               : `Completing your ${provider} sign-in`}
           </Text>
           <Text align="center" color="gray">
-            {callbackError || error || "Please wait while we restore your session."}
+            {displayError || "Please wait while we complete your sign-in."}
           </Text>
-          {(callbackError || error) && (
+          {displayError && (
             <Button asChild>
               <Link to="/login">Back to Sign In</Link>
             </Button>
