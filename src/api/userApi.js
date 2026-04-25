@@ -197,4 +197,31 @@ export const userApi = {
 
   cancelWithdrawal: (withdrawalId) =>
     api.delete(`/agents/withdrawals/${withdrawalId}`),
+
+  // Push Notifications & FCM
+  registerFCMToken: (token) =>
+    api.post("/notification-preferences/fcm-token", { token }),
+
+  unregisterFCMToken: (token) =>
+    api.delete("/notification-preferences/fcm-token", { data: { token } }),
+
+  // Notification preferences
+  getNotificationPreferences: () => api.get("/notification-preferences"),
+
+  updateNotificationPreferences: (preferences) =>
+    api.put("/notification-preferences", preferences),
+
+  updateNotificationChannel: (channel, settings) =>
+    api.put(`/notification-preferences/channel/${channel}`, settings),
+
+  toggleEventNotification: (category, event, enabled) =>
+    api.put(`/notification-preferences/event/${category}/${event}`, {
+      enabled,
+    }),
+
+  updateQuietHours: (quietHours) =>
+    api.put("/notification-preferences/quiet-hours", quietHours),
+
+  resetNotificationPreferences: () =>
+    api.put("/notification-preferences/reset"),
 };
