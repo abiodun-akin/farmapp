@@ -135,7 +135,7 @@ const Landing = () => {
               fontWeight: 700,
             }}
           >
-            Transforming Agriculture in Nigeria
+            Transforming Agriculture in Africa
           </h2>
           <p
             style={{
@@ -147,7 +147,7 @@ const Landing = () => {
             }}
           >
             FarmConnect is the trusted platform connecting farmers, vendors, and
-            service providers across Nigeria. Build stronger business
+            service providers across Africa. Build stronger business
             relationships and grow your agricultural enterprise.
           </p>
 
