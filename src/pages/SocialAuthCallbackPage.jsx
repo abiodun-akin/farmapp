@@ -1,10 +1,12 @@
-import { Card, Flex, Spinner, Text, Button } from "@radix-ui/themes";
+import { Button, Card, Flex, Spinner, Text } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import api from "../config/api";
 import AuthLayout from "../layouts/AuthLayout";
 import { fetchSessionSuccess } from "../redux/slices/userSlice";
-import api from "../config/api";
+
+const EXCHANGE_TIMEOUT_MS = 10000; // 10 seconds
 
 const SocialAuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ const SocialAuthCallbackPage = () => {
   const [searchParams] = useSearchParams();
   const handled = useRef(false);
   const [exchangeError, setExchangeError] = useState(null);
+  const [exchangeErrorCode, setExchangeErrorCode] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const provider = searchParams.get("provider") || "social";
@@ -31,20 +34,46 @@ const SocialAuthCallbackPage = () => {
     // Remove the code from browser history immediately
     window.history.replaceState({}, "", "/auth/social/callback");
 
+    // Set timeout for exchange request
+    const timeoutId = setTimeout(() => {
+      setExchangeError("Sign-in took too long. Please try again.");
+      setExchangeErrorCode("EXCHANGE_TIMEOUT");
+      setLoading(false);
+      console.error("[Social Auth] Exchange timeout", {
+        provider,
+        timeout: EXCHANGE_TIMEOUT_MS,
+      });
+    }, EXCHANGE_TIMEOUT_MS);
+
     api
       .post("/auth/social/exchange", { code: exchangeCode })
       .then(({ data }) => {
+        clearTimeout(timeoutId);
+        console.log("[Social Auth] Exchange successful", { provider });
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         dispatch(fetchSessionSuccess({ user: data.user, token: data.token }));
         navigate("/", { replace: true });
       })
       .catch((err) => {
-        setExchangeError(
-          err.response?.data?.error || "Sign-in failed. Please try again.",
-        );
+        clearTimeout(timeoutId);
+        const errorMessage =
+          err.response?.data?.error || err.message || "Sign-in failed";
+        const errorCode = err.response?.data?.code || "UNKNOWN_ERROR";
+
+        console.error("[Social Auth] Exchange failed", {
+          provider,
+          errorMessage,
+          errorCode,
+          status: err.response?.status,
+        });
+
+        setExchangeError(errorMessage);
+        setExchangeErrorCode(errorCode);
         setLoading(false);
       });
+
+    return () => clearTimeout(timeoutId);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const displayError = callbackError || exchangeError;
@@ -60,7 +89,29 @@ const SocialAuthCallbackPage = () => {
               : `Completing your ${provider} sign-in`}
           </Text>
           <Text align="center" color="gray">
-            {displayError || "Please wait while we complete your sign-in."}
+            {displayError ? (
+              <Flex direction="column" align="center" gap="2">
+                <span>{displayError}</span>
+                {exchangeErrorCode && exchangeErrorCode !== "UNKNOWN_ERROR" && (
+                  <span style={{ fontSize: "0.85em", opacity: 0.7 }}>
+                    Error code: {exchangeErrorCode}
+                  </span>
+                )}
+                {exchangeErrorCode === "EXCHANGE_CODE_EXPIRED" && (
+                  <span style={{ fontSize: "0.85em" }}>
+                    This can happen with slow connections. Please try again.
+                  </span>
+                )}
+                {exchangeErrorCode === "EXCHANGE_TIMEOUT" && (
+                  <span style={{ fontSize: "0.85em" }}>
+                    Your network may be slow. Please ensure you have a stable
+                    connection.
+                  </span>
+                )}
+              </Flex>
+            ) : (
+              "Please wait while we complete your sign-in."
+            )}
           </Text>
           {displayError && (
             <Button asChild>
