@@ -1,7 +1,10 @@
 import axios from "axios";
 
-const configuredApiUrl =
-  import.meta.env.VITE_API_URL || "https://connectapi-joq3.onrender.com";
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+
+if (!configuredApiUrl) {
+  throw new Error("VITE_API_URL is not set. Check your .env file.");
+}
 
 const normalizedApiUrl = configuredApiUrl.replace(/\/+$/, "");
 

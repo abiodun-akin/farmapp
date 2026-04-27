@@ -6,7 +6,7 @@ import api from "../config/api";
 import AuthLayout from "../layouts/AuthLayout";
 import { fetchSessionSuccess } from "../redux/slices/userSlice";
 
-const EXCHANGE_TIMEOUT_MS = 10000; // 10 seconds
+const EXCHANGE_TIMEOUT_MS = 15000; // 15 seconds
 
 const SocialAuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -51,7 +51,6 @@ const SocialAuthCallbackPage = () => {
         clearTimeout(timeoutId);
         console.log("[Social Auth] Exchange successful", { provider });
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
         dispatch(fetchSessionSuccess({ user: data.user, token: data.token }));
         navigate("/", { replace: true });
       })

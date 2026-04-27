@@ -16,7 +16,8 @@ function MainLayout({ children }) {
   const location = useLocation();
 
   // Don't apply background for marketplace page
-  const shouldApplyBackground = location.pathname !== "/marketplace";
+  // const shouldApplyBackground = location.pathname !== "/marketplace";
+  const shouldApplyBackground = !location.pathname.startsWith("/marketplace");
 
   return (
     <div

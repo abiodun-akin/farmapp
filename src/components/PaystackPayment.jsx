@@ -1,13 +1,24 @@
+import { Button, Flex, Text } from "@radix-ui/themes";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Flex, Text } from "@radix-ui/themes";
-import { initializePaymentRequest, verifyPaymentRequest } from "../redux/slices/paymentSlice";
 import useToast from "../hooks/useToast";
+import {
+  initializePaymentRequest,
+  verifyPaymentRequest,
+} from "../redux/slices/paymentSlice";
 
-const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false }) => {
+const PaystackPayment = ({
+  plan,
+  amount,
+  onSuccess,
+  onClose,
+  isTrialAuth = false,
+}) => {
   const dispatch = useDispatch();
   const { addToast } = useToast();
-  const { loading, paymentData, error, verifyResult } = useSelector((state) => state.payment);
+  const { loading, paymentData, error, verifyResult } = useSelector(
+    (state) => state.payment,
+  );
   const { user } = useSelector((state) => state.user);
   const [paystackReady, setPaystackReady] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
@@ -36,6 +47,7 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
 
     const reference = paymentData.paymentData.reference;
 
+    // Ensure all metadata values are serializable (strings/numbers only, no objects)
     const handler = window.PaystackPop.setup({
       key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
       email: user?.email || "user@example.com",
@@ -43,8 +55,8 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
       currency: "NGN",
       ref: reference,
       metadata: {
-        plan,
-        reference,
+        plan: String(plan || ""),
+        reference: String(reference || ""),
       },
       callback: function (response) {
         console.log("Payment successful:", response);
@@ -82,8 +94,12 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
     setPaymentInProgress(true);
 
     try {
-      console.log("Initializing payment for:", { plan, amount, email: user?.email });
-      
+      console.log("Initializing payment for:", {
+        plan,
+        amount,
+        email: user?.email,
+      });
+
       // Dispatch action to initialize payment via saga
       dispatch(initializePaymentRequest({ plan, amount, email: user?.email }));
     } catch (error) {
@@ -95,7 +111,10 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
   useEffect(() => {
     if (!pendingVerificationRef || loading) return;
 
-    if (verifyResult?.status === "success" && verifyResult?.reference === pendingVerificationRef) {
+    if (
+      verifyResult?.status === "success" &&
+      verifyResult?.reference === pendingVerificationRef
+    ) {
       const ref = pendingVerificationRef;
       setPendingVerificationRef(null);
       onSuccess({ reference: ref, plan });
@@ -106,7 +125,15 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
       addToast(error, "error");
       setPendingVerificationRef(null);
     }
-  }, [pendingVerificationRef, loading, verifyResult, error, onSuccess, plan, addToast]);
+  }, [
+    pendingVerificationRef,
+    loading,
+    verifyResult,
+    error,
+    onSuccess,
+    plan,
+    addToast,
+  ]);
 
   const isProcessing = loading || paymentInProgress;
   const isDisabled = isProcessing || !paystackReady;
@@ -119,20 +146,33 @@ const PaystackPayment = ({ plan, amount, onSuccess, onClose, isTrialAuth = false
 
       {isTrialAuth ? (
         <div style={{ textAlign: "center", padding: "0 8px" }}>
-          <Text size="3" style={{ color: "#555", display: "block", marginBottom: "6px" }}>
-            A <strong>₦50</strong> authorization charge is used to verify your card.
+          <Text
+            size="3"
+            style={{ color: "#555", display: "block", marginBottom: "6px" }}
+          >
+            A <strong>₦50</strong> authorization charge is used to verify your
+            card.
           </Text>
           <Text size="2" color="gray" style={{ display: "block" }}>
-            ₦5,000 will only be charged after your free trial ends (if you haven't cancelled).
+            ₦5,000 will only be charged after your free trial ends (if you
+            haven't cancelled).
           </Text>
         </div>
       ) : (
         <Text size="4">Amount: ₦{amount.toLocaleString()}</Text>
       )}
 
-      {!paystackReady && <Text size="2" color="gray">Loading payment provider...</Text>}
+      {!paystackReady && (
+        <Text size="2" color="gray">
+          Loading payment provider...
+        </Text>
+      )}
 
-      {error && <Text size="2" color="red">Error: {error}</Text>}
+      {error && (
+        <Text size="2" color="red">
+          Error: {error}
+        </Text>
+      )}
 
       <Button
         onClick={initializePayment}
