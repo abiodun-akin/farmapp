@@ -26,7 +26,17 @@ const SocialAuthCallbackPage = () => {
     if (handled.current) return;
     handled.current = true;
 
+    console.log("[Social Auth] Processing callback", {
+      provider,
+      hasCode: !!exchangeCode,
+      status,
+      callbackError,
+    });
+
     if (callbackError || status !== "success" || !exchangeCode) {
+      console.warn(
+        "[Social Auth] Missing required parameters or error present",
+      );
       setLoading(false);
       return;
     }
