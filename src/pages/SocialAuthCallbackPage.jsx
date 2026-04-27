@@ -26,63 +26,70 @@ const SocialAuthCallbackPage = () => {
     if (handled.current) return;
     handled.current = true;
 
-    console.log("[Social Auth] Processing callback", {
-      provider,
-      hasCode: !!exchangeCode,
-      status,
-      callbackError,
-    });
-
-    if (callbackError || status !== "success" || !exchangeCode) {
-      console.warn(
-        "[Social Auth] Missing required parameters or error present",
-      );
-      setLoading(false);
-      return;
-    }
-
-    // Remove the code from browser history immediately
-    window.history.replaceState({}, "", "/auth/social/callback");
-
-    // Set timeout for exchange request
-    const timeoutId = setTimeout(() => {
-      setExchangeError("Sign-in took too long. Please try again.");
-      setExchangeErrorCode("EXCHANGE_TIMEOUT");
-      setLoading(false);
-      console.error("[Social Auth] Exchange timeout", {
+    try {
+      console.log("[Social Auth] Processing callback", {
         provider,
-        timeout: EXCHANGE_TIMEOUT_MS,
+        hasCode: !!exchangeCode,
+        status,
+        callbackError,
       });
-    }, EXCHANGE_TIMEOUT_MS);
 
-    api
-      .post("/auth/social/exchange", { code: exchangeCode })
-      .then(({ data }) => {
-        clearTimeout(timeoutId);
-        console.log("[Social Auth] Exchange successful", { provider });
-        localStorage.setItem("token", data.token);
-        dispatch(fetchSessionSuccess({ user: data.user, token: data.token }));
-        navigate("/", { replace: true });
-      })
-      .catch((err) => {
-        clearTimeout(timeoutId);
-        const errorMessage =
-          err.response?.data?.error || err.message || "Sign-in failed";
-        const errorCode = err.response?.data?.code || "UNKNOWN_ERROR";
+      if (callbackError || status !== "success" || !exchangeCode) {
+        console.warn(
+          "[Social Auth] Missing required parameters or error present",
+        );
+        setLoading(false);
+        return;
+      }
 
-        console.error("[Social Auth] Exchange failed", {
+      // Remove the code from browser history immediately
+      window.history.replaceState({}, "", "/auth/social/callback");
+
+      // Set timeout for exchange request
+      const timeoutId = setTimeout(() => {
+        setExchangeError("Sign-in took too long. Please try again.");
+        setExchangeErrorCode("EXCHANGE_TIMEOUT");
+        setLoading(false);
+        console.error("[Social Auth] Exchange timeout", {
           provider,
-          errorMessage,
-          errorCode,
-          status: err.response?.status,
+          timeout: EXCHANGE_TIMEOUT_MS,
+        });
+      }, EXCHANGE_TIMEOUT_MS);
+
+      api
+        .post("/auth/social/exchange", { code: exchangeCode })
+        .then(({ data }) => {
+          clearTimeout(timeoutId);
+          console.log("[Social Auth] Exchange successful", { provider });
+          localStorage.setItem("token", data.token);
+          dispatch(fetchSessionSuccess({ user: data.user, token: data.token }));
+          navigate("/", { replace: true });
+        })
+        .catch((err) => {
+          clearTimeout(timeoutId);
+          const errorMessage =
+            err.response?.data?.error || err.message || "Sign-in failed";
+          const errorCode = err.response?.data?.code || "UNKNOWN_ERROR";
+
+          console.error("[Social Auth] Exchange failed", {
+            provider,
+            errorMessage,
+            errorCode,
+            status: err.response?.status,
+          });
+
+          setExchangeError(errorMessage);
+          setExchangeErrorCode(errorCode);
+          setLoading(false);
         });
 
-        setExchangeError(errorMessage);
-        setExchangeErrorCode(errorCode);
-        setLoading(false);
-      });
-
-    return () => clearTimeout(timeoutId);
+      return () => clearTimeout(timeoutId);
+    } catch (e) {
+      console.error("[Social Auth] Synchronous error in useEffect:", e);
+      setExchangeError("An unexpected error occurred during sign-in.");
+      setExchangeErrorCode("CLIENT_SIDE_ERROR");
+      setLoading(false);
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const displayError = callbackError || exchangeError;
