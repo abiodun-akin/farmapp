@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { logoutRequest } from "../redux/slices/userSlice";
-import { clearAuthStorage, isTokenExpired } from "../utils/tokenUtils";
+import {
+  clearAuthStorage,
+  getToken,
+  isTokenExpired,
+} from "../utils/tokenUtils";
 
 /**
  * AuthInitializer - Validates token at app startup
@@ -12,8 +16,8 @@ const AuthInitializer = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Check token validity at app startup
-    const token = localStorage.getItem("token");
+    // Check token validity at app startup (prefer sessionStorage over localStorage)
+    const token = getToken();
 
     // If token exists but is expired, clear auth state immediately
     if (token && isTokenExpired(token)) {

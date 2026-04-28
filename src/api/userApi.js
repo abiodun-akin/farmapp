@@ -226,4 +226,9 @@ export const userApi = {
 
   resetNotificationPreferences: () =>
     api.put("/notification-preferences/reset"),
+
+  // Admin 2FA endpoints
+  getAdminTwoFactorSettings: () => api.get("/admin/2fa-settings"),
+
+  regenerateAdminRecoveryCodes: () => api.post("/admin/2fa/recovery-codes"),
 };

@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  user: localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
+  user: sessionStorage.getItem("user")
+    ? JSON.parse(sessionStorage.getItem("user"))
     : null,
-  token: localStorage.getItem("token") || null,
+  token: sessionStorage.getItem("token") || null,
   loading: false,
   error: null,
   statusMessage: null,
@@ -15,7 +15,7 @@ const initialState = {
   twoFactorRequired: false,
   twoFactorChallengeToken: null,
   isAuthenticated: !!(
-    localStorage.getItem("token") && localStorage.getItem("user")
+    sessionStorage.getItem("token") && sessionStorage.getItem("user")
   ),
 };
 
@@ -36,8 +36,8 @@ const userSlice = createSlice({
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
     },
     signupFailure: (state, action) => {
       state.loading = false;
@@ -46,8 +46,8 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
 
     // Login actions
@@ -66,8 +66,8 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.twoFactorRequired = false;
       state.twoFactorChallengeToken = null;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
     },
     loginTwoFactorRequired: (state, action) => {
       const { challengeToken, message } = action.payload;
@@ -79,8 +79,8 @@ const userSlice = createSlice({
       state.token = null;
       state.twoFactorRequired = true;
       state.twoFactorChallengeToken = challengeToken;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -91,8 +91,8 @@ const userSlice = createSlice({
       state.token = null;
       state.twoFactorRequired = false;
       state.twoFactorChallengeToken = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
 
     verifyTwoFactorRequest: (state) => {
@@ -110,8 +110,8 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.twoFactorRequired = false;
       state.twoFactorChallengeToken = null;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
     },
     verifyTwoFactorFailure: (state, action) => {
       state.loading = false;
@@ -159,8 +159,8 @@ const userSlice = createSlice({
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
     },
     fetchSessionFailure: (state, action) => {
       state.loading = false;
@@ -168,8 +168,8 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
 
     socialAuthStartRequest: (state) => {
@@ -261,7 +261,7 @@ const userSlice = createSlice({
       state.emailVerified = true;
       if (state.user) {
         state.user = { ...state.user, isEmailVerified: true };
-        localStorage.setItem("user", JSON.stringify(state.user));
+        sessionStorage.setItem("user", JSON.stringify(state.user));
       }
     },
     verifyEmailFailure: (state, action) => {
@@ -286,6 +286,7 @@ const userSlice = createSlice({
       state.statusMessage = null;
       state.passwordResetRequested = false;
       state.passwordResetCompleted = false;
+      // Clear sessionStorage
       sessionStorage.clear();
       // Clear all auth-related localStorage
       localStorage.removeItem("token");
@@ -305,7 +306,7 @@ const userSlice = createSlice({
     setProfile: (state, action) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        localStorage.setItem("user", JSON.stringify(state.user));
+        sessionStorage.setItem("user", JSON.stringify(state.user));
       }
     },
 
@@ -313,7 +314,7 @@ const userSlice = createSlice({
       state.loading = false;
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        localStorage.setItem("user", JSON.stringify(state.user));
+        sessionStorage.setItem("user", JSON.stringify(state.user));
       }
     },
 

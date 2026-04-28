@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken, removeToken, setToken } from "../utils/tokenUtils";
 
 const configuredApiUrl = import.meta.env.VITE_API_URL;
 
@@ -42,7 +43,7 @@ const refreshSession = async () => {
       .then((response) => {
         const refreshedToken = response?.data?.token;
         if (refreshedToken) {
-          localStorage.setItem("token", refreshedToken);
+          setToken(refreshedToken); // Uses sessionStorage
         }
         return refreshedToken;
       })
@@ -61,7 +62,7 @@ api.interceptors.request.use(
       return config;
     }
 
-    const token = localStorage.getItem("token");
+    const token = getToken(); // Prefers sessionStorage
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -112,7 +113,7 @@ api.interceptors.response.use(
       }
       return api(originalRequest);
     } catch (refreshError) {
-      localStorage.removeItem("token");
+      removeToken(); // Clears both sessionStorage and localStorage
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(
