@@ -10,9 +10,11 @@ export const paymentAPI = {
   handlePaymentSuccess: (reference, plan) =>
     api.post("/payment/success", { reference, plan }),
 
-  handlePaymentClose: () =>
-    api.post("/payment/close"),
+  handlePaymentClose: (reference = null) =>
+    api.post("/payment/close", { reference }),
 
-  getSubscriptionStatus: () =>
-    api.get("/payment/subscription"),
+  cancelSubscription: (reason = null) =>
+    api.post("/payment/cancel-subscription", { reason }),
+
+  getSubscriptionStatus: () => api.get("/payment/subscription"),
 };

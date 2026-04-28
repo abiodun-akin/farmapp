@@ -67,7 +67,9 @@ const PaystackPayment = ({
       onClose: function () {
         console.log("Payment modal closed");
         setPaymentInProgress(false);
-        onClose();
+        // Pass the reference when closing so backend can mark payment as failed
+        const reference = paymentData?.paymentData?.reference || null;
+        onClose({ reference });
       },
     });
 

@@ -2,6 +2,7 @@ import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import AdminRoute from "./components/AdminRoute";
+import AuthInitializer from "./components/AuthInitializer";
 import AuthSessionManager from "./components/AuthSessionManager";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
@@ -53,6 +54,7 @@ function App() {
     <ErrorBoundary>
       <Theme>
         <Router>
+          <AuthInitializer />
           <Toast />
           <AuthSessionManager />
           <Routes>

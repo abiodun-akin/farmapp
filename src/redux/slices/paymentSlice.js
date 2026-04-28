@@ -73,13 +73,29 @@ const paymentSlice = createSlice({
     closePaymentSuccess: (state, action) => {
       state.loading = false;
       state.closeResult = action.payload;
-      state.subscription = null;
-      state.hasActiveSubscription = false;
+      // DO NOT clear subscription - payment close is not subscription cancellation
+      // Subscription should remain active
     },
     closePaymentFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
       state.closeResult = null;
+    },
+
+    cancelSubscriptionRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    cancelSubscriptionSuccess: (state) => {
+      state.loading = false;
+      // After cancellation, refresh subscription status
+      // Subscription status will be "cancelled"
+      state.subscription = null;
+      state.hasActiveSubscription = false;
+    },
+    cancelSubscriptionFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "Failed to cancel subscription";
     },
 
     fetchSubscriptionStatusRequest: (state) => {
@@ -90,7 +106,8 @@ const paymentSlice = createSlice({
       state.subscriptionLoading = false;
       state.subscriptionError = null;
       state.subscription = action.payload?.subscription || null;
-      state.hasActiveSubscription = action.payload?.hasActiveSubscription || false;
+      state.hasActiveSubscription =
+        action.payload?.hasActiveSubscription || false;
       state.hasEverSubscribed = action.payload?.hasEverSubscribed || false;
       state.subscriptionLastFetchedAt = Date.now();
       state.subscriptionUserId = action.payload?.userId || null;
@@ -141,6 +158,9 @@ export const {
   closePaymentRequest,
   closePaymentSuccess,
   closePaymentFailure,
+  cancelSubscriptionRequest,
+  cancelSubscriptionSuccess,
+  cancelSubscriptionFailure,
   fetchSubscriptionStatusRequest,
   fetchSubscriptionStatusSuccess,
   fetchSubscriptionStatusFailure,

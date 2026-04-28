@@ -8,6 +8,11 @@ const PricingPage = () => {
   const navigate = useNavigate();
   const [loadingPlan, setLoadingPlan] = useState(null);
   const { isAuthenticated } = useSelector((state) => state.user);
+  const { subscription, hasActiveSubscription } = useSelector(
+    (state) => state.payment,
+  );
+
+  const isRenewal = hasActiveSubscription && subscription?.status === "active";
 
   const handleChoosePlan = (plan) => {
     if (!isAuthenticated) {
@@ -26,7 +31,9 @@ const PricingPage = () => {
       id: "premium",
       name: "Premium Plan",
       price: "₦5,000",
-      description: "Get started with our 30 days free trial.",
+      description: isRenewal
+        ? "Renew your subscription for uninterrupted access to premium features."
+        : "Get started with our 30 days free trial.",
       features: [
         "Free signup",
         "Free listing",
@@ -122,7 +129,11 @@ const PricingPage = () => {
                     opacity: loadingPlan === plan.id ? 0.7 : 1,
                   }}
                 >
-                  {loadingPlan === plan.id ? "Processing..." : "Start trial"}
+                  {loadingPlan === plan.id
+                    ? "Processing..."
+                    : isRenewal
+                      ? "Renew Subscription"
+                      : "Start Trial"}
                 </Button>
               </Flex>
             </Card>

@@ -1,5 +1,5 @@
 import { Button, Card, Flex, Text } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ErrorDisplay from "../components/ErrorDisplay";
@@ -8,26 +8,28 @@ import useSagaApi from "../hooks/useSagaApi";
 import useToast from "../hooks/useToast";
 import FullPageLayout from "../layouts/FullPageLayout";
 import {
-  clearPaymentFlowState,
-  closePaymentRequest,
-  fetchSubscriptionStatusRequest,
-  successPaymentRequest,
+    clearPaymentFlowState,
+    closePaymentRequest,
+    fetchSubscriptionStatusRequest,
+    successPaymentRequest
 } from "../redux/slices/paymentSlice";
 import { logoutRequest } from "../redux/slices/userSlice";
 
-const PLANS = {
+const getPlans = (isRenewal) => ({
   premium: {
     name: "Premium Plan",
     amount: 5000,
-    description: "Get started with our 30 days free trial.",
+    description: isRenewal
+      ? "Renew your subscription for uninterrupted access to premium features."
+      : "Get started with our 30 days free trial.",
     features: [
       "Access to core features",
-      "30-day trial period",
+      isRenewal ? "Uninterrupted access" : "30-day trial period",
       "Email support",
       "Basic analytics",
     ],
   },
-};
+});
 
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
@@ -54,7 +56,13 @@ const PaymentPage = () => {
     error: paymentError,
     loading: paymentLoading,
     subscription,
+    hasActiveSubscription,
   } = useSelector((state) => state.payment);
+
+  const isRenewal = hasActiveSubscription && subscription?.status === "active";
+
+  // Memoize PLANS to prevent unnecessary dependency updates
+  const PLANS = useMemo(() => getPlans(isRenewal), [isRenewal]);
 
   useEffect(() => {
     // Quick client-side JWT expiry check to avoid unexpected 401s
@@ -94,7 +102,7 @@ const PaymentPage = () => {
       setError("Invalid plan selected");
       navigate("/pricing");
     }
-  }, [searchParams, navigate, isAuthenticated, dispatch, addToast]);
+  }, [searchParams, navigate, isAuthenticated, dispatch, addToast, PLANS]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -175,8 +183,10 @@ const PaymentPage = () => {
     };
   }, [dispatch]);
 
-  const handlePaymentClose = () => {
-    dispatch(closePaymentRequest());
+  const handlePaymentClose = (data) => {
+    // Just close payment modal, don't cancel subscription
+    const reference = data?.reference || null;
+    dispatch(closePaymentRequest({ reference }));
   };
 
   const handleScheduleDowngrade = async () => {
